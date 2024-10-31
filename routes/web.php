@@ -4,7 +4,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\PdfController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -37,6 +36,10 @@ Route::group(['middleware' => ['role:uploader']], routes: function (): void {
 
     Route::get('/showObiettivo/{obiettivo}', [HomeController::class, 'showObiettivo'])->name('showObiettivo');
     Route::post('/uploadObiettivo', [HomeController::class, 'uploadFileObiettivo'])->name('file.uploadObiettivo');
+    Route::get('/prontoSoccorso', [HomeController::class, 'prontoSoccorso'])->name('prontoSoccorso');
+    Route::get('/donazioni', [HomeController::class, 'donazioni'])->name('donazioni');
+    Route::get('/tempiListeAttesa', [HomeController::class, 'tempiListeAttesa'])->name('tempiListeAttesa');
+    Route::get('/screening', [HomeController::class, 'screening'])->name('screening');
     
 });
 
