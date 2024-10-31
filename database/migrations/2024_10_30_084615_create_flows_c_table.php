@@ -11,30 +11,29 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('flows_EMUR', function (Blueprint $table) {
+        Schema::create('flows_c', function (Blueprint $table) {
             $table->id();
             $table->string("file_name");
             $table->unsignedBigInteger("structure_id");
             $table->integer("year");
             $table->integer("month");
-            $table->integer("tmp");
-            $table->integer("boarding");
             $table->integer("version")->nullable();
             $table->datetime("created_at")->useCurrent();
             $table->date("file_date");
+            $table->integer("denominatore");
+            $table->integer("ia1_1");
             $table->integer("ia1_2");
-
-            $table->foreign("structure_id", "fk_structure_id")->on("structures")->references("id");
+            $table->integer("ia1_3");
+            $table->integer("ia1_4");
+            $table->integer("ia1_5");
+            $table->integer("ia1_6");
         });
     }
-
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::table('flows_EMUR', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('flows_c');
     }
 };

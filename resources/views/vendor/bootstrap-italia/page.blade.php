@@ -207,9 +207,27 @@
                                                                 <div class="col-12 col-lg-4">
                                                                     <div class="link-list-wrapper">
                                                                         <ul class="link-list">
+
+                                                                            <li>
+                                                                                <a class="list-item" href="{{ route("tempiListeAttesa") }}"><span><i class="bi bi-people"></i>&nbsp;&nbsp;Obiettivo 1 - Riduzione dei tempi delle liste di attesa delle prestazioni sanitarie</span></a>
+                                                                            </li>
+
                                                                             <li>
                                                                                 <a class="list-item" href="{{ route("showObiettivo", ['obiettivo' => 3]) }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Check list punti nascita</span></a>
                                                                             </li>
+                                                                            
+                                                                            <li>
+                                                                                <a class="list-item" href="{{ route("prontoSoccorso") }}"><span><i class="bi bi-people"></i>&nbsp;&nbsp;Obiettivo 4 - PS</span></a>
+                                                                            </li>
+
+                                                                            <li>
+                                                                                <a class="list-item" href="{{ route("screening") }}"><span><i class="bi bi-people"></i>&nbsp;&nbsp;Obiettivo 5 - Screening</span></a>
+                                                                            </li>
+
+                                                                            <li>
+                                                                                <a class="list-item" href="{{ route("donazioni") }}"><span><i class="bi bi-people"></i>&nbsp;&nbsp;Obiettivo 6 - Donazioni</span></a>
+                                                                            </li>
+
                                                                             <li>
                                                                                 <a class="list-item" href="{{ route("usersList") }}"><span><i class="bi bi-people"></i>&nbsp;&nbsp;Lista utenti</span></a>
                                                                             </li>
