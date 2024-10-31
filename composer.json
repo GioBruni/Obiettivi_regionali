@@ -6,6 +6,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "barryvdh/laravel-dompdf": "^3.0",
         "consoletvs/charts": "^6.7",
         "icehouse-ventures/laravel-chartjs": "^4.1",
         "italia/design-laravel-theme": "^1.3",

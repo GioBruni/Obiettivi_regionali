@@ -169,6 +169,10 @@ class AdminController extends Controller
         switch($obiettivo) {
             case 3: $dataView['titolo'] = "Check list punto di nascite";
             break;
+            case 8: $dataView['titolo'] = "Certficazione Bilanci";
+            break;
+            case 9: $dataView['titolo'] = "Ottimizzazione della gest del I ciclo di terapia";
+            break;
         }
         $dataView['categorie'] = DB::table("target_categories")
             ->where("target_number", $obiettivo)
@@ -178,7 +182,7 @@ class AdminController extends Controller
         $dataView['filesCaricati'] = UploatedFile::where('uploated_files.target_number', $obiettivo)
         ->join("structures", "structures.id", "=", "uploated_files.structure_id")
         ->join("users", "users.id", "=", "uploated_files.user_id")
-        ->join('target_categories as tc', 'uploated_files.target_category_id', '=', 'tc.id')
+        ->leftJoin('target_categories as tc', 'uploated_files.target_category_id', '=', 'tc.id')
         ->orderByRaw('approved IS NULL DESC') // prima quelli con approved a NULL
         ->orderBy('created_at')
         ->select("uploated_files.*", "users.name as utente", "structures.name as struttura", "tc.category")

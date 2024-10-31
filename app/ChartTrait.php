@@ -2,8 +2,6 @@
 
 namespace App;
 
-use Carbon\Carbon;
-use Carbon\CarbonPeriod;
 use IcehouseVentures\LaravelChartjs\Facades\Chartjs;
 
 trait ChartTrait
