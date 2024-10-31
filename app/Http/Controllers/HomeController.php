@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\ChartTrait;
 use App\Models\LocationsUsers;
+use App\Models\PCT;
 use App\Models\UploatedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +20,8 @@ class HomeController extends Controller
 {
     use ChartTrait;
 
+    protected $dataViewSaluteEFunzionamento = [];
+
     /**
      * Create a new controller instance.
      *
@@ -26,7 +29,7 @@ class HomeController extends Controller
      */
     public function __construct()
     {
-        this->middleware('auth');
+        $this->middleware('auth');
     }
 
     /**
@@ -62,12 +65,45 @@ class HomeController extends Controller
                 if (isset($tmp)) {
                     $punteggioRaggiunto[$obiettivo] = $tmp->approved == 1 ? $punteggioTeoria->clone()->where("target_number", $obiettivo)->select($struttura->column_points)->first() : 0;
                 }
-                foreach ($punteggioTeoria->orderby("id")->get() as $rowTmp) {
+                $obiettivo = 8;
+                $tmp = DB::table("uploated_files")
+                    ->where("target_number", $obiettivo)
+                    ->where("structure_id", $struttura->structure_id)
+                    ->latest()->first();
+                if (isset($tmp)) {
+                    $punteggioRaggiunto[$obiettivo] = $tmp->approved == 1 ? $punteggioTeoria->clone()->where("target_number", $obiettivo)->select($struttura->column_points)->first() : 0;
+                }
+                $obiettivo = 9;
+                $punteggioRaggiunto[$obiettivo] = 0;
+                $tmp = DB::table("uploated_files")
+                    ->join("target_PCT", "target_PCT.uploated_file_id", "=", "uploated_files.id")
+                    ->where("target_number", $obiettivo)
+                    ->where("target_PCT.structure_id", $struttura->structure_id)
+                    ->select("target_PCT.numerator", "target_PCT.denominator", "uploated_files.approved")
+                    ->latest("target_PCT.updated_at")->first();
+                if (isset($tmp) && $tmp->approved == 1) {
+                    $rapporto = round($tmp->numerator / $tmp->denominator * 100, 2);
+                    $punteggioRaggiunto[$obiettivo] += ($rapporto >= 80) ? 2.5 : (round($rapporto / 80 * 2.5, 2));
+                }
+
+                foreach($punteggioTeoria->orderby("id")->get() as $rowTmp) {
+                    //if (isset($punteggioRaggiunto[$rowTmp->target_number]))
+                    //    dd($punteggioRaggiunto[$rowTmp->target_number]->{$struttura->column_points});
+                    $raggiunto = 0;
+                    switch ($rowTmp->target_number) {
+                        case 3:
+                        case 8:
+                            $raggiunto = isset($punteggioRaggiunto[$rowTmp->target_number]->{$struttura->column_points}) ? $punteggioRaggiunto[$rowTmp->target_number]->{$struttura->column_points} : 0;
+                            break;                            
+                        case 9:
+                            $raggiunto = $punteggioRaggiunto[9];
+
+                    }
                     $dataView['punteggi'][$struttura->name][] = [
-                        "target_number" => $rowTmp->target_number,
-                        "target" => $rowTmp->target,
-                        "sub_target" => $rowTmp->sub_target,
-                        "points" => $rowTmp->points,
+                        "target_number" => $rowTmp->target_number, 
+                        "target" => $rowTmp->target, 
+                        "sub_target" => $rowTmp->sub_target, 
+                        "points" => $rowTmp->points, 
                         "real_points" => (isset($punteggioRaggiunto[$rowTmp->target_number]) ? $punteggioRaggiunto[$rowTmp->target_number]->asp : 0)
                     ];
                 }
@@ -75,6 +111,79 @@ class HomeController extends Controller
         } else {
             $dataView['userStructures'] = null;
         }
+
+        $this->dataViewSaluteEFunzionamento[1] = [
+            'icon' => 'fas fa-stopwatch',
+            'text' => 'Prestazioni sanitarie',
+            'tooltip' => 'Riduzione dei tempi delle liste di attesa delle prestazioni sanitarie ',
+            'route' => null, //route('indexAmbulatoriale')
+            'enable' => false,
+        ];
+        $this->dataViewSaluteEFunzionamento[2] = [
+            'icon' => 'fas fa-bed-pulse',
+            'text' => 'Esiti',
+            'tooltip' => 'Esiti',
+            'route' => null, //route('chart-esiti')
+            'enable' => false,
+        ];
+        $this->dataViewSaluteEFunzionamento[3] = [
+            'icon' => 'fa-solid fa-person-pregnant',
+            'text' => 'Checklist punti nascita',
+            'tooltip' => 'Rispetto degli standard di sicurezza dei punti nascita',
+            'route' => route("showObiettivo", ["obiettivo" => 3]),
+            'enable' => true,
+        ];
+        $this->dataViewSaluteEFunzionamento[4] = [
+            'icon' => 'fas fa-truck-medical',
+            'text' => 'Sovraffollamento PS',
+            'tooltip' => 'Pronto Soccorso - Gestione del sovraffollamento',
+            'route' => null, //route('chart-ps')
+            'enable' => false,
+        ];
+        $this->dataViewSaluteEFunzionamento[5] = [
+            'icon' => 'fas fa-heartbeat',
+            'text' => 'Screening',
+            'tooltip' => 'Screening oncologici',
+            'route' => null, //route('indexScreening')
+            'enable' => false,
+        ];
+        $this->dataViewSaluteEFunzionamento[6] = [
+            'icon' => 'fas fa-hand-holding-medical',
+            'text' => 'Donazioni',
+            'tooltip' => 'Donazione sangue, plasma, organi e tessuti',
+            'route' => null ,//route('indexDonazioni')
+            'enable' => false,
+        ];
+        $this->dataViewSaluteEFunzionamento[7] = [
+            'icon' => 'fas fa-file-medical',
+            'text' => 'Fascicolo Sanitario Elettronico',
+            'tooltip' => 'Fascicolo Sanitario Elettronico',
+            'route' => null,
+            'enable' => false,
+        ];
+        $this->dataViewSaluteEFunzionamento[8] = [
+            'icon' => 'fas fa-check-circle',
+            'text' => 'Percorso attuativo di certificabilità',
+            'tooltip' => 'Percorso attuativo di certificabilità (P.A.C.)',
+            'route' => route("showObiettivo", ["obiettivo" => 8]),
+            'enable' => true,
+        ];
+        $this->dataViewSaluteEFunzionamento[9] = [
+            'icon' => 'fas fa-pills',
+            'text' => 'Farmaci',
+            'tooltip' => 'Approvvigionamento farmaci e gestione I ciclo di terapia',
+            'route' => route('indexFarmaci'),
+            'enable' => true,
+        ];
+        $this->dataViewSaluteEFunzionamento[10] = [
+            'icon' => 'fas fa-tasks',
+            'text' => 'Garanzia dei LEA',
+            'tooltip' => 'Area della Performance: garanzia dei LEA nell\'Area della Prevenzione, dell\'Assistenza Territoriale e dell\'Assistenza Ospedaliera secondo il Nuovo Sistema di Garanzia (NSG)',
+            'route' => null, //route('indexLEA')
+            'enable' => false,
+        ];
+        $dataView['saluteEFunzionamento'] = $this->dataViewSaluteEFunzionamento;
+
 
         $data = [1, 2, 3];
         $labels = ['gen', 'feb', 'mar'];
@@ -101,17 +210,21 @@ class HomeController extends Controller
             ->orderBy("order")
             ->get();
 
+        $vista = null;
         switch ($request->obiettivo) {
             case 3:
-                $dataView['titolo'] = "check list nascite";
+                $dataView['titolo'] = $this->dataViewSaluteEFunzionamento[$request->obiettivo]['text'];
+                $dataView['icona'] = $this->dataViewSaluteEFunzionamento[$request->obiettivo]['icon'];
+                $dataView['tooltip'] = $this->dataViewSaluteEFunzionamento[$request->obiettivo]['tooltip'];
+
                 $dataView['files'][] = "obiettivo3.pdf";
                 $dataView['strutture'] = Auth::user()->structures();
 
                 $dataView['filesCaricati'] = DB::table('uploated_files as uf')
-                    ->join('target_categories as tc', 'uf.target_category_id', '=', 'tc.id')
-                    ->select('uf.validator_user_id', 'uf.approved', 'uf.notes', 'uf.path', 'uf.filename', 'uf.target_category_id', 'tc.category', 'uf.updated_at', 'uf.user_id', 'uf.created_at')
-                    ->where('uf.target_number', 3)
-                    ->whereRaw('uf.created_at = (SELECT MAX(u2.created_at)
+                ->join('target_categories as tc', 'uf.target_category_id', '=', 'tc.id')
+                ->select('uf.validator_user_id', 'uf.approved','uf.notes', 'uf.path', 'uf.filename', 'uf.target_category_id', 'tc.category', 'uf.updated_at', 'uf.user_id', 'uf.created_at')
+                ->where('uf.target_number', 3)
+                ->whereRaw('uf.created_at = (SELECT MAX(u2.created_at)
                                             FROM uploated_files as u2 
                                             WHERE u2.target_category_id = uf.target_category_id)')
                     ->whereRaw('uf.updated_at = (SELECT MAX(u3.updated_at)
@@ -123,6 +236,7 @@ class HomeController extends Controller
                     ->get();
 
                 break;
+    
         }
         $dataView['obiettivo'] = $request->obiettivo;
 
@@ -398,4 +512,5 @@ public function screening(){
 
         return redirect()->back()->with('success', 'File caricato con successo e in attesa di approvazione.');
     }
+
 }
