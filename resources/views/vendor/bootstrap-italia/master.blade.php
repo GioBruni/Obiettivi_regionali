@@ -11,8 +11,6 @@
 
     <!-- Bootstrap core CSS -->
     <link href="{{ asset('vendor/bootstrap-italia/dist/css/bootstrap-italia.min.css') }}" rel="stylesheet">
-    <!--link href="{{ asset('vendor/bootstrap-italia/dist/css/bootstrap-icons.min.css') }}" rel="stylesheet"-->
-    <link href="{{ asset('vendor/fontawesome-6.6.0/css/all.min.css') }}" rel="stylesheet">
 
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
     
