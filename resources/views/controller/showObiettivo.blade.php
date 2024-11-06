@@ -5,7 +5,7 @@
     <div class="row justify-content-center">
         <div class="col-md-12">
             <div class="row">
-                <h3>Obiettivo {{ $dataView['obiettivo'] }} - {{ $dataView['titolo'] }}</h3>
+                <h3>Obiettivo {{ $dataView['obiettivo'] }}</h3>
             </div>
             <div class="card mt-2">
                 <div class="card-header">Files caricati</div>

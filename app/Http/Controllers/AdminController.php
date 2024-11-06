@@ -164,7 +164,6 @@ class AdminController extends Controller
 
 
     public function showObiettivo($obiettivo) {
-
         $dataView['obiettivo'] = $obiettivo;
         switch($obiettivo) {
             case 3: $dataView['titolo'] = "Check list punto di nascite";
@@ -176,13 +175,15 @@ class AdminController extends Controller
             ->get();
 
         $dataView['filesCaricati'] = UploatedFile::where('uploated_files.target_number', $obiettivo)
-        ->join("structures", "structures.id", "=", "uploated_files.structure_id")
-        ->join("users", "users.id", "=", "uploated_files.user_id")
-        ->join('target_categories as tc', 'uploated_files.target_category_id', '=', 'tc.id')
+        ->leftjoin("structures", "structures.id", "=", "uploated_files.structure_id")
+        ->leftjoin("users", "users.id", "=", "uploated_files.user_id")
+        ->leftjoin('target_categories as tc', 'uploated_files.target_category_id', '=', 'tc.id')
         ->orderByRaw('approved IS NULL DESC') // prima quelli con approved a NULL
         ->orderBy('created_at')
         ->select("uploated_files.*", "users.name as utente", "structures.name as struttura", "tc.category")
         ->get();
+
+      
 
         return view("controller.showObiettivo")->with("dataView", $dataView);
 

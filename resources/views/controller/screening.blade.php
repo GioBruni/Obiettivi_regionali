@@ -183,33 +183,38 @@
             </div>
             <div class="card-body">
                 <div class="row">
-                    <!--
-                    @if(isset($risultato))
+
+                    @if(isset($dataView['file']))
+                   
                     @php
                     $categoria_trovata = false;
-                    @endphp
-                    @foreach($risultato as $categoria_risultato)
-                    @if($categoria_risultato->categoria === 'Formazione del personale dedicato allo screening')
-                    @php
-                    $categoria_trovata = true;
-                    @endphp
 
-                    @if($categoria_risultato->validator_user_id === null)
-                    <div id="message5" class="message bg-light p-3 rounded border border-primary text-center w-100" style="color: orange;">
-                        <strong>File caricato il: {{ Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $categoria_risultato->created_at)->format('d/m/Y H:i') }} in attesa di approvazione.</strong>
-                    </div>
-                    @else
-                    @if($categoria_risultato->approved === 1)
-                    <div id="message5" class="message bg-light p-3 rounded border border-primary text-center w-100" style="color:green;">
-                        <strong>Il file caricato il: {{ Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $categoria_risultato->created_at)->format('d/m/Y H:i') }} è stato approvato -> Obiettivo raggiunto!</strong>
-                    </div>
-                    @else
-                    <div id="message5" class="message bg-light p-3 rounded border border-primary text-center w-100" style="color:red;">
-                        <strong>Il file caricato il: {{ Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $categoria_risultato->created_at)->format('d/m/Y H:i') }} non è stato approvato -> Obiettivo non raggiunto!</strong>
-                    </div>
-                    @endif
-                    @endif
-                    @endif
+              
+                    @endphp
+                    @foreach($dataView['file'] as $categoria_risultato)
+                        {{dd($categoria_risultato)}}
+                        @if($categoria_risultato->category === 'Formazione del personale dedicato allo screening')
+                        @php
+                        $categoria_trovata = true;
+                    
+                        @endphp
+        
+                        @if($categoria_risultato->validator_user_id === null)
+                        <div id="message5" class="message bg-light p-3 rounded border border-primary text-center w-100" style="color: orange;">
+                            <strong>File caricato il: {{ Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $categoria_risultato->created_at)->format('d/m/Y H:i') }} in attesa di approvazione.</strong>
+                        </div>
+                        @else
+                        @if($categoria_risultato->approved === 1)
+                        <div id="message5" class="message bg-light p-3 rounded border border-primary text-center w-100" style="color:green;">
+                            <strong>Il file caricato il: {{ Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $categoria_risultato->created_at)->format('d/m/Y H:i') }} è stato approvato -> Obiettivo raggiunto!</strong>
+                        </div>
+                        @else
+                        <div id="message5" class="message bg-light p-3 rounded border border-primary text-center w-100" style="color:red;">
+                            <strong>Il file caricato il: {{ Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $categoria_risultato->created_at)->format('d/m/Y H:i') }} non è stato approvato -> Obiettivo non raggiunto!</strong>
+                        </div>
+                        @endif
+                        @endif
+                        @endif
                     @endforeach
 
                     @if(!$categoria_trovata)
@@ -218,7 +223,7 @@
                     </div>
                     @endif
                     @endif
-                    -->
+                
                 </div>
                 <div class="legend p-3 border rounded">
                     <strong>Scala valori di riferimento (Punteggio massimo 1)</strong><br>

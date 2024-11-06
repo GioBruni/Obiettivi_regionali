@@ -486,12 +486,14 @@ class HomeController extends Controller
     public function screening()
 {
     // Mi serve per prendere i dati solo per il file di obiettivo 5
-    $dataView['file'] = DB::table('uploated_files')
-        ->where('user_id', Auth::user()->id)
-        ->where('target_number', 5)
-        ->select('target_number')
-        ->get();
+    $dataView['file'] = DB::table('uploated_files as up')
+            ->join('target_categories as tc', 'up.target_category_id', '=', 'tc.id')
+            ->where('up.user_id', 3)
+            ->where('up.target_number', 5)
+            ->select('up.target_number', 'up.target_category_id', 'tc.category','up.validator_user_id','up.approved')
+            ->get();
 
+dd( $dataView['file']);
     // Dati per la tabella nella view 
     $dataView['tableData'] = DB::table('insert_mmg')
         ->select('mmg_totale', 'mmg_coinvolti', 'anno')
