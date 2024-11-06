@@ -14,8 +14,8 @@ use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Collection;
 use IcehouseVentures\LaravelChartjs\Facades\Chartjs;
-use App\Models\User;
-
+use App\Models\InsertMmg;
+use PDF;
 class HomeController extends Controller
 {
     use ChartTrait;
@@ -86,7 +86,7 @@ class HomeController extends Controller
                     $punteggioRaggiunto[$obiettivo] += ($rapporto >= 80) ? 2.5 : (round($rapporto / 80 * 2.5, 2));
                 }
 
-                foreach($punteggioTeoria->orderby("id")->get() as $rowTmp) {
+                foreach ($punteggioTeoria->orderby("id")->get() as $rowTmp) {
                     //if (isset($punteggioRaggiunto[$rowTmp->target_number]))
                     //    dd($punteggioRaggiunto[$rowTmp->target_number]->{$struttura->column_points});
                     $raggiunto = 0;
@@ -94,16 +94,16 @@ class HomeController extends Controller
                         case 3:
                         case 8:
                             $raggiunto = isset($punteggioRaggiunto[$rowTmp->target_number]->{$struttura->column_points}) ? $punteggioRaggiunto[$rowTmp->target_number]->{$struttura->column_points} : 0;
-                            break;                            
+                            break;
                         case 9:
                             $raggiunto = $punteggioRaggiunto[9];
 
                     }
                     $dataView['punteggi'][$struttura->name][] = [
-                        "target_number" => $rowTmp->target_number, 
-                        "target" => $rowTmp->target, 
-                        "sub_target" => $rowTmp->sub_target, 
-                        "points" => $rowTmp->points, 
+                        "target_number" => $rowTmp->target_number,
+                        "target" => $rowTmp->target,
+                        "sub_target" => $rowTmp->sub_target,
+                        "points" => $rowTmp->points,
                         "real_points" => (isset($punteggioRaggiunto[$rowTmp->target_number]) ? $punteggioRaggiunto[$rowTmp->target_number]->asp : 0)
                     ];
                 }
@@ -151,7 +151,7 @@ class HomeController extends Controller
             'icon' => 'fas fa-hand-holding-medical',
             'text' => 'Donazioni',
             'tooltip' => 'Donazione sangue, plasma, organi e tessuti',
-            'route' => null ,//route('indexDonazioni')
+            'route' => null,//route('indexDonazioni')
             'enable' => false,
         ];
         $this->dataViewSaluteEFunzionamento[7] = [
@@ -221,10 +221,10 @@ class HomeController extends Controller
                 $dataView['strutture'] = Auth::user()->structures();
 
                 $dataView['filesCaricati'] = DB::table('uploated_files as uf')
-                ->join('target_categories as tc', 'uf.target_category_id', '=', 'tc.id')
-                ->select('uf.validator_user_id', 'uf.approved','uf.notes', 'uf.path', 'uf.filename', 'uf.target_category_id', 'tc.category', 'uf.updated_at', 'uf.user_id', 'uf.created_at')
-                ->where('uf.target_number', 3)
-                ->whereRaw('uf.created_at = (SELECT MAX(u2.created_at)
+                    ->join('target_categories as tc', 'uf.target_category_id', '=', 'tc.id')
+                    ->select('uf.validator_user_id', 'uf.approved', 'uf.notes', 'uf.path', 'uf.filename', 'uf.target_category_id', 'tc.category', 'uf.updated_at', 'uf.user_id', 'uf.created_at')
+                    ->where('uf.target_number', 3)
+                    ->whereRaw('uf.created_at = (SELECT MAX(u2.created_at)
                                             FROM uploated_files as u2 
                                             WHERE u2.target_category_id = uf.target_category_id)')
                     ->whereRaw('uf.updated_at = (SELECT MAX(u3.updated_at)
@@ -236,7 +236,7 @@ class HomeController extends Controller
                     ->get();
 
                 break;
-    
+
         }
         $dataView['obiettivo'] = $request->obiettivo;
 
@@ -253,14 +253,14 @@ class HomeController extends Controller
             ->distinct()
             ->pluck('company_code');
 
-        
+
         $dataView['flowEmur'] = DB::table('flows_emur as fe')
             ->join('structures as s', 'fe.structure_id', '=', 's.id')
-            ->select('fe.tmp','fe.year AS anno','fe.month AS mese','s.name AS nome_struttura','s.company_code','fe.boarding')
-            ->whereIn('s.company_code', $dataView['companyCode']) 
+            ->select('fe.tmp', 'fe.year AS anno', 'fe.month AS mese', 's.name AS nome_struttura', 's.company_code', 'fe.boarding')
+            ->whereIn('s.company_code', $dataView['companyCode'])
             ->get();
 
-    
+
         $overallAverageTmp = $dataView['flowEmur']->avg('tmp');
         $complementaryValueTmp = 100 - $overallAverageTmp;
 
@@ -304,10 +304,10 @@ class HomeController extends Controller
                 ]
             ]);
 
-       
+
         $dataGraficoBoarding = [$overallAverageBoarding, $complementaryValueBoarding];
 
-      //secondo grafico
+        //secondo grafico
         $dataView['chartBoarding'] = Chartjs::build()
             ->name("OverallAvgBoardingComplementaryPieChart")
             ->type("doughnut")
@@ -378,29 +378,30 @@ class HomeController extends Controller
 
     }
 
-    public function donazioni() {
-        
-        $datoSdo = DB::table('flows_sdo')->pluck('sdo_dato')->toArray(); 
-    
-       
-        $labelsTmp = ['Label 1', 'Label 2']; 
-        $labelsBoarding = ['Label 3', 'Label 4']; 
-    
-        
-        $dataGraficoTmp = [ 
-            $datoSdo[0] ?? 0, 
+    public function donazioni()
+    {
+
+        $datoSdo = DB::table('flows_sdo')->pluck('sdo_dato')->toArray();
+
+
+        $labelsTmp = ['Label 1', 'Label 2'];
+        $labelsBoarding = ['Label 3', 'Label 4'];
+
+
+        $dataGraficoTmp = [
+            $datoSdo[0] ?? 0,
             $datoSdo[1] ?? 0
         ];
-    
+
         $dataView['chartDonazioni'] = Chartjs::build()
             ->name("OverallAvgTmpComplementaryBarChart")
-            ->type("bar") 
+            ->type("bar")
             ->size(["width" => 300, "height" => 150])
             ->labels($labelsTmp)
             ->datasets([
                 [
                     "label" => "Percentuale TMP",
-                    "backgroundColor" => "rgba(38, 185, 154, 0.7)", 
+                    "backgroundColor" => "rgba(38, 185, 154, 0.7)",
                     "data" => $dataGraficoTmp
                 ]
             ])
@@ -412,7 +413,7 @@ class HomeController extends Controller
                         'text' => 'Distribuzione Percentuale: TMP e Differenza Media Totale'
                     ],
                     'legend' => [
-                        'display' => false 
+                        'display' => false
                     ]
                 ],
                 'scales' => [
@@ -421,50 +422,51 @@ class HomeController extends Controller
                     ],
                 ],
             ]);
-    
+
 
         return view("controller.donazioni")->with('dataView', $dataView);
     }
-    
 
 
-    public function tempiListeAttesa() {
+
+    public function tempiListeAttesa()
+    {
         $numeratore = 99609;  //per ora statico
 
         $dataView['flussoC'] = DB::table('flows_c')
             ->select('denominatore as denominatore_c', 'structure_id')
-            ->get(); 
+            ->get();
 
         $dataView['flussoM'] = DB::table('flows_m')
             ->select('denominatore as denominatore_m', 'structure_id')
-            ->get(); 
-    
+            ->get();
+
         $DenominatoreC = DB::table('flows_c')->sum('denominatore');
         $DenominatoreM = DB::table('flows_m')->sum('denominatore');
-    
+
         $dataView['denominatoreTotale'] = $DenominatoreC + $DenominatoreM;
-    
+
         if ($dataView['denominatoreTotale'] > 0) {
             $overallPercentuale = ($numeratore / $dataView['denominatoreTotale']) * 100;
         } else {
-            $overallPercentuale = 0; 
+            $overallPercentuale = 0;
         }
 
-       //dd($overallPercentuale);
+        //dd($overallPercentuale);
         $dataView['percentuali'] = array_fill(0, count($dataView['flussoC']), $overallPercentuale);
 
         $labelsTmp = ['Label 1'];
 
         $dataView['tempiListeAttesa'] = Chartjs::build()
             ->name("OverallAvgTmpComplementaryBarChart")
-            ->type("doughnut") 
+            ->type("doughnut")
             ->size(["width" => 300, "height" => 150])
             ->labels($labelsTmp)
             ->datasets([
                 [
                     "label" => "Percentuale TMP",
-                    "backgroundColor" => "rgba(38, 185, 154, 0.7)", 
-                    "data" => [$overallPercentuale] 
+                    "backgroundColor" => "rgba(38, 185, 154, 0.7)",
+                    "data" => [$overallPercentuale]
                 ]
             ])
             ->options([
@@ -481,13 +483,63 @@ class HomeController extends Controller
 
 
 
-public function screening(){
+    public function screening()
+{
+    // Mi serve per prendere i dati solo per il file di obiettivo 5
+    $dataView['file'] = DB::table('uploated_files')
+        ->where('user_id', Auth::user()->id)
+        ->where('target_number', 5)
+        ->select('target_number')
+        ->get();
 
+    // Dati per la tabella nella view 
+    $dataView['tableData'] = DB::table('insert_mmg')
+        ->select('mmg_totale', 'mmg_coinvolti', 'anno')
+        ->get();
 
+    $record = DB::table('insert_mmg')->select('mmg_totale', 'mmg_coinvolti')->first();
+    $dataView['noData'] = false;
 
-    return view("controller.screening");
+    if ($record && $record->mmg_totale != 0) {
+        $dataView['percentualeCoinvolti'] = ($record->mmg_coinvolti / $record->mmg_totale) * 100;
+        $dataView['percentualeNonCoinvolti'] = 100 - $dataView['percentualeCoinvolti'];
+    } else {
+        $dataView['percentualeCoinvolti'] = 0;
+        $dataView['percentualeNonCoinvolti'] = 0;
+        $dataView['noData'] = true;
+    }
+
+    $dataView['mmgChart'] = Chartjs::build()
+        ->name("OverallAvgTmpComplementaryBarChart")
+        ->type("doughnut")
+        ->size(["width" => 300, "height" => 150])
+        ->labels(['MMG Coinvolti', 'MMG Non Coinvolti'])
+        ->datasets([
+            [
+                "label" => "Percentuali MMG",
+                "backgroundColor" => [
+                    "rgba(38, 185, 154, 0.7)",
+                    "rgba(255, 99, 132, 0.7)"
+                ],
+                "data" => $dataView['noData'] 
+                    ? [0, 0] 
+                    : [number_format($dataView['percentualeCoinvolti'], 2), number_format($dataView['percentualeNonCoinvolti'], 2)]
+            ]
+        ])
+        ->options([
+            'responsive' => true,
+            'plugins' => [
+                'title' => [
+                    'display' => true,
+                    'text' => $dataView['noData'] 
+                        ? 'Non ci sono dati disponibili' 
+                        : 'Distribuzione Percentuale: MMG Coinvolti e Non Coinvolti'
+                ]
+            ]
+        ]);
+
+    return view("controller.screening")->with("dataView", $dataView);
 }
-
 
     public function uploadFileObiettivo(Request $request)
     {
@@ -512,5 +564,88 @@ public function screening(){
 
         return redirect()->back()->with('success', 'File caricato con successo e in attesa di approvazione.');
     }
+
+
+    public function uploadFileScreening(Request $request)
+    {
+        // Validate the file input
+        $request->validate([
+            'file' => 'required|file|mimes:pdf|max:5096',
+        ]);
+
+        // Check if a file is uploaded
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $path = $file->store('uploads', 'public');
+            $url = Storage::url($path);
+
+
+            UploatedFile::create([
+                'filename' => $file->getClientOriginalName(),
+                'path' => $url,
+                'user_id' => Auth::user()->id,
+                'structure_id' => 93,
+                'notes' => null,
+                'target_number' => $request->obiettivo,
+                'target_category_id' => null,
+            ]);
+
+            return redirect()->back()->with('success', 'File caricato con successo e in attesa di approvazione.');
+        }
+
+        return redirect()->back()->with('error', 'Nessun file caricato.');
+    }
+
+
+
+    public function mmgRegister(Request $request)
+    {
+        $messages = [
+            'tot_mmg.required' => 'Il totale MMG è obbligatorio.',
+            'tot_mmg.numeric' => 'Il totale MMG deve essere un numero.',
+            'mmg_coinvolti.required' => 'Il numero di MMG coinvolti è obbligatorio.',
+            'mmg_coinvolti.numeric' => 'Il numero di MMG coinvolti deve essere un numero.',
+            'mmg_coinvolti.lte' => 'Il numero di MMG coinvolti deve essere minore o uguale al totale MMG.',
+            'anno.required' => 'L\'anno è obbligatorio.',
+            'anno.integer' => 'L\'anno deve essere un numero intero.',
+        ];
+
+
+        $request->validate([
+            'tot_mmg' => 'required|numeric',
+            'mmg_coinvolti' => 'required|numeric|lte:tot_mmg', // mmg_coinvolti <= tot_mmg
+            'anno' => 'required|integer',
+        ], $messages);
+
+
+        $anno = $request->anno;
+        $tot_mmg = $request->tot_mmg;
+        $mmg_coinvolti = $request->mmg_coinvolti;
+
+
+        InsertMmg::create([
+            'mmg_totale' => $tot_mmg,
+            'mmg_coinvolti' => $mmg_coinvolti,
+            'anno' => $anno,
+        ]);
+
+
+        return redirect()->route('screening');
+    }
+
+
+    public function downloadPdf(Request $request)
+    {
+
+        $dataView['tableData'] = DB::table('insert_mmg')
+            ->select('mmg_totale', 'mmg_coinvolti', 'anno')
+            ->get();
+
+
+        $pdf = PDF::loadView('emails.screeningPdf', $dataView);
+
+        return $pdf->download('certificazione_completa.pdf');
+    }
+
 
 }

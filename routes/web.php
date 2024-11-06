@@ -30,6 +30,20 @@ Route::group(['middleware' => ['role:user manager']], routes: function (): void 
     
 });
 
+Route::get('/showObiettivo/{obiettivo}', [HomeController::class, 'showObiettivo'])->name('showObiettivo');
+
+Route::post('/uploadObiettivo', [HomeController::class, 'uploadFileObiettivo'])->name('file.uploadObiettivo');
+Route::get('/prontoSoccorso', [HomeController::class, 'prontoSoccorso'])->name('prontoSoccorso');
+Route::get('/donazioni', [HomeController::class, 'donazioni'])->name('donazioni');
+Route::get('/tempiListeAttesa', [HomeController::class, 'tempiListeAttesa'])->name('tempiListeAttesa');
+Route::get('/screening', [HomeController::class, 'screening'])->name('screening');
+Route::post('/mmgRegister', [HomeController::class, 'mmgRegister'])->name('mmgRegister');
+Route::get('/downloadPdf', [HomeController::class, 'downloadPdf'])->name('downloadPdf');
+Route::post('/uploadFileScreening', [HomeController::class, 'uploadFileScreening'])->name('uploadFileScreening');
+
+
+
+
 Route::group(['middleware' => ['role:uploader']], routes: function (): void {
     /*Route::get('/showFileUpload', function () {
         return view('file_upload');
