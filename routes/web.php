@@ -64,7 +64,8 @@ Route::group(['middleware' => ['role:uploader']], routes: function (): void {
     //Route::get(uri: '/indexAmbulatoriale', [HomeController::class, 'indexAmbulatoriale'])->name(name: 'indexAmbulatoriale');
     Route::get('/tempiListeAttesa', [HomeController::class, 'tempiListeAttesa'])->name('tempiListeAttesa');
 
-    
+    Route::get('/prontoSoccorso', [HomeController::class, 'prontoSoccorso'])->name('prontoSoccorso');
+
 });
 
 Route::group(attributes: ['middleware' => ['role:controller']], routes: function (): void {

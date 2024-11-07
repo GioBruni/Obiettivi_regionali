@@ -266,19 +266,20 @@ class HomeController extends Controller
 
     public function prontoSoccorso()
     {
-
+/*
         $dataView['companyCode'] = DB::table('users_structures as us')
             ->join('structures as s', 'us.structure_id', '=', 's.id')
             ->where('us.user_id', Auth::user()->id)
             ->distinct()
             ->pluck('s.company_code');
+*/
 
-
-        $dataView['flowEmur'] = DB::table('flows_emur as fe')
-            ->join('structures as s', 'fe.structure_id', '=', 's.id')
-            ->leftJoin('users_structures as us', 's.id', '=', 'us.structure_id')
-            ->select('fe.tmp', 'fe.year AS anno', 'fe.month AS mese', 's.name AS nome_struttura', 's.company_code', 'fe.boarding', 's.id')
-            ->whereIn('s.company_code', $dataView['companyCode'])
+        $dataView['flowEmur'] = DB::table('flows_EMUR as fe')
+            //->join('structures as s', 'fe.structure_id', '=', 's.id')
+            ->leftJoin('users_structures as us', 'fe.structure_id', '=', 'us.structure_id')
+            //->select('fe.tmp', 'fe.year AS anno', 'fe.month AS mese', 's.name AS nome_struttura', 's.company_code', 'fe.boarding', 's.id')
+            ->select('fe.tmp', 'fe.year AS anno', 'fe.month AS mese', 'fe.boarding')
+            //->whereIn('s.company_code', $dataView['companyCode'])
             ->where('us.user_id', Auth::user()->id)
             ->get();
 
@@ -392,7 +393,7 @@ class HomeController extends Controller
             ];
         }
 
-        return view("controller.prontoSoccorso", [
+        return view("prontoSoccorso", [
             'dataView' => $dataView,
             'overallAverageTmp' => $overallAverageTmp,
             'overallAverageBoarding' => $overallAverageBoarding,
