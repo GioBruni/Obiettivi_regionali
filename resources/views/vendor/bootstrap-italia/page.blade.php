@@ -212,7 +212,7 @@
                                                                         <ul class="link-list">
 
                                                                             <li>
-                                                                                <a class="list-item" href="{{ route("tempiListeAttesa") }}"><span><i class="bi bi-people"></i>&nbsp;&nbsp;Obiettivo 1 - Riduzione dei tempi delle liste di attesa delle prestazioni sanitarie</span></a>
+                                                                                <a class="list-item" href="{{ route("uploadTempiListeAttesa") }}"><span><i class="bi bi-people"></i>&nbsp;&nbsp;Obiettivo 1 - Tempi liste di attesa delle prestazioni sanitarie</span></a>
                                                                             </li>
 
                                                                             <li>

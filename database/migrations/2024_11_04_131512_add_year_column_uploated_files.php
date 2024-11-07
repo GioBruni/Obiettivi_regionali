@@ -11,12 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('structures', function (Blueprint $table) {
-            $table->id();
-            $table->integer('company_code'); 
-            $table->integer('type'); 
-            $table->string('name'); 
-            $table->timestamps();
+        Schema::table('uploated_files', function (Blueprint $table) {
+            $table->integer("year");
         });
     }
 
@@ -25,7 +21,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('structures', function (Blueprint $table) {
+        Schema::table('uploated_files', function (Blueprint $table) {
             //
         });
     }

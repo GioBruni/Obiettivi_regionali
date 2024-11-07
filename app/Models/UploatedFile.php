@@ -19,5 +19,6 @@ class UploatedFile extends Model
         'notes', 
         'target_number', 
         'target_category_id', 
+        'year',
     ];
 }

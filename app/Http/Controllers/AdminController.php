@@ -166,7 +166,11 @@ class AdminController extends Controller
     public function showObiettivo($obiettivo) {
         $dataView['obiettivo'] = $obiettivo;
         switch($obiettivo) {
-            case 3: $dataView['titolo'] = "Check list punto di nascite";
+            case 3: $dataView['titolo'] = config("constants.OBIETTIVO.3.text");
+            break;
+            case 8: $dataView['titolo'] = config("constants.OBIETTIVO.8.text");
+            break;
+            case 9: $dataView['titolo'] = "Ottimizzazione della gest del I ciclo di terapia";
             break;
         }
         $dataView['categorie'] = DB::table("target_categories")
@@ -185,9 +189,29 @@ class AdminController extends Controller
 
       
 
-        return view("controller.showObiettivo")->with("dataView", $dataView);
+        return view("controller.showObiettivo".$obiettivo)->with("dataView", $dataView);
 
     }
+
+    public function approvaObiettivo(Request $request)
+    {
+
+        $file = UploatedFile::findOrFail($request->fileId);
+        $file->approved = $request->esito;
+        $file->validator_user_id = Auth::user()->id;
+        $file->notes = $request->notes;
+        $file->save();
+
+        DB::table("result_target3")->insert([
+            'numerator' => $request->numeratore ?? null,
+            'denominator' => $request->denominatore ?? null,
+            'uploated_file_id' => $request->fileId,
+        ]);
+
+        return $this->showObiettivo($file->target_number);
+    }
+
+    
 
     public function valide(Request $request) {
         return $this->updateUploatedFiles($request, true);
