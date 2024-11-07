@@ -11,12 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('structures', function (Blueprint $table) {
+        Schema::create('result_target3', function (Blueprint $table) {
             $table->id();
-            $table->integer('company_code'); 
-            $table->integer('type'); 
-            $table->string('name'); 
+            $table->integer("numerator")->nullable();
+            $table->integer("denominator")->nullable();
+            $table->unsignedBigInteger("uploated_file_id");
             $table->timestamps();
+
+            $table->foreign("uploated_file_id")->on("uploated_files")->references("id");
         });
     }
 
@@ -25,8 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('structures', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('result_target3');
     }
 };

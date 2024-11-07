@@ -55,4 +55,12 @@ class User extends Authenticatable
             ->select("users_structures.id as us_id", "structures.*")
             ->get();
     }
+
+    public function firstStructureId() {
+        return LocationsUsers::where("user_id", $this->id)
+            ->leftJoin("structures", "users_structures.structure_id", "=", "structures.id")
+            ->select("structures.id")
+            ->first();
+    }
+
 }
