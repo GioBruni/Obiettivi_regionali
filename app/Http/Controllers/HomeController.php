@@ -149,11 +149,11 @@ class HomeController extends Controller
                 $obiettivo = 9;
                 $punteggioRaggiunto[$obiettivo] = 0;
                 $tmp = DB::table("uploated_files")
-                    ->join("target_PCT", "target_PCT.uploated_file_id", "=", "uploated_files.id")
+                    ->join("result_target3", "result_target3.uploated_file_id", "=", "uploated_files.id")
                     ->where("target_number", $obiettivo)
-                    ->where("target_PCT.structure_id", $struttura->structure_id)
-                    ->select("target_PCT.numerator", "target_PCT.denominator", "uploated_files.approved")
-                    ->latest("target_PCT.updated_at")->first();
+                    ->where("structure_id", $struttura->structure_id)
+                    ->select("numerator", "denominator", "uploated_files.approved")
+                    ->latest("uploated_files.updated_at")->first();
                 if (isset($tmp) && $tmp->approved == 1) {
                     $rapporto = round($tmp->numerator / $tmp->denominator * 100, 2);
                     $punteggioRaggiunto[$obiettivo] += ($rapporto >= 80) ? 2.5 : (round($rapporto / 80 * 2.5, 2));
@@ -265,19 +265,20 @@ class HomeController extends Controller
 
     public function prontoSoccorso()
     {
-
+/*
         $dataView['companyCode'] = DB::table('users_structures as us')
             ->join('structures as s', 'us.structure_id', '=', 's.id')
             ->where('us.user_id', Auth::user()->id)
             ->distinct()
             ->pluck('s.company_code');
+*/
 
-
-        $dataView['flowEmur'] = DB::table('flows_emur as fe')
-            ->join('structures as s', 'fe.structure_id', '=', 's.id')
-            ->leftJoin('users_structures as us', 's.id', '=', 'us.structure_id')
-            ->select('fe.tmp', 'fe.year AS anno', 'fe.month AS mese', 's.name AS nome_struttura', 's.company_code', 'fe.boarding', 's.id')
-            ->whereIn('s.company_code', $dataView['companyCode'])
+        $dataView['flowEmur'] = DB::table('flows_EMUR as fe')
+            //->join('structures as s', 'fe.structure_id', '=', 's.id')
+            ->leftJoin('users_structures as us', 'fe.structure_id', '=', 'us.structure_id')
+            //->select('fe.tmp', 'fe.year AS anno', 'fe.month AS mese', 's.name AS nome_struttura', 's.company_code', 'fe.boarding', 's.id')
+            ->select('fe.tmp', 'fe.year AS anno', 'fe.month AS mese', 'fe.boarding')
+            //->whereIn('s.company_code', $dataView['companyCode'])
             ->where('us.user_id', Auth::user()->id)
             ->get();
 
@@ -391,7 +392,7 @@ class HomeController extends Controller
             ];
         }
 
-        return view("controller.prontoSoccorso", [
+        return view("prontoSoccorso", [
             'dataView' => $dataView,
             'overallAverageTmp' => $overallAverageTmp,
             'overallAverageBoarding' => $overallAverageBoarding,

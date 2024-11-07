@@ -42,8 +42,8 @@ return [
             'icon' => 'fas fa-truck-medical',
             'text' => 'Sovraffollamento PS',
             'tooltip' => 'Pronto Soccorso - Gestione del sovraffollamento',
-            'route' => null, //route('chart-ps')
-            'enable' => false,
+            'route' => "/prontoSoccorso",
+            'enable' => true,
         ],
         '5' => [
             'icon' => 'fas fa-heartbeat',

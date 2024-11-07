@@ -20,9 +20,8 @@ return new class extends Migration
             $table->integer("version")->nullable();
             $table->datetime("created_at")->useCurrent();
             $table->date("file_date");
-            $table->integer("denominatore");
-            $table->integer("ia1_1");
-            $table->integer("ia1_2");
+            $table->integer("ob1_1");
+            $table->integer("ob5_4");
             $table->integer("ia1_3");
             $table->integer("ia1_4");
             $table->integer("ia1_5");
