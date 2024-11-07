@@ -94,6 +94,7 @@ class HomeController extends Controller
                 ->latest("uploated_files.created_at")->first();
             $mediaPercentuale += (isset($tmp->numerator) && isset($tmp->denominator)) ? round($tmp->numerator / $tmp->denominator,2) : 0;
         }
+
         $mediaPercentuale = round($mediaPercentuale / count($categories), 2) * 100;
         $punteggioCalcolato = reset($punteggioTeorico);
         if($mediaPercentuale > 85 && $mediaPercentuale <= 95)
@@ -149,11 +150,11 @@ class HomeController extends Controller
                 $obiettivo = 9;
                 $punteggioRaggiunto[$obiettivo] = 0;
                 $tmp = DB::table("uploated_files")
-                    ->join("target_PCT", "target_PCT.uploated_file_id", "=", "uploated_files.id")
+                    ->join("result_target3", "result_target3.uploated_file_id", "=", "uploated_files.id")
                     ->where("target_number", $obiettivo)
-                    ->where("target_PCT.structure_id", $struttura->structure_id)
-                    ->select("target_PCT.numerator", "target_PCT.denominator", "uploated_files.approved")
-                    ->latest("target_PCT.updated_at")->first();
+                    ->where("structure_id", $struttura->structure_id)
+                    ->select("numerator", "denominator", "uploated_files.approved")
+                    ->latest("uploated_files.updated_at")->first();
                 if (isset($tmp) && $tmp->approved == 1) {
                     $rapporto = round($tmp->numerator / $tmp->denominator * 100, 2);
                     $punteggioRaggiunto[$obiettivo] += ($rapporto >= 80) ? 2.5 : (round($rapporto / 80 * 2.5, 2));

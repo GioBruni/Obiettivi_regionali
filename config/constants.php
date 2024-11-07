@@ -49,8 +49,8 @@ return [
             'icon' => 'fas fa-heartbeat',
             'text' => 'Screening',
             'tooltip' => 'Screening oncologici',
-            'route' => null, //route('indexScreening')
-            'enable' => false,
+            'route' => "/screening",
+            'enable' => true,
         ],
         '6' => [
             'icon' => 'fas fa-hand-holding-medical',
