@@ -228,6 +228,10 @@
                                                                             </li>
 
                                                                             <li>
+                                                                                <a class="list-item" href="{{ route("caricamentoScreening") }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Caricamento Screening</span></a>
+                                                                            </li>
+
+                                                                            <li>
                                                                                 <a class="list-item" href="{{ route("donazioni") }}"><span><i class="bi bi-people"></i>&nbsp;&nbsp;Obiettivo 6 - Donazioni</span></a>
                                                                             </li>
 

@@ -26,6 +26,12 @@ class UsersSeeder extends Seeder
             'email' => 'sebastiano.ortisi.ext@asp.sr.it',
             'password' => bcrypt('ciao'),
         ]);
+
+        $user = User::create([
+            'name' => 'utente',
+            'email' => 'utente@hotmail.it',
+            'password' => bcrypt('ciao'),
+        ]);
     
         // Assegna il ruolo di "uploader" e "user manager"
         $user->assignRole(['uploader', 'user manager', 'controller']);   

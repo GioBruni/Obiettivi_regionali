@@ -249,15 +249,17 @@ class HomeController extends Controller
 
         $dataView['companyCode'] = DB::table('users_structures as us')
             ->join('structures as s', 'us.structure_id', '=', 's.id')
-            ->select('s.company_code')
+            ->where('us.user_id', Auth::user()->id)
             ->distinct()
-            ->pluck('company_code');
+            ->pluck('s.company_code');
 
 
         $dataView['flowEmur'] = DB::table('flows_emur as fe')
             ->join('structures as s', 'fe.structure_id', '=', 's.id')
-            ->select('fe.tmp', 'fe.year AS anno', 'fe.month AS mese', 's.name AS nome_struttura', 's.company_code', 'fe.boarding')
+            ->leftJoin('users_structures as us', 's.id', '=', 'us.structure_id')
+            ->select('fe.tmp', 'fe.year AS anno', 'fe.month AS mese', 's.name AS nome_struttura', 's.company_code', 'fe.boarding', 's.id')
             ->whereIn('s.company_code', $dataView['companyCode'])
+            ->where('us.user_id', Auth::user()->id)
             ->get();
 
 
@@ -483,65 +485,150 @@ class HomeController extends Controller
 
 
 
-    public function screening()
-{
-    // Mi serve per prendere i dati solo per il file di obiettivo 5
-    $dataView['file'] = DB::table('uploated_files as up')
+    public function screening(Request $request)
+    {
+
+        // Mi serve per prendere i dati solo per il file di obiettivo 5
+        $dataView['file'] = DB::table('uploated_files as up')
             ->join('target_categories as tc', 'up.target_category_id', '=', 'tc.id')
-            ->where('up.user_id', 3)
+            ->where('up.user_id', Auth::user()->id)
             ->where('up.target_number', 5)
-            ->select('up.target_number', 'up.target_category_id', 'tc.category','up.validator_user_id','up.approved')
+            ->select('up.target_number', 'up.target_category_id', 'tc.category', 'up.validator_user_id', 'up.approved', 'up.created_at')
             ->get();
 
-dd( $dataView['file']);
-    // Dati per la tabella nella view 
-    $dataView['tableData'] = DB::table('insert_mmg')
-        ->select('mmg_totale', 'mmg_coinvolti', 'anno')
-        ->get();
 
-    $record = DB::table('insert_mmg')->select('mmg_totale', 'mmg_coinvolti')->first();
-    $dataView['noData'] = false;
+        // Dati per la tabella nella view 
+        $dataView['tableData'] = DB::table('insert_mmg')
+            ->select('mmg_totale', 'mmg_coinvolti', 'anno')
+            ->get();
 
-    if ($record && $record->mmg_totale != 0) {
-        $dataView['percentualeCoinvolti'] = ($record->mmg_coinvolti / $record->mmg_totale) * 100;
-        $dataView['percentualeNonCoinvolti'] = 100 - $dataView['percentualeCoinvolti'];
-    } else {
-        $dataView['percentualeCoinvolti'] = 0;
-        $dataView['percentualeNonCoinvolti'] = 0;
-        $dataView['noData'] = true;
-    }
+        //avrò solo una riga nel db (per ora)
+        $record = DB::table('insert_mmg')->select('mmg_totale', 'mmg_coinvolti')->first();
+        $dataView['noData'] = false;
 
-    $dataView['mmgChart'] = Chartjs::build()
-        ->name("OverallAvgTmpComplementaryBarChart")
-        ->type("doughnut")
-        ->size(["width" => 300, "height" => 150])
-        ->labels(['MMG Coinvolti', 'MMG Non Coinvolti'])
-        ->datasets([
-            [
-                "label" => "Percentuali MMG",
-                "backgroundColor" => [
-                    "rgba(38, 185, 154, 0.7)",
-                    "rgba(255, 99, 132, 0.7)"
-                ],
-                "data" => $dataView['noData'] 
-                    ? [0, 0] 
-                    : [number_format($dataView['percentualeCoinvolti'], 2), number_format($dataView['percentualeNonCoinvolti'], 2)]
-            ]
-        ])
-        ->options([
-            'responsive' => true,
-            'plugins' => [
-                'title' => [
-                    'display' => true,
-                    'text' => $dataView['noData'] 
-                        ? 'Non ci sono dati disponibili' 
-                        : 'Distribuzione Percentuale: MMG Coinvolti e Non Coinvolti'
+
+
+        if ($record && $record->mmg_totale != 0) {
+            $dataView['percentualeAderenti'] = ($record->mmg_coinvolti / $record->mmg_totale) * 100;
+            $dataView['percentualeNonAderenti'] = 100 - $dataView['percentualeAderenti'];
+        } else {
+            $dataView['percentualeAderenti'] = 0;
+            $dataView['percentualeNonAderenti'] = 0;
+            $dataView['noData'] = true;
+        }
+
+        $dataView['percentualeAderenti'] = number_format($dataView['percentualeAderenti'], 2);
+
+
+        $dataView['mmgChart'] = Chartjs::build()
+            ->name("OverallAvgTmpComplementaryBarChart")
+            ->type("doughnut")
+            ->size(["width" => 300, "height" => 150])
+            ->labels(['MMG Aderenti', 'MMG non aderenti'])
+            ->datasets([
+                [
+                    "label" => "Percentuali MMG",
+                    "backgroundColor" => [
+                        "rgba(38, 185, 154, 0.7)",
+                        "rgba(255, 99, 132, 0.7)"
+                    ],
+                    "data" => $dataView['noData']
+                        ? [0, 0]
+                        : [$dataView['percentualeAderenti'], number_format($dataView['percentualeNonAderenti'], 2)]
                 ]
-            ]
-        ]);
+            ])
+            ->options([
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => $dataView['noData']
+                            ? 'Non ci sono dati disponibili'
+                            : 'Distribuzione Percentuale: MMG aderenti e Non aderenti'
+                    ]
+                ]
+            ]);
 
-    return view("controller.screening")->with("dataView", $dataView);
-}
+        //*************Secondo grafico **********//
+
+        $dataView['prestazioniInappropriate'] = 642;
+        $dataView['totalePrestazioni'] = 3963;
+
+        $dataView['percentualeCodiciDD'] = number_format($dataView['prestazioniInappropriate'] / $dataView['totalePrestazioni'] * 100, 2);
+
+
+        $dataView['codiciDD'] = Chartjs::build()
+            ->name("chartCodiciDD")
+            ->type("doughnut")
+            ->size(["width" => 300, "height" => 150])
+            ->labels(['Prestazioni Inappropriate', 'Prestazione appropriate'])
+            ->datasets([
+                [
+                    "label" => "Percentuali MMG",
+                    "backgroundColor" => [
+                        "rgba(38, 185, 154, 0.7)",
+                        "rgba(255, 99, 132, 0.7)"
+                    ],
+                    "data" => [$dataView['totalePrestazioni'], $dataView['prestazioniInappropriate']]
+
+                ]
+            ])
+            ->options([
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => '% Prestazioni inappropriate'
+
+                    ]
+                ]
+            ]);
+
+
+
+
+
+
+        /***********************Grafico MMG****************************/
+
+
+        if ($dataView['percentualeAderenti'] > 60) {
+            $dataView['messaggioTmp'] = [
+                'text' => "Raggiungimento dell'obiettivo con punteggio: 2",
+                'class' => 'text-success'
+            ];
+        } elseif ($dataView['percentualeAderenti'] >= 20) {
+            $dataView['messaggioTmp'] = [
+                'text' => "Raggiungimento dell'obiettivo parziale con punteggio: 1",
+                'class' => 'text-warning'
+            ];
+        } else {
+            $dataView['messaggioTmp'] = [
+                'text' => "Obiettivo non raggiunto con punteggio: 0",
+                'class' => 'text-danger'
+            ];
+        }
+
+        /*****************Grafico D02 E D03*******************/
+
+
+        if ($dataView['percentualeCodiciDD'] >= 0 && $dataView['percentualeCodiciDD'] <= 10) {
+            $dataView['messaggioTmpCodiciDD'] = [
+                'textt' => "Pieno raggiungimento dell'obiettivo con punteggio: 1",
+                'classs' => 'text-success'
+            ];
+
+        } elseif ($dataView['percentualeCodiciDD'] > 10) {
+            $dataView['messaggioTmpCodiciDD'] = [
+                'textCodiciDD' => "Obiettivo non raggiunto con punteggio: 0",
+                'classCodiciDD' => 'text-danger'
+            ];
+
+        }
+
+
+        return view("controller.screening")->with("dataView", $dataView);
+    }
 
     public function uploadFileObiettivo(Request $request)
     {
@@ -570,6 +657,8 @@ dd( $dataView['file']);
 
     public function uploadFileScreening(Request $request)
     {
+
+
         // Validate the file input
         $request->validate([
             'file' => 'required|file|mimes:pdf|max:5096',
@@ -589,7 +678,7 @@ dd( $dataView['file']);
                 'structure_id' => 93,
                 'notes' => null,
                 'target_number' => $request->obiettivo,
-                'target_category_id' => null,
+                'target_category_id' => $request->category,
             ]);
 
             return redirect()->back()->with('success', 'File caricato con successo e in attesa di approvazione.');
@@ -632,7 +721,7 @@ dd( $dataView['file']);
         ]);
 
 
-        return redirect()->route('screening');
+        return redirect()->route('caricamentoScreening');
     }
 
 
@@ -649,5 +738,40 @@ dd( $dataView['file']);
         return $pdf->download('certificazione_completa.pdf');
     }
 
+
+    public function getDescription($id)
+    {
+
+        $description = DB::table('target_categories')
+            ->where('id', $id)
+            ->value('description');
+
+        return response()->json(['description' => $description]);
+    }
+
+
+
+
+    public function caricamentoScreening(Request $request){
+
+
+        $dataView['file'] = DB::table('uploated_files as up')
+        ->join('target_categories as tc', 'up.target_category_id', '=', 'tc.id')
+        ->where('up.user_id', Auth::user()->id)
+        ->where('up.target_number', 5)
+        ->select('up.target_number', 'up.target_category_id', 'tc.category', 'up.validator_user_id', 'up.approved', 'up.created_at')
+        ->get();
+
+
+    // Dati per la tabella nella view 
+    $dataView['tableData'] = DB::table('insert_mmg')
+        ->select('mmg_totale', 'mmg_coinvolti', 'anno')
+        ->get();
+
+
+
+
+        return view('controller.caricamentoScreening')->with("dataView", $dataView);
+    }
 
 }
