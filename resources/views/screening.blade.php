@@ -110,7 +110,6 @@
             <div class="legend p-3 border rounded mt-3 {{ $dataView['messaggioTmpCodiciDD']['classCodiciDD'] }}">
                 <strong>{{ $dataView['messaggioTmpCodiciDD']['textCodiciDD'] }}</strong>
             </div>
-
         </div>
     </div>
     <br>
@@ -319,8 +318,5 @@
         </div>
     </div>
 </div>
-
-
-
 
 @endsection

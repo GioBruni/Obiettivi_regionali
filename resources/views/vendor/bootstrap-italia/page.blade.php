@@ -233,7 +233,6 @@
                                                     </li>
                                                 @endif
                                             @endauth
-
                                             <!--@ each('bootstrap-italia::partials.header-menu-item', $bootstrapItalia->menu()['header-menu'], 'item')-->
                                         </ul>
                                     </div>
