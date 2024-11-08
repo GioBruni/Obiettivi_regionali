@@ -657,7 +657,7 @@ class HomeController extends Controller
         }
 
 
-        return view("controller.screening")->with("dataView", $dataView);
+        return view("screening")->with("dataView", $dataView);
     }
 
     public function uploadFileObiettivo(Request $request)
@@ -871,7 +871,7 @@ class HomeController extends Controller
 
         $dataView['obiettivo'] = $request->obiettivo;
 
-        return view('controller.caricamentoScreening')->with("dataView", $dataView);
+        return view('caricamentoScreening')->with("dataView", $dataView);
     }
 
 
