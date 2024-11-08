@@ -503,7 +503,7 @@ class HomeController extends Controller
 
         // Dati per la tabella nella view 
         $dataView['tableData'] = DB::table('insert_mmg')
-            ->select('mmg_totale', 'mmg_coinvolti', 'anno')
+            ->select('mmg_totale', 'mmg_coinvolti', 'year')
             ->get();
 
         //avrò solo una riga nel db (per ora)
@@ -729,6 +729,25 @@ class HomeController extends Controller
         return redirect()->route('caricamentoScreening');
     }
 
+    public function indexFarmaci(Request $request) {
+        $dataView['strutture'] = Auth::user()->structures();
+        $dataView['PCT'] = PCT::where("user_id", Auth::user()->id)
+        ->latest()->first();
+
+        if(! ($dataView['PCT'])) {
+            $pct = new PCT();
+            $pct->year = date('Y');
+            $pct->begin_month = 1;
+            $pct->end_month = date('n');
+            $pct->structure_id = $dataView['strutture']->first()->id;
+
+            $dataView['PCT'] = $pct;
+        }
+
+        return view("farmaci")->with("dataView", $dataView);
+    }
+
+
     public function farmaciPCT(Request $request) {
 
     }
@@ -802,7 +821,7 @@ class HomeController extends Controller
 
     // Dati per la tabella nella view 
     $dataView['tableData'] = DB::table('insert_mmg')
-        ->select('mmg_totale', 'mmg_coinvolti', 'anno')
+        ->select('mmg_totale', 'mmg_coinvolti', 'year')
         ->get();
 
 
