@@ -22,7 +22,7 @@
                         {{ session('status') }}
                     </div>
                 @endif
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-primary text-white mt-4">
                     Inserisci i dati
                 </div>
                 <div class="card-body">
@@ -31,12 +31,13 @@
                             @csrf
                             <input type="hidden" name="obiettivo" value={{$dataView['obiettivo']}}>
                             @if ($errors->any())
-                                <div class="alert alert-danger">
-                                    <ul>
-                                        @foreach ($errors->all() as $error)
-                                            <li>{{ $error }}</li>
-                                        @endforeach
-                                    </ul>
+                                <div class="overflow-auto alert alert-danger" style="max-height: 200px;" role="alert">
+                                    <h4 class="alert-heading px-5">Errore</h4>
+                                    <p>
+                                    @foreach($errors->all() as $errore)
+                                            {{$errore}}<br />
+                                    @endforeach
+                                    </p>
                                 </div>
                             @endif
 
@@ -66,7 +67,7 @@
                                         <option value="" disabled {{ $dataView['tableData']->isEmpty() ? 'selected' : '' }}>
                                             Scegli
                                             un anno</option>
-                                        @for ($year = date('Y'); $year >= 2000; $year--)
+                                        @for ($year = date('Y'); $year >= 2023; $year--)
                                             <option value="{{ $year }}" {{ $dataView['tableData']->isNotEmpty() && $dataView['tableData']->first()->year == $year ? 'selected' : '' }}>
                                                 {{ $year }}
                                             </option>
