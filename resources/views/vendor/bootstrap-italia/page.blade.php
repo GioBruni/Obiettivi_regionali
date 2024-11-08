@@ -225,11 +225,6 @@
                                                                             <li>
                                                                                 <a class="list-item" href="{{ route("caricamentoScreening",['obiettivo' => 5])}}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Obiettivo 5 - Screening</span></a>
                                                                             </li>
-
-                                                                            <li>
-                                                                                <a class="list-item" href="{{ route("usersList") }}"><span><i class="bi bi-people"></i>&nbsp;&nbsp;Lista utenti</span></a>
-                                                                            </li>
-                                                                            <li><span class="divider"></span></li>
                                                                         </ul>
                                                                     </div>
                                                                 </div>
@@ -238,7 +233,6 @@
                                                     </li>
                                                 @endif
                                             @endauth
-
                                             <!--@ each('bootstrap-italia::partials.header-menu-item', $bootstrapItalia->menu()['header-menu'], 'item')-->
                                         </ul>
                                     </div>

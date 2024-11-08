@@ -120,12 +120,10 @@
                         <form action="{{ route('uploadFileScreening') }}" method="POST" enctype="multipart/form-data"
                             id="caricaPDFForm">
                             @csrf
-                            @foreach($dataView['tableData'] as $data)
-                          
-                                <input type="hidden" name="obiettivo" value={{$dataView['obiettivo']}}>
-                                <input type="hidden" name="category" value="category">
-                            @endforeach
 
+                            <input type="hidden" name="obiettivo" value={{$dataView['obiettivo']}}>
+                            <input type="hidden" name="category" value="category">
+                            
                             <div class="row">
                                 <div class="col-md-6">
                                     <label for="categoria">Seleziona la struttura</label>
