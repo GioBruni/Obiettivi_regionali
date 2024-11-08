@@ -38,7 +38,7 @@ Route::post('/uploadObiettivo', [HomeController::class, 'uploadFileObiettivo'])-
 Route::get('/prontoSoccorso', [HomeController::class, 'prontoSoccorso'])->name('prontoSoccorso');
 Route::get('/donazioni', [HomeController::class, 'donazioni'])->name('donazioni');
 Route::get('/screening', [HomeController::class, 'screening'])->name('screening');
-Route::get('/caricamentoScreening', [HomeController::class, 'caricamentoScreening'])->name('caricamentoScreening');
+Route::get('/caricamentoScreening/{obiettivo}', [HomeController::class, 'caricamentoScreening'])->name('caricamentoScreening');
 Route::post('/mmgRegister', [HomeController::class, 'mmgRegister'])->name('mmgRegister');
 Route::get('/downloadPdf', [HomeController::class, 'downloadPdf'])->name('downloadPdf');
 Route::post('/uploadFileScreening', [HomeController::class, 'uploadFileScreening'])->name('uploadFileScreening');
@@ -73,7 +73,6 @@ Route::group(attributes: ['middleware' => ['role:controller']], routes: function
     Route::get('/controller/showObiettivo/{obiettivo}', [AdminController::class, 'showObiettivo'])->name('controller.obiettivo');
     Route::post('/controller/valide', [AdminController::class, 'valide'])->name('controller.valide');
     Route::post('/controller/notValide', [AdminController::class, 'notValide'])->name('controller.notValide');
-    
     Route::post('/approvaObiettivo', action: [AdminController::class, 'approvaObiettivo'])->name('approvaObiettivo');
 
 });

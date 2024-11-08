@@ -17,6 +17,9 @@ use Illuminate\Support\Collection;
 use IcehouseVentures\LaravelChartjs\Facades\Chartjs;
 use App\Models\InsertMmg;
 use PDF;
+use App\Models\Structure;
+
+
 class HomeController extends Controller
 {
     use ChartTrait;
@@ -32,7 +35,8 @@ class HomeController extends Controller
     }
 
 
-    protected function punteggioOb1_1($anno, $meseInizio, $meseFine) {
+    protected function punteggioOb1_1($anno, $meseInizio, $meseFine)
+    {
         $dataView['numeratore'] = DB::table('cup_model_target1')
             ->select(DB::raw(value: 'SUM(amount) as totale_quantita'))
             ->whereYear('provision_date', $anno)
@@ -47,7 +51,7 @@ class HomeController extends Controller
             ->where('year', $anno)
             ->whereBetween('month', [$meseInizio, $meseFine])
             ->sum('ob1_1');
-        $DenominatoreM = DB::table('flows_m')            
+        $DenominatoreM = DB::table('flows_m')
             ->where("structure_id", Auth::user()->firstStructureId()->id)
             ->where('year', $anno)
             ->whereBetween('month', [$meseInizio, $meseFine])
@@ -73,31 +77,32 @@ class HomeController extends Controller
             $punteggio = max(5 - $penalizzazione, 0);  // Assicuriamoci che non vada sotto 0
         }
         $dataView['punteggio'] = round($punteggio, 2);
-        
+
         return $dataView;
     }
 
 
-    protected function punteggioOb3_8($obiettivo, $strutturaId, $punteggioTeorico) {
+    protected function punteggioOb3_8($obiettivo, $strutturaId, $punteggioTeorico)
+    {
         $categories = DB::table("target_categories")
-        ->where("target_number", $obiettivo)
-        ->orderby("id")
-        ->get();
+            ->where("target_number", $obiettivo)
+            ->orderby("id")
+            ->get();
         $mediaPercentuale = 0;
 
-        foreach($categories as $category) {
+        foreach ($categories as $category) {
             $tmp = DB::table("uploated_files")
                 ->leftJoin("result_target3", "result_target3.uploated_file_id", "=", "uploated_files.id")
                 ->where("target_number", $obiettivo)
                 ->where("structure_id", $strutturaId)
                 ->where("target_category_id", $category->id)
                 ->latest("uploated_files.created_at")->first();
-            $mediaPercentuale += (isset($tmp->numerator) && isset($tmp->denominator)) ? round($tmp->numerator / $tmp->denominator,2) : 0;
+            $mediaPercentuale += (isset($tmp->numerator) && isset($tmp->denominator)) ? round($tmp->numerator / $tmp->denominator, 2) : 0;
         }
 
         $mediaPercentuale = round($mediaPercentuale / count($categories), 2) * 100;
         $punteggioCalcolato = reset($punteggioTeorico);
-        if($mediaPercentuale > 85 && $mediaPercentuale <= 95)
+        if ($mediaPercentuale > 85 && $mediaPercentuale <= 95)
             $punteggioCalcolato = round($punteggioCalcolato * 90 / 100, 2);
         elseif ($mediaPercentuale > 75 && $mediaPercentuale <= 85)
             $punteggioCalcolato = round($punteggioCalcolato * 75 / 100, 2);
@@ -122,7 +127,7 @@ class HomeController extends Controller
 
             $dataView['punteggi'] = [];
             // Per ogni struttura e per ogni obiettivo recupero il punteggio teorico e calcolo il punteggio ottenuto
-            foreach($dataView['userStructures'] as $struttura) {
+            foreach ($dataView['userStructures'] as $struttura) {
 
                 if ($struttura->column_points === 'ao') {
                     $punteggioTeoria = DB::table("points")
@@ -142,7 +147,7 @@ class HomeController extends Controller
                 $obiettivo = 3;
                 $punteggioMassimo = $punteggioTeoria->clone()->where("target_number", $obiettivo)->select($struttura->column_points)->first();
                 $punteggioRaggiunto[$obiettivo] = $this->punteggioOb3_8($obiettivo, $struttura->structure_id, $punteggioMassimo);
-                
+
                 $obiettivo = 8;
                 $punteggioMassimo = $punteggioTeoria->clone()->where("target_number", $obiettivo)->select($struttura->column_points)->first();
                 $punteggioRaggiunto[$obiettivo] = $this->punteggioOb3_8($obiettivo, $struttura->structure_id, $punteggioMassimo);
@@ -212,21 +217,21 @@ class HomeController extends Controller
                 $dataView['categorie'] = DB::table(table: 'target_categories as tc')
                     ->where("target_number", $request->obiettivo)->get();
                 $dataView['filesCaricati'] = DB::table('uploated_files as uf')
-                ->join('target_categories as tc', 'uf.target_category_id', '=', 'tc.id')
-                ->select('uf.id', 'uf.validator_user_id', 'uf.approved','uf.notes', 'uf.path', 'uf.filename', 'uf.target_category_id', 'tc.category', 'uf.updated_at', 'uf.user_id', 'uf.created_at')
-                ->where('uf.target_number', $request->obiettivo)
-                ->whereIn("uf.structure_id", $dataView['strutture']->pluck("id")->toArray())
-                ->whereRaw('uf.created_at = (SELECT MAX(u2.created_at)
+                    ->join('target_categories as tc', 'uf.target_category_id', '=', 'tc.id')
+                    ->select('uf.id', 'uf.validator_user_id', 'uf.approved', 'uf.notes', 'uf.path', 'uf.filename', 'uf.target_category_id', 'tc.category', 'uf.updated_at', 'uf.user_id', 'uf.created_at')
+                    ->where('uf.target_number', $request->obiettivo)
+                    ->whereIn("uf.structure_id", $dataView['strutture']->pluck("id")->toArray())
+                    ->whereRaw('uf.created_at = (SELECT MAX(u2.created_at)
                                             FROM uploated_files as u2 
                                             WHERE u2.target_category_id = uf.target_category_id)')
-                ->whereRaw('uf.updated_at = (SELECT MAX(u3.updated_at)
+                    ->whereRaw('uf.updated_at = (SELECT MAX(u3.updated_at)
                                             FROM uploated_files as u3
                                             WHERE u3.target_category_id = uf.target_category_id
                                             AND u3.created_at = uf.created_at)')
-                ->orderBy("tc.category" )
-                ->orderBy('uf.created_at', 'desc')
-                ->orderBy('uf.updated_at', 'desc')
-                ->get();
+                    ->orderBy("tc.category")
+                    ->orderBy('uf.created_at', 'desc')
+                    ->orderBy('uf.updated_at', 'desc')
+                    ->get();
 
                 break;
 
@@ -240,11 +245,11 @@ class HomeController extends Controller
                     ->where("target_number", $request->obiettivo)->get();
 
                 $dataView['filesCaricati'] = DB::table('uploated_files as uf')
-                ->join('target_categories as tc', 'uf.target_category_id', '=', 'tc.id')
-                ->select('uf.id', 'uf.validator_user_id', 'uf.approved','uf.notes', 'uf.path', 'uf.filename', 'uf.target_category_id', 'tc.category', 'uf.updated_at', 'uf.user_id', 'uf.created_at')
-                ->where('uf.target_number', $request->obiettivo)
-                ->whereIn("uf.structure_id", $dataView['strutture']->pluck("id")->toArray())
-                ->whereRaw('uf.created_at = (SELECT MAX(u2.created_at)
+                    ->join('target_categories as tc', 'uf.target_category_id', '=', 'tc.id')
+                    ->select('uf.id', 'uf.validator_user_id', 'uf.approved', 'uf.notes', 'uf.path', 'uf.filename', 'uf.target_category_id', 'tc.category', 'uf.updated_at', 'uf.user_id', 'uf.created_at')
+                    ->where('uf.target_number', $request->obiettivo)
+                    ->whereIn("uf.structure_id", $dataView['strutture']->pluck("id")->toArray())
+                    ->whereRaw('uf.created_at = (SELECT MAX(u2.created_at)
                                             FROM uploated_files as u2 
                                             WHERE u2.target_category_id = uf.target_category_id)')
                     ->whereRaw('uf.updated_at = (SELECT MAX(u3.updated_at)
@@ -257,6 +262,8 @@ class HomeController extends Controller
 
                 break;
 
+
+
         }
         $dataView['obiettivo'] = $request->obiettivo;
 
@@ -266,13 +273,13 @@ class HomeController extends Controller
 
     public function prontoSoccorso()
     {
-/*
-        $dataView['companyCode'] = DB::table('users_structures as us')
-            ->join('structures as s', 'us.structure_id', '=', 's.id')
-            ->where('us.user_id', Auth::user()->id)
-            ->distinct()
-            ->pluck('s.company_code');
-*/
+        /*
+                $dataView['companyCode'] = DB::table('users_structures as us')
+                    ->join('structures as s', 'us.structure_id', '=', 's.id')
+                    ->where('us.user_id', Auth::user()->id)
+                    ->distinct()
+                    ->pluck('s.company_code');
+        */
 
         $dataView['flowEmur'] = DB::table('flows_EMUR as fe')
             //->join('structures as s', 'fe.structure_id', '=', 's.id')
@@ -457,7 +464,7 @@ class HomeController extends Controller
         $tmpAnno = isset($request->anno) ? $request->anno : date('Y');
         $tmpMeseInizio = isset($request->mese_inizio) ? $request->mese_inizio : 1;
         $tmpMeseFine = isset($request->mese_fine) ? $request->mese_fine : date("m");
-        
+
         $dataView = $this->punteggioOb1_1($tmpAnno, $tmpMeseInizio, $tmpMeseFine);
         $dataView['anno'] = $tmpAnno;
         $dataView['meseInizio'] = $tmpMeseInizio;
@@ -493,23 +500,46 @@ class HomeController extends Controller
     {
 
         // Mi serve per prendere i dati solo per il file di obiettivo 5
-        $dataView['file'] = DB::table('uploated_files as up')
+        /*$dataView['file'] = DB::table('uploated_files as up')
             ->join('target_categories as tc', 'up.target_category_id', '=', 'tc.id')
             ->where('up.user_id', Auth::user()->id)
             ->where('up.target_number', 5)
             ->select('up.target_number', 'up.target_category_id', 'tc.category', 'up.validator_user_id', 'up.approved', 'up.created_at')
             ->get();
+*/
+
+        $dataView['strutture'] = Auth::user()->structures();
+
+        $dataView['categorie'] = DB::table(table: 'target_categories as tc')
+            ->where("target_number", $request->obiettivo)->get();
+        $dataView['file'] = DB::table('uploated_files as uf')
+            ->join('target_categories as tc', 'uf.target_category_id', '=', 'tc.id')
+            ->select('uf.id', 'uf.validator_user_id', 'uf.approved', 'uf.notes', 'uf.path', 'uf.filename', 'uf.target_category_id', 'tc.category', 'uf.updated_at', 'uf.user_id', 'uf.created_at')
+            ->where('uf.target_number', 5)
+            ->whereIn("uf.structure_id", $dataView['strutture']->pluck("id")->toArray())
+            ->whereRaw('uf.created_at = (SELECT MAX(u2.created_at)
+                                    FROM uploated_files as u2 
+                                    WHERE u2.target_category_id = uf.target_category_id)')
+            ->whereRaw('uf.updated_at = (SELECT MAX(u3.updated_at)
+                                    FROM uploated_files as u3
+                                    WHERE u3.target_category_id = uf.target_category_id
+                                    AND u3.created_at = uf.created_at)')
+            ->orderBy("tc.category")
+            ->orderBy('uf.created_at', 'desc')
+            ->orderBy('uf.updated_at', 'desc')
+            ->get();
+
 
 
         // Dati per la tabella nella view 
         $dataView['tableData'] = DB::table('insert_mmg')
-            ->select('mmg_totale', 'mmg_coinvolti', 'year')
+            ->join('structures as s', 'insert_mmg.structure_id', '=', 's.id')
+            ->select('mmg_totale', 'mmg_coinvolti', 'year', 'structure_id', 's.name as nome_struttura')
             ->get();
 
         //avrò solo una riga nel db (per ora)
         $record = DB::table('insert_mmg')->select('mmg_totale', 'mmg_coinvolti')->first();
         $dataView['noData'] = false;
-
 
 
         if ($record && $record->mmg_totale != 0) {
@@ -589,11 +619,7 @@ class HomeController extends Controller
             ]);
 
 
-
-
-
-
-        /***********************Grafico MMG****************************/
+        /***********************MMG****************************/
 
 
         if ($dataView['percentualeAderenti'] > 60) {
@@ -613,7 +639,7 @@ class HomeController extends Controller
             ];
         }
 
-        /*****************Grafico D02 E D03*******************/
+        /*****************D02 E D03*******************/
 
 
         if ($dataView['percentualeCodiciDD'] >= 0 && $dataView['percentualeCodiciDD'] <= 10) {
@@ -644,6 +670,8 @@ class HomeController extends Controller
         $path = $request->file('file')->store('uploads', 'public');
         $url = Storage::url($path);
 
+
+
         // Salva le informazioni nel database
         UploatedFile::create([
             'filename' => $file->getClientOriginalName(),
@@ -662,8 +690,6 @@ class HomeController extends Controller
 
     public function uploadFileScreening(Request $request)
     {
-
-
         // Validate the file input
         $request->validate([
             'file' => 'required|file|mimes:pdf|max:5096',
@@ -674,7 +700,7 @@ class HomeController extends Controller
             $file = $request->file('file');
             $path = $file->store('uploads', 'public');
             $url = Storage::url($path);
-
+            $categoriaId = $request->input('categoria');
 
             UploatedFile::create([
                 'filename' => $file->getClientOriginalName(),
@@ -683,7 +709,7 @@ class HomeController extends Controller
                 'structure_id' => 93,
                 'notes' => null,
                 'target_number' => $request->obiettivo,
-                'target_category_id' => $request->category,
+                'target_category_id' =>  $categoriaId,
             ]);
 
             return redirect()->back()->with('success', 'File caricato con successo e in attesa di approvazione.');
@@ -696,37 +722,42 @@ class HomeController extends Controller
 
     public function mmgRegister(Request $request)
     {
+
+
+        $anno = $request->year;
+        $tot_mmg = $request->tot_mmg;
+        $mmg_coinvolti = $request->mmg_coinvolti;
+        $structure_id = $request->structure_id;
+
         $messages = [
             'tot_mmg.required' => 'Il totale MMG è obbligatorio.',
             'tot_mmg.numeric' => 'Il totale MMG deve essere un numero.',
             'mmg_coinvolti.required' => 'Il numero di MMG coinvolti è obbligatorio.',
             'mmg_coinvolti.numeric' => 'Il numero di MMG coinvolti deve essere un numero.',
             'mmg_coinvolti.lte' => 'Il numero di MMG coinvolti deve essere minore o uguale al totale MMG.',
-            'anno.required' => 'L\'anno è obbligatorio.',
-            'anno.integer' => 'L\'anno deve essere un numero intero.',
+            'year.required' => 'L\'anno è obbligatorio.',
+            'year.integer' => 'L\'anno deve essere un numero intero.',
         ];
 
 
         $request->validate([
             'tot_mmg' => 'required|numeric',
             'mmg_coinvolti' => 'required|numeric|lte:tot_mmg', // mmg_coinvolti <= tot_mmg
-            'anno' => 'required|integer',
+            'year' => 'required|integer',
         ], $messages);
 
-
-        $anno = $request->anno;
-        $tot_mmg = $request->tot_mmg;
-        $mmg_coinvolti = $request->mmg_coinvolti;
 
 
         InsertMmg::create([
             'mmg_totale' => $tot_mmg,
             'mmg_coinvolti' => $mmg_coinvolti,
-            'anno' => $anno,
+            'year' => $anno,
+            'structure_id' => $structure_id,
         ]);
 
 
-        return redirect()->route('caricamentoScreening');
+        return redirect()->route('caricamentoScreening', ['obiettivo' => $request->obiettivo]);
+
     }
 
     public function indexFarmaci(Request $request) {
@@ -769,10 +800,10 @@ class HomeController extends Controller
             }
             $dateObj = \DateTime::createFromFormat($formatoData, $data[0]);
             if (!$dateObj || $dateObj->format($formatoData) !== $data[0]) {
-                $errori[$row][] = "Formato della data deve essere aaaa-mm-gg; dato letto: ".$data[0];
+                $errori[$row][] = "Formato della data deve essere aaaa-mm-gg; dato letto: " . $data[0];
             }
             if (!is_numeric($data[1]) || $data[1] <= 0) {
-                $errori[$row][] = "Quantità errata: ".$data[1];
+                $errori[$row][] = "Quantità errata: " . $data[1];
             }
         }
         if (count($errori) == 0) {
@@ -791,7 +822,7 @@ class HomeController extends Controller
             $dataView['success'] = "CSV importato correttamente";
         } else
             $dataView['errors'] = $errori;
-        
+
         return view("uploadTempiListaAttesa")->with("dataView", $dataView);
     }
 
@@ -808,26 +839,50 @@ class HomeController extends Controller
 
 
 
-    public function caricamentoScreening(Request $request){
+    public function caricamentoScreening(Request $request)
+    {
+
+         
+        $dataView['categorie'] = DB::table("target_categories")
+        ->where("target_number", $request->obiettivo)
+        ->orderBy("order")
+        ->get();
+
+        $dataView['structures'] = Auth::user()->structures();
+
 
 
         $dataView['file'] = DB::table('uploated_files as up')
-        ->join('target_categories as tc', 'up.target_category_id', '=', 'tc.id')
-        ->where('up.user_id', Auth::user()->id)
-        ->where('up.target_number', 5)
-        ->select('up.target_number', 'up.target_category_id', 'tc.category', 'up.validator_user_id', 'up.approved', 'up.created_at')
-        ->get();
+            ->join('target_categories as tc', 'up.target_category_id', '=', 'tc.id')
+            ->where('up.user_id', Auth::user()->id)
+            ->where('up.target_number', $request->obiettivo)
+            ->select('up.target_number', 'up.target_category_id', 'tc.category', 'up.validator_user_id', 'up.approved', 'up.created_at')
+            ->get();
 
 
-    // Dati per la tabella nella view 
-    $dataView['tableData'] = DB::table('insert_mmg')
-        ->select('mmg_totale', 'mmg_coinvolti', 'year')
-        ->get();
+        // Dati per la tabella nella view 
+        $dataView['tableData'] = DB::table('insert_mmg')
+            ->select('mmg_totale', 'mmg_coinvolti', 'year')
+            ->get();
 
 
-
+        $dataView['obiettivo'] = $request->obiettivo;
 
         return view('controller.caricamentoScreening')->with("dataView", $dataView);
     }
 
+
+
+    public function downloadPdf(Request $request)
+    {
+
+        $dataView['tableData'] = DB::table('insert_mmg')
+            ->join('structures as s', 'insert_mmg.structure_id', '=', 's.id')
+            ->select('mmg_totale', 'mmg_coinvolti', 'year', 'structure_id', 's.name as nome_struttura')
+            ->get();
+
+        $pdf = PDF::loadView('emails.screeningPdf', $dataView);
+
+        return $pdf->download('certificazione_completa.pdf');
+    }
 }
