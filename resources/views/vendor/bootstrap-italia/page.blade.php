@@ -227,10 +227,6 @@
                                                                             </li>
 
                                                                             <li>
-                                                                                <a class="list-item" href="{{ route("donazioni") }}"><span><i class="bi bi-people"></i>&nbsp;&nbsp;Obiettivo 6 - Donazioni</span></a>
-                                                                            </li>
-
-                                                                            <li>
                                                                                 <a class="list-item" href="{{ route("usersList") }}"><span><i class="bi bi-people"></i>&nbsp;&nbsp;Lista utenti</span></a>
                                                                             </li>
                                                                             <li><span class="divider"></span></li>

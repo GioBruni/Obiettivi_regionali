@@ -706,15 +706,15 @@ class HomeController extends Controller
                 'filename' => $file->getClientOriginalName(),
                 'path' => $url,
                 'user_id' => Auth::user()->id,
-                'structure_id' => 93,
+                'structure_id' => $request->structure_id,
                 'notes' => null,
                 'target_number' => $request->obiettivo,
                 'target_category_id' =>  $categoriaId,
+                'year' => $request->anno
             ]);
 
             return redirect()->back()->with('success', 'File caricato con successo e in attesa di approvazione.');
         }
-
         return redirect()->back()->with('error', 'Nessun file caricato.');
     }
 
@@ -753,6 +753,7 @@ class HomeController extends Controller
             'mmg_coinvolti' => $mmg_coinvolti,
             'year' => $anno,
             'structure_id' => $structure_id,
+    
         ]);
 
 
@@ -831,7 +832,9 @@ class HomeController extends Controller
         ->get();
 
         $dataView['structures'] = Auth::user()->structures();
-
+        $dataView['titolo'] = config("constants.OBIETTIVO.5.text");
+        $dataView['icona'] = config("constants.OBIETTIVO.5.icon");
+        $dataView['tooltip'] = config("constants.OBIETTIVO.5.tooltip");
 
 
         $dataView['file'] = DB::table('uploated_files as up')
@@ -844,7 +847,7 @@ class HomeController extends Controller
 
         // Dati per la tabella nella view 
         $dataView['tableData'] = DB::table('insert_mmg')
-            ->select('mmg_totale', 'mmg_coinvolti', 'year')
+            ->select('mmg_totale', 'mmg_coinvolti', 'year','structure_id')
             ->get();
 
 

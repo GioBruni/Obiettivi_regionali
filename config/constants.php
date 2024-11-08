@@ -56,8 +56,8 @@ return [
             'icon' => 'fas fa-hand-holding-medical',
             'text' => 'Donazioni',
             'tooltip' => 'Donazione sangue, plasma, organi e tessuti',
-            'route' => null ,//route('indexDonazioni')
-            'enable' => false,
+            'route' => "/donazioni",
+            'enable' => true,
         ],
         '7' => [
             'icon' => 'fas fa-file-medical',
