@@ -16,7 +16,8 @@ class InsertMmg extends Model
     protected $fillable = [
         'mmg_totale',
         'mmg_coinvolti',
-        'anno',
+        'year',
+        'structure_id',
     ];
 }
 

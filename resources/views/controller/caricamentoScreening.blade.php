@@ -8,69 +8,85 @@
         Inserisci i dati
     </div>
     <div class="card-body">
-        <div class="card-body">
-            <form method="POST" action="{{ route('mmgRegister') }}">
-                @csrf
-                @if ($errors->any())
-                    <div class="alert alert-danger">
-                        <ul>
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
+    <div class="card-body">
+    <form method="POST" action="{{ route('mmgRegister') }}">
+        @csrf
+        <input type="hidden" name="obiettivo" value={{$dataView['obiettivo']}}>
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
-                <div class="form-row">
-                    <div class="form-group col-md-6">
-                        <p class="mb-1">Totale MMG</p>
-                        <input id="tot_mmg" type="text" class="form-control" name="tot_mmg" required
-                            autocomplete="tot_mmg" autofocus tabindex="1"
-                            value="{{ $dataView['tableData']->isNotEmpty() ? $dataView['tableData']->first()->mmg_totale : '' }}"
-                            @if($dataView['tableData']->isNotEmpty()) disabled @endif>
-                    </div>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <p class="mb-1">Totale MMG</p>
+                <input id="tot_mmg" type="text" class="form-control" name="tot_mmg" required
+                    autocomplete="tot_mmg" autofocus tabindex="1"
+                    value="{{ $dataView['tableData']->isNotEmpty() ? $dataView['tableData']->first()->mmg_totale : '' }}"
+                    @if($dataView['tableData']->isNotEmpty()) disabled @endif>
+            </div>
 
-                    <div class="form-group col-md-6">
-                        <p class="mb-1">MMG Coinvolti</p>
-                        <input id="mmg_coinvolti" type="text" class="form-control" name="mmg_coinvolti" required
-                            autocomplete="mmg_coinvolti" tabindex="2"
-                            value="{{ $dataView['tableData']->isNotEmpty() ? $dataView['tableData']->first()->mmg_coinvolti : '' }}"
-                            @if($dataView['tableData']->isNotEmpty()) disabled @endif>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group col-md-6">
-                        <p class="mb-1">Anno</p>
-                        <select id="anno" name="anno" class="form-control" required tabindex="3"
-                            @if($dataView['tableData']->isNotEmpty()) disabled @endif>
-                            <option value="" disabled {{ $dataView['tableData']->isEmpty() ? 'selected' : '' }}>
-                                Scegli un anno</option>
-                            @for ($year = date('Y'); $year >= 2000; $year--)
-                                <option value="{{ $year }}" {{ $dataView['tableData']->isNotEmpty() && $dataView['tableData']->first()->anno == $year ? 'selected' : '' }}>
-                                    {{ $year }}
-                                </option>
-                            @endfor
-                        </select>
-                    </div>
-                </div>
-
-                <div class="d-flex justify-content-end mt-3">
-                    <button type="submit" class="btn btn-primary btn-sm" id="submitBtn"
-                        @if($dataView['tableData']->isNotEmpty()) disabled @endif>
-                        <i class="bi bi-floppy"></i>&nbsp;&nbsp;{{ __('Salva') }}
-                    </button>
-                </div>
-            </form>
-
-
-            <a href="{{ $dataView['tableData']->count() === 0 ? '#' : route('downloadPdf') }}"
-                class="btn btn-primary @if($dataView['tableData']->count() === 0) disabled @endif"
-                @if($dataView['tableData']->count() === 0) tabindex="-1" aria-disabled="true"
-                onclick="event.preventDefault();" @endif>
-                Scarica Certificazione PDF
-            </a>
+            <div class="form-group col-md-6">
+                <p class="mb-1">MMG Coinvolti</p>
+                <input id="mmg_coinvolti" type="text" class="form-control" name="mmg_coinvolti" required
+                    autocomplete="mmg_coinvolti" tabindex="2"
+                    value="{{ $dataView['tableData']->isNotEmpty() ? $dataView['tableData']->first()->mmg_coinvolti : '' }}"
+                    @if($dataView['tableData']->isNotEmpty()) disabled @endif>
+            </div>
         </div>
+
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <p class="mb-1">Anno</p>
+                <select id="year" name="year" class="form-control" required tabindex="3"
+                    @if($dataView['tableData']->isNotEmpty()) disabled @endif>
+                    <option value="" disabled {{ $dataView['tableData']->isEmpty() ? 'selected' : '' }}>Scegli un anno</option>
+                    @for ($year = date('Y'); $year >= 2000; $year--)
+                        <option value="{{ $year }}" {{ $dataView['tableData']->isNotEmpty() && $dataView['tableData']->first()->year == $year ? 'selected' : '' }}>
+                            {{ $year }}
+                        </option>
+                    @endfor
+                </select>
+
+            </div>
+
+    
+            <div class="form-group col-md-6">
+                <p class="mb-1">Struttura</p>
+                <select id="structure_id" name="structure_id" class="form-control" required tabindex="4"
+                    @if($dataView['tableData']->isNotEmpty()) disabled @endif>
+                    <option value="" disabled {{ $dataView['tableData']->isEmpty() ? 'selected' : '' }}>Scegli una struttura</option>
+                    @foreach($dataView['structures'] as $structure)
+                        <option value="{{ $structure->id }}">
+                            {{ $structure->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+        </div>
+
+        <div class="d-flex justify-content-end mt-3">
+            <button type="submit" class="btn btn-primary btn-sm" id="submitBtn"
+                @if($dataView['tableData']->isNotEmpty()) disabled @endif>
+                <i class="bi bi-floppy"></i>&nbsp;&nbsp;{{ __('Salva') }}
+            </button>
+        </div>
+    </form>
+
+    <a href="{{ $dataView['tableData']->count() === 0 ? '#' : route('downloadPdf') }}"
+        class="btn btn-primary @if($dataView['tableData']->count() === 0) disabled @endif"
+        @if($dataView['tableData']->count() === 0) tabindex="-1" aria-disabled="true"
+        onclick="event.preventDefault();" @endif>
+        Scarica Certificazione PDF
+    </a>
+</div>
+
 
     </div>
     <br>
@@ -84,27 +100,27 @@
             <form action="{{ route('uploadFileScreening') }}" method="POST" enctype="multipart/form-data"
                 id="caricaPDFForm">
                 @csrf
-                <input type="hidden" name="obiettivo" value="5">
+                <input type="hidden" name="obiettivo" value={{$dataView['obiettivo']}}>
                 <input type="hidden" name="category" value="category">
 
-                <div class="row mb-3">
+                <div class="row align-top">
                     <div class="col-md-6">
-                        <label for="category">Seleziona categoria:</label>
-                        <select name="category" id="category" class="form-control" onchange="toggleDescription()">
-                            <option value="">-- Seleziona una categoria --</option>
-                            <option value="5">Formazione del Personale dedicato allo screening</option>
-                            <option value="6">Adeguamento delle dotazioni organiche</option>
-                            <option value="7">Organizzazione di programmi di comunicazione rivolti alla popolazione
-                                target
-                            </option>
-                        </select>
+                        <label for="categoria">Seleziona la categoria</label>
+                        <div class="form-group">
+                            <select class="form-control" name="categoria" id="categoriaSelect" required>
+                                <option value="" data-description="&nbsp;">-- Seleziona --</option>
+                                @foreach ($dataView['categorie'] as $rowCategoria)
+                                <option value="{{ $rowCategoria->id }}" data-description="{{ $rowCategoria->description }}">
+                                    {{ $rowCategoria->category }}
+                                </option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
-
                     <div class="col-md-6">
-                        <div id="descriptionContainer" style="display: none; margin-top: 15px;">
-                            <label for="description">Descrizione:</label>
-                            <textarea id="description" name="description" rows="4" class="form-control"
-                                readonly></textarea>
+                        <label for="categoriaDescription">Descrizione</label>
+                        <div id="categoriaDescription" style="margin-top: 0; border: 1px solid #ccc; padding: 5px; border-radius: 5px;">
+                            <span id="descriptionText">&nbsp;</span>
                         </div>
                     </div>
                 </div>
@@ -131,28 +147,27 @@
     </div>
 </div>
 
+@endsection
 
-    <script>
-        function toggleDescription() {
-            var categoryId = document.getElementById("category").value;
-            var descriptionContainer = document.getElementById("descriptionContainer");
+@section('bootstrapitalia_js')
+<script>
 
-            if (categoryId !== "") {
-                fetch(`/get-category-description/${categoryId}`)
-                    .then(response => response.json())
-                    .then(data => {
-
-                        descriptionContainer.style.display = 'block';
-
-                        document.getElementById("description").value = data.description;
-                    })
-                    .catch(error => {
-                        console.error('Errore durante il recupero della descrizione:', error);
-                    });
-            } else {
-
-                descriptionContainer.style.display = 'none';
+    $(document).ready(function() {
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             }
-        }
-    </script>
-    @endsection
+        });
+
+        $("#categoriaSelect").change(function() {
+            var selectedOption = $(this).find('option:selected');
+            var description = selectedOption.attr('data-description');
+
+            $('#descriptionText').text(description); 
+        });
+
+    });
+
+</script>
+
+@endsection

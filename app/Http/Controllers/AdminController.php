@@ -168,11 +168,14 @@ class AdminController extends Controller
         switch($obiettivo) {
             case 3: $dataView['titolo'] = config("constants.OBIETTIVO.3.text");
             break;
+            case 5: $dataView['titolo'] = config("constants.OBIETTIVO.5.text");
+            break;
             case 8: $dataView['titolo'] = config("constants.OBIETTIVO.8.text");
             break;
             case 9: $dataView['titolo'] = "Ottimizzazione della gest del I ciclo di terapia";
             break;
         }
+
         $dataView['categorie'] = DB::table("target_categories")
             ->where("target_number", $obiettivo)
             ->orderBy("order")
@@ -187,8 +190,7 @@ class AdminController extends Controller
         ->select("uploated_files.*", "users.name as utente", "structures.name as struttura", "tc.category")
         ->get();
 
-      
-
+        
         return view("controller.showObiettivo".$obiettivo)->with("dataView", $dataView);
 
     }
