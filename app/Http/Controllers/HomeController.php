@@ -454,7 +454,7 @@ class HomeController extends Controller
             ]);
 
 
-        return view("controller.donazioni")->with('dataView', $dataView);
+        return view("donazioni")->with('dataView', $dataView);
     }
 
 

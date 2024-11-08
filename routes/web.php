@@ -36,8 +36,6 @@ Route::get('/showObiettivo/{obiettivo}', [HomeController::class, 'showObiettivo'
 
 Route::post('/uploadObiettivo', [HomeController::class, 'uploadFileObiettivo'])->name('file.uploadObiettivo');
 Route::get('/prontoSoccorso', [HomeController::class, 'prontoSoccorso'])->name('prontoSoccorso');
-Route::get('/donazioni', [HomeController::class, 'donazioni'])->name('donazioni');
-Route::get('/screening', [HomeController::class, 'screening'])->name('screening');
 Route::get('/caricamentoScreening/{obiettivo}', [HomeController::class, 'caricamentoScreening'])->name('caricamentoScreening');
 Route::post('/mmgRegister', [HomeController::class, 'mmgRegister'])->name('mmgRegister');
 Route::get('/downloadPdf', [HomeController::class, 'downloadPdf'])->name('downloadPdf');
@@ -65,7 +63,9 @@ Route::group(['middleware' => ['role:uploader']], routes: function (): void {
     Route::get('/tempiListeAttesa', [HomeController::class, 'tempiListeAttesa'])->name('tempiListeAttesa');
 
     Route::get('/prontoSoccorso', [HomeController::class, 'prontoSoccorso'])->name('prontoSoccorso');
-
+    Route::get('/donazioni', [HomeController::class, 'donazioni'])->name('donazioni');
+    Route::get('/screening', [HomeController::class, 'screening'])->name('screening');
+    
 });
 
 Route::group(attributes: ['middleware' => ['role:controller']], routes: function (): void {
