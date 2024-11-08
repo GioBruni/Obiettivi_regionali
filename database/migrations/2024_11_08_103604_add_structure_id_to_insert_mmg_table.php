@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('insert_mmg', function (Blueprint $table) {
-            $table->integer("structure_id");
+            $table->unsignedBigInteger("structure_id");
+
+            $table->foreign("structure_id")->on("structures")->references("id");
         });
     }
 

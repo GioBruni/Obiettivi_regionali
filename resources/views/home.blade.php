@@ -116,7 +116,7 @@
 
                         <div class="row mt-4">
                             <div class="col">
-                                <h4 class="mb-4 " id="titleEx6">Punteggi</h4>
+                                <h4 class="mb-4 " id="titleEx6">Punteggi 01/01/{{ date('Y') }} ad oggi</h4>
                             </div>
                         </div>
                         <div class="row gy-3">

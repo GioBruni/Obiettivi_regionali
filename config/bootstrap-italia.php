@@ -14,7 +14,7 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'title' => 'Regione della....',
+    'title' => 'Regione Sicilia',
 
     'title_prefix' => '',
 
