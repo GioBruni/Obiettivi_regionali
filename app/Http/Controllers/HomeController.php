@@ -586,11 +586,30 @@ class HomeController extends Controller
 
         //*************Secondo grafico **********//
 
-        $dataView['prestazioniInappropriate'] = 642;
+            $dataView['datiFlussoM'] = DB::table('flows_m')
+            ->select('ob5_num as numeratore_m', 'ob5_den as denominatore_m')
+            ->get();
+
+            $dataView['datiFlussoC'] = DB::table('flows_c')
+            ->select('ob5_num as numeratore_c', 'ob5_den as denominatore_c')
+            ->get();
+
+            $numeratoreM = $dataView['datiFlussoM']->sum('numeratore_m');
+            $denominatoreM = $dataView['datiFlussoM']->sum('denominatore_m');
+            $numeratoreC = $dataView['datiFlussoC']->sum('numeratore_c');
+            $denominatoreC = $dataView['datiFlussoC']->sum('denominatore_c');
+            $dataView['numeratoreTotale'] = $numeratoreM + $numeratoreC;
+            $dataView['denominatoreTotale'] = $denominatoreM + $denominatoreC;
+
+            $dataView['percentuale'] = number_format( $dataView['numeratoreTotale'] /  $dataView['denominatoreTotale'] * 100,2);
+
+            $dataView['percentualeComplementare'] =  100 - $dataView['percentuale'];
+
+      /*  $dataView['prestazioniInappropriate'] = 642;
         $dataView['totalePrestazioni'] = 3963;
 
         $dataView['percentualeCodiciDD'] = number_format($dataView['prestazioniInappropriate'] / $dataView['totalePrestazioni'] * 100, 2);
-
+*/
 
         $dataView['codiciDD'] = Chartjs::build()
             ->name("chartCodiciDD")
@@ -604,7 +623,7 @@ class HomeController extends Controller
                         "rgba(38, 185, 154, 0.7)",
                         "rgba(255, 99, 132, 0.7)"
                     ],
-                    "data" => [$dataView['totalePrestazioni'], $dataView['prestazioniInappropriate']]
+                    "data" => [$dataView['percentuale'],$dataView['percentualeComplementare'] ]
 
                 ]
             ])
@@ -643,13 +662,13 @@ class HomeController extends Controller
         /*****************D02 E D03*******************/
 
 
-        if ($dataView['percentualeCodiciDD'] >= 0 && $dataView['percentualeCodiciDD'] <= 10) {
+        if ( $dataView['percentuale'] >= 0 &&  $dataView['percentuale'] <= 10) {
             $dataView['messaggioTmpCodiciDD'] = [
-                'textt' => "Pieno raggiungimento dell'obiettivo con punteggio: 1",
-                'classs' => 'text-success'
+                'textCodiciDD' => "Pieno raggiungimento dell'obiettivo con punteggio: 1",
+                'classCodiciDD' => 'text-success'
             ];
 
-        } elseif ($dataView['percentualeCodiciDD'] > 10) {
+        } elseif ($dataView['percentuale'] > 10) {
             $dataView['messaggioTmpCodiciDD'] = [
                 'textCodiciDD' => "Obiettivo non raggiunto con punteggio: 0",
                 'classCodiciDD' => 'text-danger'
@@ -911,8 +930,10 @@ class HomeController extends Controller
         $dataFine = (new \DateTime($dataFine))->format('Y-m-d');
 
         $dataView['primoGrafico'] = DB::table('flows_sdo')
-            ->select('ob10_1', 'year', 'month', 'structure_id', 's.name as nome_struttura')
+        ->select('flows_sdo.ob10_1', 'flows_sdo.year', 'flows_sdo.month', 'flows_sdo.structure_id', 's.name as nome_struttura')
             ->join('structures as s', 'flows_sdo.structure_id', '=', 's.id')
+            ->join('users_structures as us', 'flows_sdo.structure_id', '=', 'us.structure_id')
+            ->where('us.user_id', Auth::user()->id,)
             ->whereRaw("STR_TO_DATE(CONCAT(year, '-', month, '-01'), '%Y-%m-%d') BETWEEN ? AND ?", [$dataInizio, $dataFine])
             ->get();
 
@@ -967,12 +988,23 @@ class HomeController extends Controller
             }
     
         /*********************************************************************************/
-
+/*
         $dataView['prevenzioneDue'] = DB::table('flows_sdo')
         ->select('ob10_2', 'year', 'month', 'structure_id', 's.name as nome_struttura')
         ->join('structures as s', 'flows_sdo.structure_id', '=', 's.id')
         ->whereRaw("STR_TO_DATE(CONCAT(year, '-', month, '-01'), '%Y-%m-%d') BETWEEN ? AND ?", [$dataInizio, $dataFine])
         ->get();
+*/
+
+        $dataView['prevenzioneDue'] = DB::table('flows_sdo')
+            ->select('flows_sdo.ob10_2', 'flows_sdo.year', 'flows_sdo.month', 'flows_sdo.structure_id', 's.name as nome_struttura')
+            ->join('structures as s', 'flows_sdo.structure_id', '=', 's.id')
+            ->join('users_structures as us', 'flows_sdo.structure_id', '=', 'us.structure_id')
+            ->where('us.user_id', Auth::user()->id,)
+            ->whereRaw("STR_TO_DATE(CONCAT(flows_sdo.year, '-', flows_sdo.month, '-01'), '%Y-%m-%d') BETWEEN ? AND ?", ['2024-01-01', '2024-11-11'])
+            ->get();
+
+      
 
         $dataView['denominatore'] = 100;
         $mediaNumeratore = $dataView['prevenzioneDue']->avg('ob10_2') ;
@@ -1021,8 +1053,10 @@ class HomeController extends Controller
         /***************************************************************************************/
 
         $dataView['prevenzioneTre'] = DB::table('flows_sdo')
-        ->select('ob10_3', 'year', 'month', 'structure_id', 's.name as nome_struttura')
+        ->select('flows_sdo.ob10_3', 'flows_sdo.year', 'flows_sdo.month', 'flows_sdo.structure_id', 's.name as nome_struttura')
         ->join('structures as s', 'flows_sdo.structure_id', '=', 's.id')
+        ->join('users_structures as us', 'flows_sdo.structure_id', '=', 'us.structure_id')
+        ->where('us.user_id', Auth::user()->id,)
         ->whereRaw("STR_TO_DATE(CONCAT(year, '-', month, '-01'), '%Y-%m-%d') BETWEEN ? AND ?", [$dataInizio, $dataFine])
         ->get();
 
@@ -1542,6 +1576,110 @@ class HomeController extends Controller
             ]
         ]);
   
+
+/********************************************************************************** */
+
+
+
+$dataView['chartRefertiLaboratorio'] = Chartjs::build()
+->name("chartRefertiLaboratorio")
+->type("doughnut")
+->size(["width" => 200, "height" => 100])
+->labels(['Non vaccinati', 'Vaccinati'])
+->datasets([
+    [
+        "label" => "Percentuali MMG",
+        "backgroundColor" => [
+            "rgba(38, 185, 154, 0.7)",
+            "rgba(255, 99, 132, 0.7)"
+        ],
+        "data" => [100, 200]
+
+    ]
+])
+->options([
+    'responsive' => true,
+    'plugins' => [
+        'title' => [
+            'display' => true,
+            'text' => 'Copertura vaccinale ciclo base'
+
+        ]
+    ]
+]);
+
+
+/******************************************************************* */
+
+
+
+
+$dataView['chartRefertiProntoSoccorso'] = Chartjs::build()
+->name("chartRefertiProntoSoccorso")
+->type("doughnut")
+->size(["width" => 200, "height" => 100])
+->labels(['Non vaccinati', 'Vaccinati'])
+->datasets([
+    [
+        "label" => "Percentuali MMG",
+        "backgroundColor" => [
+            "rgba(38, 185, 154, 0.7)",
+            "rgba(255, 99, 132, 0.7)"
+        ],
+        "data" => [100, 200]
+
+    ]
+])
+->options([
+    'responsive' => true,
+    'plugins' => [
+        'title' => [
+            'display' => true,
+            'text' => 'Copertura vaccinale ciclo base'
+
+        ]
+    ]
+]);
+
+
+
+/******************************************************************************** */
+
+
+$dataView['chartRefertiRadiologia'] = Chartjs::build()
+->name("chartRefertiRadiologia")
+->type("doughnut")
+->size(["width" => 200, "height" => 100])
+->labels(['Non vaccinati', 'Vaccinati'])
+->datasets([
+    [
+        "label" => "Percentuali MMG",
+        "backgroundColor" => [
+            "rgba(38, 185, 154, 0.7)",
+            "rgba(255, 99, 132, 0.7)"
+        ],
+        "data" => [100, 200]
+
+    ]
+])
+->options([
+    'responsive' => true,
+    'plugins' => [
+        'title' => [
+            'display' => true,
+            'text' => 'Copertura vaccinale ciclo base'
+
+        ]
+    ]
+]);
+
+
+
+
+
+
+
+
 
 
 

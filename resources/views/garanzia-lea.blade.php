@@ -22,27 +22,18 @@
                         @csrf
                         <div class="card-body">
                             <div class="row">
-                                <div class="col-md-3 mb-3">
-                                    <label for="timeFilter">Intervallo di tempo:</label>
-                                    <select id="timeFilter" name="timeFilter" class="form-control">
-                                        <option value="1">Ultima settimana</option>
-                                        <option value="2">Ultimo mese</option>
-                                        <option value="3">Ultimi 3 mesi</option>
-                                        <option value="4">Ultimi 6 mesi</option>
-                                        <option value="5" selected>Ultimo anno</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-3 mb-3">
+
+                                <div class="col-md-5 mb-3">
                                     <label for="data_inizio">Data Inizio:</label>
                                     <input type="date" name="data_inizio" id="data_inizio" class="form-control"
                                         value={{$dataView['dataInizioDefault']}}>
                                 </div>
-                                <div class="col-md-3 mb-3">
+                                <div class="col-md-5 mb-3">
                                     <label for="data_fine">Data Fine:</label>
                                     <input type="date" name="data_fine" id="data_fine" class="form-control"
                                         value={{$dataView['dataFineDefault']}}>
                                 </div>
-                                <div class="col-md-3 mb-3 d-flex align-items-end">
+                                <div class="col-md-2 mb-3 d-flex align-items-end">
                                     <button id="searchButton" class="btn btn-primary w-100">Cerca</button>
                                 </div>
                             </div>
@@ -55,24 +46,9 @@
                                         <br />
                                     </div>
                                     <div class="card-body">
-                                        <div class="row">
-                                            <div class="col-md-4 mb-3">
-                                                <label for="distretto_id2" class="form-label">
-                                                    <b>{{ __('Distretto:') }}</b>
-                                                </label>
-                                                <select id="distretto_id2" class="form-control">
-                                                    <option value="">{{ __('-- Tutti i distretti --') }}</option>
-                                                    <option value="Augusta">{{ __('AUGUSTA') }}</option>
-                                                    <option value="Lentini">{{ __('LENTINI') }}</option>
-                                                    <option value="Noto">{{ __('NOTO') }}</option>
-                                                    <option value="Siracusa">{{ __('SIRACUSA') }}</option>
-                                                </select>
-                                            </div>
-                                            <div class="col-md-3 mb-3 d-flex align-items-end">
-                                                <button id="searchButton1" class="btn btn-primary">Cerca</button>
-                                            </div>
+                                        <hr class="my-4">
 
-                                            <hr class="my-4">
+                                        <div class="row">
 
                                             <h5 class="text-center text-secondary mb-3">
                                                 {{ __('Copertura vaccinale nei bambini a 24 mesi per ciclo base (polio, difterite, tetano, epatite B, pertosse, Hib)') }}
@@ -122,8 +98,10 @@
                                                 <strong>La soglia deve tendere ad un valore superiore al
                                                     95%</strong><br>
                                             </div>
-                                            <hr class="my-4">
+
                                         </div>
+
+                                        <hr class="my-4">
 
                                         <h5 class="text-center text-secondary mb-3">
                                             {{ __('Copertura vaccinale nei bambini a 24 mesi per la 1° dose di vaccino contro morbillo, parotite, rosolia (MPR)') }}
@@ -188,7 +166,7 @@
                                             </div>
                                         </div>
                                         <div class="col-md-6">
-                                        <table class="table table-striped">
+                                            <table class="table table-striped">
                                                 <thead>
                                                     <tr>
                                                         <th>Distretto</th>
@@ -379,9 +357,11 @@
                                     </div>
 
 
-                                    <hr id="separatore8" class="my-4">
+
 
                                     <div id="decessiTumoreCP">
+
+                                        <hr id="separatore8" class="my-4">
                                         <h5 class="text-center text-secondary mb-3">
                                             {{ __('Numero deceduti per causa di tumore assistiti dalla Rete di cure palliative sul numero deceduti per causa di tumore') }}
                                         </h5>
@@ -596,6 +576,5 @@
         </div>
     </div>
 </div>
-
 
 @endsection
