@@ -42,8 +42,9 @@ Route::get('/caricamentoScreening/{obiettivo}', [HomeController::class, 'caricam
 Route::post('/mmgRegister', [HomeController::class, 'mmgRegister'])->name('mmgRegister');
 Route::get('/downloadPdf', [HomeController::class, 'downloadPdf'])->name('downloadPdf');
 Route::post('/uploadFileScreening', [HomeController::class, 'uploadFileScreening'])->name('uploadFileScreening');
-
-
+Route::get('/garanziaLea', [HomeController::class, 'garanziaLea'])->name('garanziaLea');
+Route::post('/aggiornaGraficiGaranzia', [HomeController::class, 'garanziaLea'])->name('aggiornaGraficiGaranzia');
+Route::get('/fse', [HomeController::class, 'fse'])->name('fse');
 
 
 Route::group(['middleware' => ['role:uploader']], routes: function (): void {

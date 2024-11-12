@@ -18,6 +18,7 @@ use IcehouseVentures\LaravelChartjs\Facades\Chartjs;
 use App\Models\InsertMmg;
 use PDF;
 use App\Models\Structure;
+use App\Http\Controllers\DateTime;
 
 
 class HomeController extends Controller
@@ -709,7 +710,7 @@ class HomeController extends Controller
                 'structure_id' => $request->structure_id,
                 'notes' => null,
                 'target_number' => $request->obiettivo,
-                'target_category_id' =>  $categoriaId,
+                'target_category_id' => $categoriaId,
                 'year' => $request->anno
             ]);
 
@@ -753,7 +754,7 @@ class HomeController extends Controller
             'mmg_coinvolti' => $mmg_coinvolti,
             'year' => $anno,
             'structure_id' => $structure_id,
-    
+
         ]);
 
 
@@ -761,12 +762,13 @@ class HomeController extends Controller
 
     }
 
-    public function indexFarmaci(Request $request) {
+    public function indexFarmaci(Request $request)
+    {
         $dataView['strutture'] = Auth::user()->structures();
         $dataView['PCT'] = PCT::where("user_id", Auth::user()->id)
-        ->latest()->first();
+            ->latest()->first();
 
-        if(! ($dataView['PCT'])) {
+        if (!($dataView['PCT'])) {
             $pct = new PCT();
             $pct->year = date('Y');
             $pct->begin_month = 1;
@@ -780,7 +782,8 @@ class HomeController extends Controller
     }
 
 
-    public function farmaciPCT(Request $request) {
+    public function farmaciPCT(Request $request)
+    {
 
     }
 
@@ -829,7 +832,6 @@ class HomeController extends Controller
 
     public function getDescription($id)
     {
-
         $description = DB::table('target_categories')
             ->where('id', $id)
             ->value('description');
@@ -843,17 +845,15 @@ class HomeController extends Controller
     public function caricamentoScreening(Request $request)
     {
 
-         
         $dataView['categorie'] = DB::table("target_categories")
-        ->where("target_number", $request->obiettivo)
-        ->orderBy("order")
-        ->get();
+            ->where("target_number", $request->obiettivo)
+            ->orderBy("order")
+            ->get();
 
         $dataView['structures'] = Auth::user()->structures();
         $dataView['titolo'] = config("constants.OBIETTIVO.5.text");
         $dataView['icona'] = config("constants.OBIETTIVO.5.icon");
         $dataView['tooltip'] = config("constants.OBIETTIVO.5.tooltip");
-
 
         $dataView['file'] = DB::table('uploated_files as up')
             ->join('target_categories as tc', 'up.target_category_id', '=', 'tc.id')
@@ -865,7 +865,7 @@ class HomeController extends Controller
 
         // Dati per la tabella nella view 
         $dataView['tableData'] = DB::table('insert_mmg')
-            ->select('mmg_totale', 'mmg_coinvolti', 'year','structure_id')
+            ->select('mmg_totale', 'mmg_coinvolti', 'year', 'structure_id')
             ->get();
 
 
@@ -887,5 +887,666 @@ class HomeController extends Controller
         $pdf = PDF::loadView('emails.screeningPdf', $dataView);
 
         return $pdf->download('certificazione_completa.pdf');
+    }
+
+
+    public function garanziaLea(Request $request)
+    {
+        $dataView['dataInizioDefault'] = $request->data_inizio ?? date('Y') . '-01-01';
+        $dataView['dataFineDefault'] = $request->data_fine ?? date('Y-m-d');
+
+
+        /*
+            $meseFine = $request->data_fine ? (new \DateTime($request->data_fine))->format('m') : null;
+            $annoFine = $request->data_fine ? (new \DateTime($request->data_fine))->format('Y') : null;
+            
+            $meseInizio = $request->data_inizio ? (new \DateTime($request->data_inizio))->format('m') : null;
+            $annoInizio = $request->data_inizio ? (new \DateTime($request->data_inizio))->format('Y') : null;
+        */
+
+        $dataInizio = $request->data_inizio ?: $dataView['dataInizioDefault'];
+        $dataFine = $request->data_fine ?: $dataView['dataFineDefault'];
+
+        $dataInizio = (new \DateTime($dataInizio))->format('Y-m-d');
+        $dataFine = (new \DateTime($dataFine))->format('Y-m-d');
+
+        $dataView['primoGrafico'] = DB::table('flows_sdo')
+            ->select('ob10_1', 'year', 'month', 'structure_id', 's.name as nome_struttura')
+            ->join('structures as s', 'flows_sdo.structure_id', '=', 's.id')
+            ->whereRaw("STR_TO_DATE(CONCAT(year, '-', month, '-01'), '%Y-%m-%d') BETWEEN ? AND ?", [$dataInizio, $dataFine])
+            ->get();
+
+            $dataView['denominatore'] = 250;
+            $mediaNumeratore = $dataView['primoGrafico']->avg('ob10_1') ;
+
+            $percentuale =  ($mediaNumeratore / $dataView['denominatore']) * 100 ;
+    
+            $complementare = 100 - $percentuale;
+
+        //dd($complementaryValueTmp);
+        //dd($dataView['primoGrafico']);
+
+
+        $dataView['areaPrevenzione'] = Chartjs::build()
+            ->name("chartCodiciDD")
+            ->type("doughnut")
+            ->size(["width" => 300, "height" => 150])
+            ->labels(['Non vaccinati', 'Vaccinati'])
+            ->datasets([
+                [
+                    "label" => "Vaccinati",
+                    "backgroundColor" => [
+                        "rgba(38, 185, 154, 0.7)",
+                        "rgba(255, 99, 132, 0.7)"
+                    ],
+                    "data" => [$percentuale, $complementare]
+
+                ]
+            ])
+            ->options([
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Copertura vaccinale ciclo base'
+
+                    ]
+                ]
+            ]);
+
+            if ($percentuale > 95) {
+                $dataView['messaggioTmp'] = [
+                    'text' => "Obiettivo raggiunto",
+                    'class' => 'text-success'
+                ];
+            } else {
+                $dataView['messaggioTmp'] = [
+                    'text' => "Obiettivo non raggiunto",
+                    'class' => 'text-danger'
+                ];
+            }
+    
+        /*********************************************************************************/
+
+        $dataView['prevenzioneDue'] = DB::table('flows_sdo')
+        ->select('ob10_2', 'year', 'month', 'structure_id', 's.name as nome_struttura')
+        ->join('structures as s', 'flows_sdo.structure_id', '=', 's.id')
+        ->whereRaw("STR_TO_DATE(CONCAT(year, '-', month, '-01'), '%Y-%m-%d') BETWEEN ? AND ?", [$dataInizio, $dataFine])
+        ->get();
+
+        $dataView['denominatore'] = 100;
+        $mediaNumeratore = $dataView['prevenzioneDue']->avg('ob10_2') ;
+        $percentuale =  ($mediaNumeratore / $dataView['denominatore']) * 100 ;
+        $complementare = 100 - $percentuale;
+
+        $dataView['areaPrevenzionePrimaDose'] = Chartjs::build()
+            ->name("areaPrevenzionePrimaDose")
+            ->type("doughnut")
+            ->size(["width" => 300, "height" => 150])
+            ->labels(['Non vaccinati', 'Vaccinati'])
+            ->datasets([
+                [
+                    "label" => "Percentuali MMG",
+                    "backgroundColor" => [
+                        "rgba(38, 185, 154, 0.7)",
+                        "rgba(255, 99, 132, 0.7)"
+                    ],
+                    "data" => [$percentuale, $complementare]
+
+                ]
+            ])
+            ->options([
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Copertura vaccinale ciclo base'
+
+                    ]
+                ]
+            ]);
+
+            if ($percentuale > 95) {
+                $dataView['messaggioTmpPrevenzioneDue'] = [
+                    'textPrevenzioneDue' => "Obiettivo raggiunto",
+                    'classPrevenzioneDue' => 'text-success'
+                ];
+            } else {
+                $dataView['messaggioTmpPrevenzioneDue'] = [
+                    'textPrevenzioneDue' => "Obiettivo non raggiunto",
+                    'classPrevenzioneDue' => 'text-danger'
+                ];
+            }
+
+        /***************************************************************************************/
+
+        $dataView['prevenzioneTre'] = DB::table('flows_sdo')
+        ->select('ob10_3', 'year', 'month', 'structure_id', 's.name as nome_struttura')
+        ->join('structures as s', 'flows_sdo.structure_id', '=', 's.id')
+        ->whereRaw("STR_TO_DATE(CONCAT(year, '-', month, '-01'), '%Y-%m-%d') BETWEEN ? AND ?", [$dataInizio, $dataFine])
+        ->get();
+
+
+        $dataView['denominatore'] = 150;
+        $mediaNumeratore = $dataView['prevenzioneTre']->avg('ob10_3') ;
+        $percentuale =  ($mediaNumeratore / $dataView['denominatore']) * 100 ;
+        $complementare = 100 - $percentuale;
+
+
+
+        $dataView['Veterinaria'] = Chartjs::build()
+            ->name("Veterinaria")
+            ->type("doughnut")
+            ->size(["width" => 300, "height" => 150])
+            ->labels(['Non vaccinati', 'Vaccinati'])
+            ->datasets([
+                [
+                    "label" => "Percentuali MMG",
+                    "backgroundColor" => [
+                        "rgba(38, 185, 154, 0.7)",
+                        "rgba(255, 99, 132, 0.7)"
+                    ],
+                    "data" => [$percentuale, $complementare]
+
+                ]
+            ])
+            ->options([
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Copertura vaccinale ciclo base'
+
+                    ]
+                ]
+            ]);
+
+
+            if ($percentuale > 80) {
+                $dataView['messaggioTmpPrevenzioneTre'] = [
+                    'textPrevenzioneTre' => "Obiettivo raggiunto",
+                    'classPrevenzioneTre' => 'text-success'
+                ];
+            } else {
+                $dataView['messaggioTmpPrevenzioneTre'] = [
+                    'textPrevenzioneTre' => "Obiettivo non raggiunto",
+                    'classPrevenzioneTre' => 'text-danger'
+                ];
+            }
+
+        /****************************************************************************************************/
+
+        $dataView['ospedalizzazioneAdulta'] = Chartjs::build()
+            ->name("ospedalizzazioneAdulta")
+            ->type("line")
+            ->size(["width" => 300, "height" => 150])
+            ->labels(['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'])
+            ->datasets([
+                [
+                    "label" => "Non Vaccinati",
+                    "backgroundColor" => "rgba(38, 185, 154, 0.7)",
+                    "borderColor" => "rgba(38, 185, 154, 1)",
+                    "data" => [100, 200, 300, 500, 100, 50, 400, 700, 95, 150, 250, 180],
+                    "fill" => false,
+                    "lineTension" => 0.1
+                ],
+                [
+                    "label" => "Vaccinati",
+                    "backgroundColor" => "rgba(255, 99, 132, 0.7)",
+                    "borderColor" => "rgba(255, 99, 132, 1)",
+                    "data" => [50, 120, 210, 320, 430, 520, 600, 450, 380, 330, 290, 240],
+                    "fill" => false,
+                    "lineTension" => 0.1
+                ]
+            ])
+            ->options([
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Copertura Vaccinale Ciclo Base per Mese'
+                    ]
+                ],
+                'scales' => [
+                    'x' => [
+                        'beginAtZero' => true,
+                        'title' => [
+                            'display' => true,
+                            'text' => 'Mesi'
+                        ]
+                    ],
+                    'y' => [
+                        'beginAtZero' => true,
+                        'title' => [
+                            'display' => true,
+                            'text' => 'Numero di Persone'
+                        ]
+                    ]
+                ]
+            ]);
+
+        /********************************************************************************* */
+
+        $dataView['asmaGastroenterite'] = Chartjs::build()
+            ->name("asmaGastroenterite")
+            ->type("line")
+            ->size(["width" => 300, "height" => 150])
+            ->labels(['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'])
+            ->datasets([
+                [
+                    "label" => "Non Vaccinati",
+                    "backgroundColor" => "rgba(38, 185, 154, 0.7)",
+                    "borderColor" => "rgba(38, 185, 154, 1)",
+                    "data" => [45, 76, 45, 433, 123, 333, 400, 333, 95, 150, 250, 180],
+                    "fill" => false,
+                    "lineTension" => 0.1
+                ],
+                [
+                    "label" => "Vaccinati",
+                    "backgroundColor" => "rgba(255, 99, 132, 0.7)",
+                    "borderColor" => "rgba(255, 99, 132, 1)",
+                    "data" => [435, 33, 22, 67, 111, 445, 33, 434, 35, 353, 353, 433],
+                    "fill" => false,
+                    "lineTension" => 0.1
+                ]
+            ])
+            ->options([
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Copertura Vaccinale Ciclo Base per Mese'
+                    ]
+                ],
+                'scales' => [
+                    'x' => [
+                        'beginAtZero' => true,
+                        'title' => [
+                            'display' => true,
+                            'text' => 'Mesi'
+                        ]
+                    ],
+                    'y' => [
+                        'beginAtZero' => true,
+                        'title' => [
+                            'display' => true,
+                            'text' => 'Numero di Persone'
+                        ]
+                    ]
+                ]
+            ]);
+
+        /**********************CIA1********************************************** */
+
+        $dataView['CIA1'] = Chartjs::build()
+            ->name("CIA1")
+            ->type("line")
+            ->size(["width" => 300, "height" => 150])
+            ->labels(['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'])
+            ->datasets([
+                [
+                    "label" => "Non Vaccinati",
+                    "backgroundColor" => "rgba(38, 185, 154, 0.7)",
+                    "borderColor" => "rgba(38, 185, 154, 1)",
+                    "data" => [45, 76, 45, 433, 123, 333, 400, 333, 95, 150, 250, 180],
+                    "fill" => false,
+                    "lineTension" => 0.1
+                ],
+                [
+                    "label" => "Vaccinati",
+                    "backgroundColor" => "rgba(255, 99, 132, 0.7)",
+                    "borderColor" => "rgba(255, 99, 132, 1)",
+                    "data" => [435, 33, 22, 67, 111, 445, 33, 434, 35, 353, 353, 433],
+                    "fill" => false,
+                    "lineTension" => 0.1
+                ]
+            ])
+            ->options([
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Copertura Vaccinale Ciclo Base per Mese'
+                    ]
+                ],
+                'scales' => [
+                    'x' => [
+                        'beginAtZero' => true,
+                        'title' => [
+                            'display' => true,
+                            'text' => 'Mesi'
+                        ]
+                    ],
+                    'y' => [
+                        'beginAtZero' => true,
+                        'title' => [
+                            'display' => true,
+                            'text' => 'Numero di Persone'
+                        ]
+                    ]
+                ]
+            ]);
+
+
+        /****************************************CIA 2*****************************************************/
+
+        $dataView['CIA2'] = Chartjs::build()
+            ->name("CIA2")
+            ->type("line")
+            ->size(["width" => 300, "height" => 150])
+            ->labels(['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'])
+            ->datasets([
+                [
+                    "label" => "Non Vaccinati",
+                    "backgroundColor" => "rgba(38, 185, 154, 0.7)",
+                    "borderColor" => "rgba(38, 185, 154, 1)",
+                    "data" => [45, 76, 45, 433, 123, 333, 400, 333, 95, 150, 250, 180],
+                    "fill" => false,
+                    "lineTension" => 0.1
+                ],
+                [
+                    "label" => "Vaccinati",
+                    "backgroundColor" => "rgba(255, 99, 132, 0.7)",
+                    "borderColor" => "rgba(255, 99, 132, 1)",
+                    "data" => [435, 33, 22, 67, 111, 445, 33, 434, 35, 353, 353, 433],
+                    "fill" => false,
+                    "lineTension" => 0.1
+                ]
+            ])
+            ->options([
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Copertura Vaccinale Ciclo Base per Mese'
+                    ]
+                ],
+                'scales' => [
+                    'x' => [
+                        'beginAtZero' => true,
+                        'title' => [
+                            'display' => true,
+                            'text' => 'Mesi'
+                        ]
+                    ],
+                    'y' => [
+                        'beginAtZero' => true,
+                        'title' => [
+                            'display' => true,
+                            'text' => 'Numero di Persone'
+                        ]
+                    ]
+                ]
+            ]);
+
+
+
+        /****************************************CIA3***************************************************** */
+
+
+        $dataView['CIA3'] = Chartjs::build()
+            ->name("CIA3")
+            ->type("line")
+            ->size(["width" => 300, "height" => 150])
+            ->labels(['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'])
+            ->datasets([
+                [
+                    "label" => "Non Vaccinati",
+                    "backgroundColor" => "rgba(38, 185, 154, 0.7)",
+                    "borderColor" => "rgba(38, 185, 154, 1)",
+                    "data" => [45, 76, 45, 433, 123, 333, 400, 333, 95, 150, 250, 180],
+                    "fill" => false,
+                    "lineTension" => 0.1
+                ],
+                [
+                    "label" => "Vaccinati",
+                    "backgroundColor" => "rgba(255, 99, 132, 0.7)",
+                    "borderColor" => "rgba(255, 99, 132, 1)",
+                    "data" => [435, 33, 22, 67, 111, 445, 33, 434, 35, 353, 353, 433],
+                    "fill" => false,
+                    "lineTension" => 0.1
+                ]
+            ])
+            ->options([
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Copertura Vaccinale Ciclo Base per Mese'
+                    ]
+                ],
+                'scales' => [
+                    'x' => [
+                        'beginAtZero' => true,
+                        'title' => [
+                            'display' => true,
+                            'text' => 'Mesi'
+                        ]
+                    ],
+                    'y' => [
+                        'beginAtZero' => true,
+                        'title' => [
+                            'display' => true,
+                            'text' => 'Numero di Persone'
+                        ]
+                    ]
+                ]
+            ]);
+
+        /*************************************************************************************/
+
+        $dataView['decessiTumore'] = Chartjs::build()
+            ->name("decessiTumore")
+            ->type("doughnut")
+            ->size(["width" => 200, "height" => 100])
+            ->labels(['Non vaccinati', 'Vaccinati'])
+            ->datasets([
+                [
+                    "label" => "Percentuali MMG",
+                    "backgroundColor" => [
+                        "rgba(38, 185, 154, 0.7)",
+                        "rgba(255, 99, 132, 0.7)"
+                    ],
+                    "data" => [100, 200]
+
+                ]
+            ])
+            ->options([
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Copertura vaccinale ciclo base'
+
+                    ]
+                ]
+            ]);
+
+      /********************************************************************************* */
+
+      $dataView['mammellaTumore'] = Chartjs::build()
+      ->name("mammellaTumore")
+      ->type("doughnut")
+      ->size(["width" => 200, "height" => 100])
+      ->labels(['Non vaccinati', 'Vaccinati'])
+      ->datasets([
+          [
+              "label" => "Percentuali MMG",
+              "backgroundColor" => [
+                  "rgba(38, 185, 154, 0.7)",
+                  "rgba(255, 99, 132, 0.7)"
+              ],
+              "data" => [100, 200]
+
+          ]
+      ])
+      ->options([
+          'responsive' => true,
+          'plugins' => [
+              'title' => [
+                  'display' => true,
+                  'text' => 'Copertura vaccinale ciclo base'
+
+              ]
+          ]
+      ]);
+
+/******************************************************************************************/
+
+
+        $dataView['chartDRG'] = Chartjs::build()
+        ->name("chartDRG")
+        ->type("line")
+        ->size(["width" => 300, "height" => 150])
+        ->labels(['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'])
+        ->datasets([
+            [
+                "label" => "Non Vaccinati",
+                "backgroundColor" => "rgba(38, 185, 154, 0.7)",
+                "borderColor" => "rgba(38, 185, 154, 1)",
+                "data" => [45, 76, 45, 433, 123, 333, 400, 333, 95, 150, 250, 180],
+                "fill" => false,
+                "lineTension" => 0.1
+            ],
+            [
+                "label" => "Vaccinati",
+                "backgroundColor" => "rgba(255, 99, 132, 0.7)",
+                "borderColor" => "rgba(255, 99, 132, 1)",
+                "data" => [435, 33, 22, 67, 111, 445, 33, 434, 35, 353, 353, 433],
+                "fill" => false,
+                "lineTension" => 0.1
+            ]
+        ])
+        ->options([
+            'responsive' => true,
+            'plugins' => [
+                'title' => [
+                    'display' => true,
+                    'text' => 'Copertura Vaccinale Ciclo Base per Mese'
+                ]
+            ],
+            'scales' => [
+                'x' => [
+                    'beginAtZero' => true,
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Mesi'
+                    ]
+                ],
+                'y' => [
+                    'beginAtZero' => true,
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Numero di Persone'
+                    ]
+                ]
+            ]
+        ]);
+
+    /********************************************************************************** */
+
+
+    
+    $dataView['chartInfezioniPostChirurgiche'] = Chartjs::build()
+    ->name("chartInfezioniPostChirurgiche")
+    ->type("line")
+    ->size(["width" => 300, "height" => 150])
+    ->labels(['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'])
+    ->datasets([
+        [
+            "label" => "Non Vaccinati",
+            "backgroundColor" => "rgba(38, 185, 154, 0.7)",
+            "borderColor" => "rgba(38, 185, 154, 1)",
+            "data" => [45, 76, 45, 433, 123, 333, 400, 333, 95, 150, 250, 180],
+            "fill" => false,
+            "lineTension" => 0.1
+        ],
+        [
+            "label" => "Vaccinati",
+            "backgroundColor" => "rgba(255, 99, 132, 0.7)",
+            "borderColor" => "rgba(255, 99, 132, 1)",
+            "data" => [435, 33, 22, 67, 111, 445, 33, 434, 35, 353, 353, 433],
+            "fill" => false,
+            "lineTension" => 0.1
+        ]
+    ])
+    ->options([
+        'responsive' => true,
+        'plugins' => [
+            'title' => [
+                'display' => true,
+                'text' => 'Copertura Vaccinale Ciclo Base per Mese'
+            ]
+        ],
+        'scales' => [
+            'x' => [
+                'beginAtZero' => true,
+                'title' => [
+                    'display' => true,
+                    'text' => 'Mesi'
+                ]
+            ],
+            'y' => [
+                'beginAtZero' => true,
+                'title' => [
+                    'display' => true,
+                    'text' => 'Numero di Persone'
+                ]
+            ]
+        ]
+    ]);
+
+        return view("garanzia-lea")->with("dataView", $dataView);
+    }
+
+
+
+    public function fse(Request $request){
+
+        $dataView['dataInizioDefault'] = $request->data_inizio ?? date('Y') . '-01-01';
+        $dataView['dataFineDefault'] = $request->data_fine ?? date('Y-m-d');
+
+        $dataInizio = $request->data_inizio ?: $dataView['dataInizioDefault'];
+        $dataFine = $request->data_fine ?: $dataView['dataFineDefault'];
+
+        $dataInizio = (new \DateTime($dataInizio))->format('Y-m-d');
+        $dataFine = (new \DateTime($dataFine))->format('Y-m-d');
+
+        /**********************************************************************************************/
+
+
+        $dataView['chartDimissioniOspedaliere'] = Chartjs::build()
+        ->name("chartDimissioniOspedaliere")
+        ->type("doughnut")
+        ->size(["width" => 200, "height" => 100])
+        ->labels(['Non vaccinati', 'Vaccinati'])
+        ->datasets([
+            [
+                "label" => "Percentuali MMG",
+                "backgroundColor" => [
+                    "rgba(38, 185, 154, 0.7)",
+                    "rgba(255, 99, 132, 0.7)"
+                ],
+                "data" => [100, 200]
+  
+            ]
+        ])
+        ->options([
+            'responsive' => true,
+            'plugins' => [
+                'title' => [
+                    'display' => true,
+                    'text' => 'Copertura vaccinale ciclo base'
+  
+                ]
+            ]
+        ]);
+  
+
+
+
+
+
+        return view("fse")->with("dataView", $dataView);
     }
 }

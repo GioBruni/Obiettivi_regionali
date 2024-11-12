@@ -109,9 +109,9 @@
                         </a>
                     </div>
                 </div>
+                
                 <br>
-
-
+                
                 <div class="card shadow-sm border-0">
                     <div class="card-header bg-primary text-white">
                         Carica PDF
@@ -123,7 +123,7 @@
 
                             <input type="hidden" name="obiettivo" value={{$dataView['obiettivo']}}>
                             <input type="hidden" name="category" value="category">
-                            
+                        
                             <div class="row">
                                 <div class="col-md-6">
                                     <label for="categoria">Seleziona la struttura</label>

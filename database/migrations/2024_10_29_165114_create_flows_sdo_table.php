@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('flows_sdo', function (Blueprint $table) {
             $table->id();
-            $table->integer("sdo_dato");
         });
     }
 

@@ -63,8 +63,8 @@ return [
             'icon' => 'fas fa-file-medical',
             'text' => 'Fascicolo Sanitario Elettronico',
             'tooltip' => 'Fascicolo Sanitario Elettronico',
-            'route' => null,
-            'enable' => false,
+            'route' => "/fse",
+            'enable' => true,
         ],
         '8' => [
             'icon' => 'fas fa-check-circle',
@@ -84,8 +84,8 @@ return [
             'icon' => 'fas fa-tasks',
             'text' => 'Garanzia dei LEA',
             'tooltip' => 'Area della Performance: garanzia dei LEA nell\'Area della Prevenzione, dell\'Assistenza Territoriale e dell\'Assistenza Ospedaliera secondo il Nuovo Sistema di Garanzia (NSG)',
-            'route' => null, //route('indexLEA')
-            'enable' => false,
+            'route' => "/garanziaLea",
+            'enable' => true,
         ]
     ],
 
