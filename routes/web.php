@@ -27,24 +27,9 @@ Route::group(['middleware' => ['role:user manager']], routes: function (): void 
     Route::post('/structureDelete', [AdminController::class, 'structureDelete'])->name( 'structure.delete');
     Route::post('/structureInsert', [AdminController::class, 'structureInsert'])->name( 'structure.insert');
     Route::post('/enableUser', [AdminController::class, 'enableUser'])->name('enableUser');
-
-
-    
 });
-Route::get('/get-category-description/{id}', [HomeController::class, 'getDescription']);
-Route::get('/showObiettivo/{obiettivo}', [HomeController::class, 'showObiettivo'])->name('showObiettivo');
 
-Route::post('/uploadObiettivo', [HomeController::class, 'uploadFileObiettivo'])->name('file.uploadObiettivo');
-Route::get('/prontoSoccorso', [HomeController::class, 'prontoSoccorso'])->name('prontoSoccorso');
-Route::get('/donazioni', [HomeController::class, 'donazioni'])->name('donazioni');
-Route::get('/screening', [HomeController::class, 'screening'])->name('screening');
-Route::get('/caricamentoScreening/{obiettivo}', [HomeController::class, 'caricamentoScreening'])->name('caricamentoScreening');
-Route::post('/mmgRegister', [HomeController::class, 'mmgRegister'])->name('mmgRegister');
-Route::get('/downloadPdf', [HomeController::class, 'downloadPdf'])->name('downloadPdf');
-Route::post('/uploadFileScreening', [HomeController::class, 'uploadFileScreening'])->name('uploadFileScreening');
-Route::get('/garanziaLea', [HomeController::class, 'garanziaLea'])->name('garanziaLea');
-Route::post('/aggiornaGraficiGaranzia', [HomeController::class, 'garanziaLea'])->name('aggiornaGraficiGaranzia');
-Route::get('/fse', [HomeController::class, 'fse'])->name('fse');
+
 
 
 Route::group(['middleware' => ['role:uploader']], routes: function (): void {
@@ -66,7 +51,13 @@ Route::group(['middleware' => ['role:uploader']], routes: function (): void {
     Route::get('/tempiListeAttesa', [HomeController::class, 'tempiListeAttesa'])->name('tempiListeAttesa');
 
     Route::get('/prontoSoccorso', [HomeController::class, 'prontoSoccorso'])->name('prontoSoccorso');
-
+    Route::get('/caricamentoScreening/{obiettivo}', [HomeController::class, 'caricamentoScreening'])->name('caricamentoScreening');
+    Route::get('/donazioni', [HomeController::class, 'donazioni'])->name('donazioni');
+    Route::get('/screening', [HomeController::class, 'screening'])->name('screening');
+    Route::post('/uploadFileScreening', [HomeController::class, 'uploadFileScreening'])->name('uploadFileScreening');
+    Route::get('/downloadPdf', [HomeController::class, 'downloadPdf'])->name('downloadPdf');
+    Route::post('/mmgRegister', [HomeController::class, 'mmgRegister'])->name('mmgRegister');
+    
 });
 
 Route::group(attributes: ['middleware' => ['role:controller']], routes: function (): void {
