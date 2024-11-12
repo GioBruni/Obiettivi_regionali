@@ -29,6 +29,9 @@ Route::group(['middleware' => ['role:user manager']], routes: function (): void 
     Route::post('/enableUser', [AdminController::class, 'enableUser'])->name('enableUser');
 });
 
+//Route::get('/get-category-description/{id}', [HomeController::class, 'getDescription']);
+//Route::get('/showObiettivo/{obiettivo}', [HomeController::class, 'showObiettivo'])->name('showObiettivo');
+
 
 
 
@@ -57,7 +60,9 @@ Route::group(['middleware' => ['role:uploader']], routes: function (): void {
     Route::post('/uploadFileScreening', [HomeController::class, 'uploadFileScreening'])->name('uploadFileScreening');
     Route::get('/downloadPdf', [HomeController::class, 'downloadPdf'])->name('downloadPdf');
     Route::post('/mmgRegister', [HomeController::class, 'mmgRegister'])->name('mmgRegister');
-    
+Route::get('/garanziaLea', [HomeController::class, 'garanziaLea'])->name('garanziaLea');
+Route::post('/aggiornaGraficiGaranzia', [HomeController::class, 'garanziaLea'])->name('aggiornaGraficiGaranzia');
+Route::get('/fse', [HomeController::class, 'fse'])->name('fse');
 });
 
 Route::group(attributes: ['middleware' => ['role:controller']], routes: function (): void {
