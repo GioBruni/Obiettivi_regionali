@@ -181,18 +181,18 @@
                                                                     <div class="link-list-wrapper">
                                                                         <ul class="link-list">
                                                                             <li>
-                                                                                <a class="list-item" href="{{ route("controller.obiettivo", ['obiettivo' => 3]) }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Obiettivo 3 - Checklist punti nascita</span></a>
+                                                                                <a class="list-item" href="{{ route("controller.obiettivo", ['obiettivo' => 1]) }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 1 - {{ config("constants.OBIETTIVO.1.text") }}</span></a>
                                                                             </li>
-
                                                                             <li>
-                                                                                <a class="list-item" href="{{ route("controller.obiettivo", ['obiettivo' => 5]) }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Obiettivo 5 - Screening</span></a>
+                                                                                <a class="list-item" href="{{ route("controller.obiettivo", ['obiettivo' => 3]) }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 3 - {{ config("constants.OBIETTIVO.3.text") }}</span></a>
                                                                             </li>
-                                                                            
                                                                             <li>
-                                                                                <a class="list-item" href="{{ route("controller.obiettivo", ['obiettivo' => 8]) }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Obiettivo 8 - testo testo</span></a>
-                                                                            </li>
-                                                                          
-                                                                            <li><span class="divider"></span></li>
+                                                                                <a class="list-item" href="{{ route("controller.obiettivo", ['obiettivo' => 5]) }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 5 - {{ config("constants.OBIETTIVO.5.text") }}</span></a>
+                                                                            </li>                                                    
+                                                                            <li>
+                                                                                <a class="list-item" href="{{ route("controller.obiettivo", ['obiettivo' => 8]) }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 8 - {{ config("constants.OBIETTIVO.8.text") }}</span></a>
+                                                                            </li>                                                                          
+                                                                            <!--li><span class="divider"></span></li-->
                                                                         </ul>
                                                                     </div>
                                                                 </div>

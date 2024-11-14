@@ -166,6 +166,8 @@ class AdminController extends Controller
     public function showObiettivo($obiettivo) {
         $dataView['obiettivo'] = $obiettivo;
         switch($obiettivo) {
+            case 1: $dataView['titolo'] = config("constants.OBIETTIVO.1.text");
+            break;
             case 3: $dataView['titolo'] = config("constants.OBIETTIVO.3.text");
             break;
             case 5: $dataView['titolo'] = config("constants.OBIETTIVO.5.text");

@@ -21,7 +21,7 @@
                     </div>
                 @endif
 
-                @if(isset($dataView['files']) && count($dataView['files']) > 0)
+                @if(isset($dataView['files']) && count(value: $dataView['files']) > 0)
                     <div class="box mt-4">
                         <div class="card-header bg-primary text-white mb-3">
                             Modelli eventualmente da scaricare
