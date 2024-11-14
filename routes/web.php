@@ -41,6 +41,10 @@ Route::group(['middleware' => ['role:uploader']], routes: function (): void {
     })->name('showFileUpload');*/
 
     Route::get('/showObiettivo/{obiettivo}', [HomeController::class, 'showObiettivo'])->name('showObiettivo');
+    Route::get('/caricamentoPuntoNascite', [HomeController::class, 'caricamentoPuntoNascite'])->name('caricamentoPuntoNascite');
+    Route::get('/caricamentoPercorsoCertificabilita', [HomeController::class, 'caricamentoPercorsoCertificabilita'])->name('caricamentoPercorsoCertificabilita');
+    
+    
     Route::post('/uploadObiettivo', [HomeController::class, 'uploadFileObiettivo'])->name('file.uploadObiettivo');
     Route::get('/farmaciIndex', [HomeController::class, 'indexFarmaci'])->name(name: 'indexFarmaci');
     Route::post('/farmaciAutodichiarazione', [PdfController::class, 'farmaciAutodichiarazionePdf'])->name('farmaci.pct.autocertificazione');

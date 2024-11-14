@@ -215,15 +215,16 @@
                                                                         <ul class="link-list">
 
                                                                             <li>
-                                                                                <a class="list-item" href="{{ route("uploadTempiListeAttesa") }}"><span><i class="bi bi-people"></i>&nbsp;&nbsp;Obiettivo 1 - Tempi liste di attesa delle prestazioni sanitarie</span></a>
+                                                                                <a class="list-item" href="{{ route("uploadTempiListeAttesa") }}"><span><i class="bi bi-people"></i>&nbsp;&nbsp;Ob. 1 - {{ config("constants.OBIETTIVO.1.text") }}</span></a>
                                                                             </li>
-
                                                                             <li>
-                                                                                <a class="list-item" href="{{ route("showObiettivo", ['obiettivo' => 3]) }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Check list punti nascita</span></a>
+                                                                                <a class="list-item" href="{{ route("caricamentoPuntoNascite") }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 3 - {{ config("constants.OBIETTIVO.3.text") }}</span></a>
+                                                                            </li>                                                                            
+                                                                            <li>
+                                                                                <a class="list-item" href="{{ route("caricamentoScreening",['obiettivo' => 5])}}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 5 - {{config("constants.OBIETTIVO.5.text")}}</span></a>
                                                                             </li>
-                                                                            
                                                                             <li>
-                                                                                <a class="list-item" href="{{ route("caricamentoScreening",['obiettivo' => 5])}}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Obiettivo 5 - Screening</span></a>
+                                                                                <a class="list-item" href="{{ route("caricamentoPercorsoCertificabilita") }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 8 - {{ config("constants.OBIETTIVO.8.text") }}</span></a>
                                                                             </li>
                                                                         </ul>
                                                                     </div>

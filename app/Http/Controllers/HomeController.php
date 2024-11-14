@@ -197,6 +197,35 @@ class HomeController extends Controller
         return view('home')->with("dataView", $dataView);
     }
 
+    public function caricamentoPuntoNascite() {
+        $dataView['titolo'] = config("constants.OBIETTIVO.3.text");
+        $dataView['icona'] = config("constants.OBIETTIVO.3.icon");
+        $dataView['tooltip'] = config("constants.OBIETTIVO.3.tooltip");
+        $dataView['obiettivo'] = 3;
+        $dataView['files'][] = "obiettivo3.pdf";
+        $dataView['strutture'] = Auth::user()->structures();
+        $dataView['categorie'] = DB::table(table: 'target_categories as tc')
+        ->where("target_number", $dataView['obiettivo'])->get();
+
+        return view("caricamentoPuntoNascite")->with("dataView", $dataView);
+
+    }
+
+
+    public function caricamentoPercorsoCertificabilita() {
+        $dataView['titolo'] = config("constants.OBIETTIVO.8.text");
+        $dataView['icona'] = config("constants.OBIETTIVO.8.icon");
+        $dataView['tooltip'] = config("constants.OBIETTIVO.8.tooltip");
+        $dataView['obiettivo'] = 8;
+        $dataView['files'] = null;
+        $dataView['strutture'] = Auth::user()->structures();
+        $dataView['categorie'] = DB::table(table: 'target_categories as tc')
+        ->where("target_number", $dataView['obiettivo'])->get();
+
+        return view("caricamentoPercorsoCertificabilita")->with("dataView", $dataView);
+
+    }
+
 
     public function showObiettivo(Request $request)
     {
@@ -412,10 +441,17 @@ class HomeController extends Controller
     public function donazioni()
     {
 
-        $datoSdo = DB::table('flows_sdo')->pluck('sdo_dato')->toArray();
+        $datoSdo = DB::table('flows_sdo')
+        ->select("year", DB::raw("sum(ob6) as tot"))->groupBy("year")->get()->toArray();
 
 
-        $labelsTmp = ['Label 1', 'Label 2'];
+        $labelsTmp = [];
+        $dataGraficoTmp = [];
+        foreach($datoSdo as $rows) {
+            $labelsTmp[] = $rows['year'];
+            $dataGraficoTmp[] = $rows['tot'];
+        }
+/*
         $labelsBoarding = ['Label 3', 'Label 4'];
 
 
@@ -423,7 +459,7 @@ class HomeController extends Controller
             $datoSdo[0] ?? 0,
             $datoSdo[1] ?? 0
         ];
-
+*/
         $dataView['chartDonazioni'] = Chartjs::build()
             ->name("OverallAvgTmpComplementaryBarChart")
             ->type("bar")
@@ -685,7 +721,7 @@ class HomeController extends Controller
             'year' => $request->anno,
         ]);
 
-        return redirect()->back()->with('success', 'File caricato con successo e in attesa di approvazione.');
+        return redirect()->back()->with('status', 'File caricato con successo e in attesa di approvazione.');
     }
 
 
