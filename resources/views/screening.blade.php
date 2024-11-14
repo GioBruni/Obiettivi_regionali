@@ -95,21 +95,21 @@
                 <thead>
                     <tr>
                         <th>% prestazioni inappropriate</th>
-                        <th>Totale Prestazioni</th>
                         <th>Prestazioni inappropriate</th>
+                        <th>Totale Prestazioni</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td>{{$dataView['percentualeCodiciDD']}}</td>
-                        <td>{{$dataView['totalePrestazioni']}}</td>
-                        <td>{{$dataView['prestazioniInappropriate']}}</td>
+                        <td>{{$dataView['percentuale']}}</td>
+                        <td>{{$dataView['numeratoreTotale']}}</td>
+                        <td>{{$dataView['denominatoreTotale']}}</td>
                     </tr>
                 </tbody>
             </table>
 
-            <div class="legend p-3 border rounded mt-3 {{ $dataView['messaggioTmpCodiciDD']['classCodiciDD'] }}">
-                <strong>{{ $dataView['messaggioTmpCodiciDD']['textCodiciDD'] }}</strong>
+            <div class="legend p-3 border rounded mt-3 {{$dataView['messaggioTmpCodiciDD']['classCodiciDD'] }}">
+                <strong>{{$dataView['messaggioTmpCodiciDD']['textCodiciDD'] }}</strong>
             </div>
         </div>
     </div>

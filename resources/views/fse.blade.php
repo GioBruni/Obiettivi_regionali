@@ -61,35 +61,119 @@
                                             </h5>
                                             <div class="row">
                                                 <div class="col-md-4">
-                                                <x-chartjs-component :chart="$dataView['chartDimissioniOspedaliere']" />
+                                                    <x-chartjs-component
+                                                        :chart="$dataView['chartDimissioniOspedaliere']" />
                                                 </div>
                                                 <div
                                                     class="col-md-8 d-flex flex-column align-items-center justify-content-center">
                                                     <div id="data-table1" class="w-100 mb-3">
-                                                    <table class="table table-striped">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>Totale MMG</th>
-                                                                <th>MMG Coinvolti</th>
-                                                                <th>Percentuale (%)</th>
-                                                                <th>Struttura</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                           
+                                                        <table class="table table-striped">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>LDO indicizzate</th>
+                                                                    <th>Dimissioni</th>
+                                                                    <th>% LDO Indicizzate</th>
+                                                                    <th>% LDO Non Indicizzate</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+
                                                                 <tr>
                                                                     <td></td>
                                                                     <td></td>
                                                                     <td></td>
                                                                     <td></td>
                                                                 </tr>
-                                           
-                                                        </tbody>
-                                                    </table>
+
+                                                            </tbody>
+                                                        </table>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
+
+                                        <hr id="separatore1" class="my-4">
+
+                                        <div id="laboratorio">
+                                            <h5 class="text-center text-secondary mb-3">
+                                                {{ __('Referti di laboratorio') }}
+                                            </h5>
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <x-chartjs-component
+                                                        :chart="$dataView['chartRefertiLaboratorio']" />
+
+                                                </div>
+                                                <div
+                                                    class="col-md-8 d-flex flex-column align-items-center justify-content-center">
+                                                    <div id="data-table3" class="w-100 mb-3">
+                                                        <table class="table table-striped">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Verbali indicizzati</th>
+                                                                    <th>Dimissioni</th>
+                                                                    <th>% Verbali Indicizzati</th>
+                                                                    <th>% Verbali Non Indicizzati</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+
+                                                                <tr>
+                                                                    <td></td>
+                                                                    <td></td>
+                                                                    <td></td>
+                                                                    <td></td>
+                                                                </tr>
+
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <hr id="separatore2" class="my-4">
+
+
+
+
+                                        <div id="radiologia">
+                                            <h5 class="text-center text-secondary mb-3">
+                                                {{ __('Referti di radiologia') }}
+                                            </h5>
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                <x-chartjs-component :chart="$dataView['chartRefertiRadiologia']" />
+                                                </div>
+                                                <div
+                                                    class="col-md-8 d-flex flex-column align-items-center justify-content-center">
+                                                    <div id="data-table4" class="w-100 mb-3">
+                                                        <table class="table table-striped">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Verbali indicizzati</th>
+                                                                    <th>Dimissioni</th>
+                                                                    <th>% Verbali Indicizzati</th>
+                                                                    <th>% Verbali Non Indicizzati</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+
+                                                                <tr>
+                                                                    <td></td>
+                                                                    <td></td>
+                                                                    <td></td>
+                                                                    <td></td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+
+                                        
                                     </div>
                                 </div>
                             </div>
@@ -100,4 +184,4 @@
         </div>
     </div>
 </div>
-        @endsection
+@endsection
