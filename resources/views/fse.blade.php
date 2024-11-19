@@ -22,35 +22,25 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-3 mb-3">
-                            <label for="timeFilter">Intervallo di tempo:</label>
-                            <select id="timeFilter" name="timeFilter" class="form-control">
-                                <option value="1">Ultima settimana</option>
-                                <option value="2">Ultimo mese</option>
-                                <option value="3">Ultimi 3 mesi</option>
-                                <option value="4">Ultimi 6 mesi</option>
-                                <option value="5" selected>Ultimo anno</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-5 mb-3">
                             <label for="data_inizio">Data Inizio:</label>
-                            <input type="date" id="data_inizio" class="form-control"
-                                value="{{  $dataView['dataInizioDefault'] }}">
+                            <input type="date" name="data_inizio" id="data_inizio" class="form-control"
+                                value={{$dataView['dataInizioDefault']}}>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-5 mb-3">
                             <label for="data_fine">Data Fine:</label>
-                            <input type="date" id="data_fine" class="form-control"
-                                value="{{ $dataView['dataFineDefault'] }}">
+                            <input type="date" name="data_fine" id="data_fine" class="form-control"
+                                value={{$dataView['dataFineDefault']}}>
                         </div>
-                        <div class="col-md-1 mb-1 d-flex align-items-end">
-                            <button id="searchButton" class="btn btn-primary">Cerca</button>
+                        <div class="col-md-2 mb-3 d-flex align-items-end">
+                            <button id="searchButton" class="btn btn-primary w-100">Cerca</button>
                         </div>
 
                         <div id="indicatore1" class="row justify-content-center">
                             <div class="col-md-12">
                                 <div class="card shadow-sm border-0">
                                     <div class="card-header bg-primary text-white">
-                                        <b>{{ __('Indicatore 1') }}</b>
+                                        <b>{{ __('Indicatore 1: Alimentazione FSE da prestazioni ospedaliere') }}</b>
                                         <br />
                                     </div>
                                     <div class="card-body">
@@ -85,6 +75,43 @@
                                                                     <td></td>
                                                                 </tr>
 
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <hr id="separatore2" class="my-4">
+
+                                        <div id="radiologia">
+                                            <h5 class="text-center text-secondary mb-3">
+                                                {{ __('Verbali di prontosoccorso') }}
+                                            </h5>
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <x-chartjs-component :chart="$dataView['chartProntoSoccorso']" />
+                                                </div>
+                                                <div
+                                                    class="col-md-8 d-flex flex-column align-items-center justify-content-center">
+                                                    <div id="data-table4" class="w-100 mb-3">
+                                                        <table class="table table-striped">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Verbali indicizzati</th>
+                                                                    <th>Dimissioni</th>
+                                                                    <th>% Verbali Indicizzati</th>
+                                                                    <th>% Verbali Non Indicizzati</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+
+                                                                <tr>
+                                                                    <td></td>
+                                                                    <td></td>
+                                                                    <td></td>
+                                                                    <td></td>
+                                                                </tr>
                                                             </tbody>
                                                         </table>
                                                     </div>
@@ -134,16 +161,13 @@
 
                                         <hr id="separatore2" class="my-4">
 
-
-
-
                                         <div id="radiologia">
                                             <h5 class="text-center text-secondary mb-3">
                                                 {{ __('Referti di radiologia') }}
                                             </h5>
                                             <div class="row">
                                                 <div class="col-md-4">
-                                                <x-chartjs-component :chart="$dataView['chartRefertiRadiologia']" />
+                                                    <x-chartjs-component :chart="$dataView['chartRefertiRadiologia']" />
                                                 </div>
                                                 <div
                                                     class="col-md-8 d-flex flex-column align-items-center justify-content-center">
@@ -173,11 +197,224 @@
                                         </div>
 
 
-                                        
+                                        <hr id="separatore2" class="my-4">
+
+                                        <div id="radiologia">
+                                            <h5 class="text-center text-secondary mb-3">
+                                                {{ __('Referti di specialistica ambulatoriale') }}
+                                            </h5>
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <x-chartjs-component
+                                                        :chart="$dataView['chartSpecialisticaAmbulatoriale']" />
+                                                </div>
+                                                <div
+                                                    class="col-md-8 d-flex flex-column align-items-center justify-content-center">
+                                                    <div id="data-table4" class="w-100 mb-3">
+                                                        <table class="table table-striped">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Verbali indicizzati</th>
+                                                                    <th>Dimissioni</th>
+                                                                    <th>% Verbali Indicizzati</th>
+                                                                    <th>% Verbali Non Indicizzati</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+
+                                                                <tr>
+                                                                    <td></td>
+                                                                    <td></td>
+                                                                    <td></td>
+                                                                    <td></td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <hr id="separatore2" class="my-4">
+
+                                        <div id="radiologia">
+                                            <h5 class="text-center text-secondary mb-3">
+                                                {{ __('Certificati vaccinali') }}
+                                            </h5>
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <x-chartjs-component
+                                                        :chart="$dataView['chartCertificatiVaccinali']" />
+                                                </div>
+                                                <div
+                                                    class="col-md-8 d-flex flex-column align-items-center justify-content-center">
+                                                    <div id="data-table4" class="w-100 mb-3">
+                                                        <table class="table table-striped">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Verbali indicizzati</th>
+                                                                    <th>Dimissioni</th>
+                                                                    <th>% Verbali Indicizzati</th>
+                                                                    <th>% Verbali Non Indicizzati</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+
+                                                                <tr>
+                                                                    <td></td>
+                                                                    <td></td>
+                                                                    <td></td>
+                                                                    <td></td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <hr id="separatore2" class="my-4">
+
+                                        <div id="radiologia">
+                                            <h5 class="text-center text-secondary mb-3">
+                                                {{ __('Alimentazione documenti FSE') }}
+                                            </h5>
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <x-chartjs-component :chart="$dataView['chartDocumentiFSE']" />
+                                                </div>
+                                                <div
+                                                    class="col-md-8 d-flex flex-column align-items-center justify-content-center">
+                                                    <div id="data-table4" class="w-100 mb-3">
+                                                        <table class="table table-striped">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Verbali indicizzati</th>
+                                                                    <th>Dimissioni</th>
+                                                                    <th>% Verbali Indicizzati</th>
+                                                                    <th>% Verbali Non Indicizzati</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+
+                                                                <tr>
+                                                                    <td></td>
+                                                                    <td></td>
+                                                                    <td></td>
+                                                                    <td></td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+
+
+
+
+
+
                                     </div>
                                 </div>
                             </div>
                         </div>
+
+                        <div id="indicatore1" class="row justify-content-center">
+                            <div class="col-md-12">
+                                <div class="card shadow-sm border-0">
+                                    <div class="card-header bg-primary text-white">
+                                        <b>{{ __('Indicatore 3: Documenti in CDA2') }}</b>
+                                        <br />
+                                    </div>
+                                    <div class="card-body">
+
+
+                                        <div id="radiologia">
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <x-chartjs-component :chart="$dataView['chartDocumentiCDA2']" />
+                                                </div>
+                                                <div
+                                                    class="col-md-8 d-flex flex-column align-items-center justify-content-center">
+                                                    <div id="data-table4" class="w-100 mb-3">
+                                                        <table class="table table-striped">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Verbali indicizzati</th>
+                                                                    <th>Dimissioni</th>
+                                                                    <th>% Verbali Indicizzati</th>
+                                                                    <th>% Verbali Non Indicizzati</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+
+                                                                <tr>
+                                                                    <td></td>
+                                                                    <td></td>
+                                                                    <td></td>
+                                                                    <td></td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="indicatore1" class="row justify-content-center">
+                            <div class="col-md-12">
+                                <div class="card shadow-sm border-0">
+                                    <div class="card-header bg-primary text-white">
+                                        <b>{{ __('Indicatore 4: Documenti firmati in PaDES') }}</b>
+                                        <br />
+                                    </div>
+                                    <div class="card-body">
+
+
+                                        <div id="radiologia">
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <x-chartjs-component :chart="$dataView['chartDocumentiPades']" />
+                                                </div>
+                                                <div
+                                                    class="col-md-8 d-flex flex-column align-items-center justify-content-center">
+                                                    <div id="data-table4" class="w-100 mb-3">
+                                                        <table class="table table-striped">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Verbali indicizzati</th>
+                                                                    <th>Dimissioni</th>
+                                                                    <th>% Verbali Indicizzati</th>
+                                                                    <th>% Verbali Non Indicizzati</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+
+                                                                <tr>
+                                                                    <td></td>
+                                                                    <td></td>
+                                                                    <td></td>
+                                                                    <td></td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>

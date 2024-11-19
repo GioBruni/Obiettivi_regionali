@@ -12,6 +12,7 @@ use Hash;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Str;
+use Storage;
 
 class AdminController extends Controller
 {
@@ -172,6 +173,8 @@ class AdminController extends Controller
             break;
             case 5: $dataView['titolo'] = config("constants.OBIETTIVO.5.text");
             break;
+            case 6: $dataView['titolo'] = config("constants.OBIETTIVO.6.text");
+            break;
             case 8: $dataView['titolo'] = config("constants.OBIETTIVO.8.text");
             break;
             case 9: $dataView['titolo'] = config("constants.OBIETTIVO.9.text");
@@ -226,7 +229,68 @@ class AdminController extends Controller
     }
 
 
+public function caricamentoDonazioni(Request $request){
 
+    $dataView['structures'] = Auth::user()->structures();
+    $dataView['titolo'] = config("constants.OBIETTIVO.$request->obiettivo.text");
+    $dataView['icona'] = config("constants.OBIETTIVO.$request->obiettivo.icon");
+    $dataView['tooltip'] = config("constants.OBIETTIVO.$request->obiettivo.tooltip");
+
+    $dataView['categorie'] = DB::table("target_categories")
+    ->where("target_number", $request->obiettivo)
+    ->orderBy("order")
+    ->get();
+
+    $dataView['file'] = DB::table('uploated_files as up')
+    ->join('target_categories as tc', 'up.target_category_id', '=', 'tc.id')
+    ->where('up.user_id', Auth::user()->id)
+    ->where('up.target_number', $request->obiettivo)
+    ->select('up.target_number', 'up.target_category_id', 'tc.category', 'up.validator_user_id', 'up.approved', 'up.created_at')
+    ->get();
+
+    // Dati per la tabella nella view 
+    $dataView['tableData'] = DB::table('target6_data')
+    ->select('totale_accertamenti', 'numero_opposti','totale_cornee', 'anno', 'structure_id', 's.name')
+    ->join('structures as s', 'target6_data.structure_id', '=', 's.id')
+    ->get();
+
+
+
+    $dataView['obiettivo'] = $request->obiettivo;
+
+    return view("caricamentoDonazioni")->with('dataView', $dataView);
+}
+
+
+public function uploadFileScreening(Request $request)
+{
+    // Validate the file input
+    $request->validate([
+        'file' => 'required|file|mimes:pdf|max:5096',
+    ]);
+
+    // Check if a file is uploaded
+    if ($request->hasFile('file')) {
+        $file = $request->file('file');
+        $path = $file->store('uploads', 'public');
+        $url = Storage::url($path);
+        $categoriaId = $request->input('categoria');
+
+        UploatedFile::create([
+            'filename' => $file->getClientOriginalName(),
+            'path' => $url,
+            'user_id' => Auth::user()->id,
+            'structure_id' => $request->structure_id,
+            'notes' => null,
+            'target_number' => $request->obiettivo,
+            'target_category_id' => $categoriaId,
+            'year' => $request->anno
+        ]);
+
+        return redirect()->back()->with('success', 'File caricato con successo e in attesa di approvazione.');
+    }
+    return redirect()->back()->with('error', 'Nessun file caricato.');
+}
 
 
     

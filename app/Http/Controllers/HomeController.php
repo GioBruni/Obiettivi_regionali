@@ -6,6 +6,7 @@ use App\ChartTrait;
 use App\Models\Gare;
 use App\Models\LocationsUsers;
 use App\Models\PCT;
+use App\Models\Target6_data;
 use App\Models\UploatedFile;
 use App\Models\CUPTarget1;
 use Illuminate\Support\Facades\Auth;
@@ -112,6 +113,119 @@ class HomeController extends Controller
             $punteggioCalcolato = 0;
         return $punteggioCalcolato;
     }
+
+    protected function calcoloPunteggioSub2($percentualeData)
+{
+   
+    $dataView = [];
+
+    $array2024 = array(5, 3, 2);
+    $array2025 = array(15, 10, 7);
+    $array2026 = array(25, 15, 10);
+
+   
+    $anno = date('Y');
+
+    if ($percentualeData < 0) {
+
+        $dataView['messaggioTmp'] = [
+            'text' => $anno . ": " . "Percentuale negativa, obiettivo non raggiunto con punteggio: 0",
+            'class' => 'text-danger'
+        ];
+    } else {
+        if ($anno == 2024) {
+            $targetArray = $array2024;
+        } elseif ($anno == 2025) {
+            $targetArray = $array2025;
+        } elseif ($anno == 2026) {
+            $targetArray = $array2026;
+        }
+
+        if ($percentualeData > $targetArray[0]) {
+           
+            $dataView['messaggioTmp'] = [
+                'text' => $anno . ": " . "Raggiungimento dell'obiettivo con punteggio: 1.5",
+                'class' => 'text-success'
+            ];
+        } elseif ($percentualeData >= $targetArray[1] && $percentualeData <= $targetArray[0]) {
+
+            $dataView['messaggioTmp'] = [
+                'text' => $anno . ": " . "Raggiungimento dell'obiettivo all'80% con punteggio: 1.2",
+                'class' => 'text-warning'
+            ];
+        } elseif ($percentualeData >= $targetArray[2] && $percentualeData < $targetArray[1]) {
+         
+            $dataView['messaggioTmp'] = [
+                'text' => $anno . ": " . "Raggiungimento dell'obiettivo al 50% con punteggio: 0.75",
+                'class' => 'text-warning'
+            ];
+        } else {
+       
+            $dataView['messaggioTmp'] = [
+                'text' => $anno . ": " . "Obiettivo non raggiunto con punteggio: 0",
+                'class' => 'text-danger'
+            ];
+        }
+    }
+
+
+    return $dataView;
+}
+
+protected function calcoloPunteggioSub4($percentualeData)
+{
+    $dataView = [];
+
+    
+    $array2024 = array(10, 5, 3);  
+    $array2025 = array(15, 10, 7);
+    $array2026 = array(30, 25, 20, 15);
+
+    $anno = date('Y');  
+
+  
+    if ($percentualeData < 0) {
+        $dataView['messaggioTmpIncremento'] = [
+            'textIncremento' => $anno . ": Percentuale negativa, obiettivo non raggiunto con punteggio: 0",
+            'classIncremento' => 'text-danger'
+        ];
+    } else {
+        
+        if ($anno == 2024) {
+            $targetArray = $array2024;
+        } elseif ($anno == 2025) {
+            $targetArray = $array2025;
+        } elseif ($anno == 2026) {
+            $targetArray = $array2026;
+        }
+
+       
+        if ($percentualeData > $targetArray[0]) {
+            $dataView['messaggioTmpIncremento'] = [
+                'textIncremento' => $anno . ": Raggiungimento dell'obiettivo con punteggio: 1.5",
+                'classIncremento' => 'text-success'
+            ];
+        } elseif ($percentualeData >= $targetArray[1] && $percentualeData <= $targetArray[0]) {
+            $dataView['messaggioTmpIncremento'] = [
+                'textIncremento' => $anno . ": Raggiungimento dell'obiettivo all'80% con punteggio: 1.2",
+                'classIncremento' => 'text-warning'
+            ];
+        } elseif ($percentualeData >= $targetArray[2] && $percentualeData < $targetArray[1]) {
+            $dataView['messaggioTmpIncremento'] = [
+                'textIncremento' => $anno . ": Raggiungimento dell'obiettivo al 50% con punteggio: 0.75",
+                'classIncremento' => 'text-warning'
+            ];
+        } else {
+            $dataView['messaggioTmpIncremento'] = [
+                'textIncremento' => $anno . ": Obiettivo non raggiunto con punteggio: 0",
+                'classIncremento' => 'text-danger'
+            ];
+        }
+    }
+
+    return $dataView;
+}
+
 
 
     protected function initView(int $obiettivo) {
@@ -437,28 +551,120 @@ class HomeController extends Controller
 
     }
 
-    public function donazioni()
+    public function donazioni(Request $request)
     {
+        $dataView['strutture'] = Auth::user()->structures();
+        $dataView['categorie'] = DB::table(table: 'target_categories as tc')
+            ->where("target_number", $request->obiettivo)->get();
 
-        $datoSdo = DB::table('flows_sdo')
-        ->select("year", DB::raw("sum(ob6) as tot"))->groupBy("year")->get()->toArray();
+        $dataView['file'] = DB::table('uploated_files as uf')
+            ->join('target_categories as tc', 'uf.target_category_id', '=', 'tc.id')
+            ->select('uf.id', 'uf.validator_user_id', 'uf.approved', 'uf.notes', 'uf.path', 'uf.filename', 'uf.target_category_id', 'tc.category', 'uf.updated_at', 'uf.user_id', 'uf.created_at')
+            ->where('uf.target_number', 6)
+            ->whereIn("uf.structure_id", $dataView['strutture']->pluck("id")->toArray())
+            ->whereRaw('uf.created_at = (SELECT MAX(u2.created_at)
+                                    FROM uploated_files as u2 
+                                    WHERE u2.target_category_id = uf.target_category_id)')
+            ->whereRaw('uf.updated_at = (SELECT MAX(u3.updated_at)
+                                    FROM uploated_files as u3
+                                    WHERE u3.target_category_id = uf.target_category_id
+                                    AND u3.created_at = uf.created_at)')
+            ->orderBy("tc.category")
+            ->orderBy('uf.created_at', 'desc')
+            ->orderBy('uf.updated_at', 'desc')
+            ->get();
 
 
+        // Numeratore sub.2
+        $dataView['target6_data'] = DB::table('target6_data')
+            ->whereIn(DB::raw('(anno, id)'), function ($query) {
+                $query->select(DB::raw('anno, MAX(id)'))
+                    ->from('target6_data')
+                    ->groupBy('anno');
+            })
+            ->select('totale_accertamenti', 'anno', 'numero_opposti', 'totale_cornee')
+            ->orderBy('anno', 'asc')
+            ->get();
+
+            //Denominatore preso dal flusso
+            $dataView['denominatore'] = DB::table('flows_sdo')
+            ->join('users_structures AS us', 'flows_sdo.structure_id', '=', 'us.structure_id')
+            ->where('us.user_id', 7)
+            ->select(
+                DB::raw('MAX(flows_sdo.ob6) as ob6'),
+                DB::raw('MAX(flows_sdo.id) as id'),
+                'flows_sdo.year'
+            )
+            ->groupBy('flows_sdo.year')
+            ->orderByDesc('flows_sdo.year')
+            ->get();
+        
+
+        //$dataView['punteggioTotale'] = 0;
+        $percentuali = [];
         $labelsTmp = [];
-        $dataGraficoTmp = [];
-        foreach($datoSdo as $rows) {
-            $labelsTmp[] = $rows['year'];
-            $dataGraficoTmp[] = $rows['tot'];
+        $dataView['result'] = [];
+
+
+        // Calcolo la percentuale per ogni anno
+        foreach ($dataView['target6_data'] as $target) {
+            $denominatore = $dataView['denominatore']->firstWhere('year', $target->anno);
+
+            $percentuale = ($target->totale_accertamenti / $denominatore->ob6) * 100;
+            $dataView['result'][] = [
+                'anno' => $target->anno,
+                'percentuale' => $percentuale,
+                'totale_accertamenti' => $target->totale_accertamenti,
+                'numero_opposti' => $target->numero_opposti,
+                'totale_cornee' => $target->totale_cornee,
+                'ob6_sum' => $denominatore->ob6
+            ];
+
+
+            $percentuali[] = $percentuale;
+            $labelsTmp[] = $target->anno;
         }
-/*
-        $labelsBoarding = ['Label 3', 'Label 4'];
 
 
-        $dataGraficoTmp = [
-            $datoSdo[0] ?? 0,
-            $datoSdo[1] ?? 0
-        ];
-*/
+
+        // $dataView['result'] = collect($dataView['result'])->sortBy('anno')->values()->all();
+
+        $dataView['totale_cornee2024'] = 0;
+        $dataView['totale_cornee2023'] = 0;
+        $dataView['percentuale2024'] = 0;
+        $dataView['percentuale2023'] = 0;
+        $dataView['percentuale'] = $percentuali;
+
+
+        foreach ($dataView['result'] as $res) {
+            if ($res['anno'] == 2023) {
+                $dataView['percentuale2023'] = $res['percentuale'];
+                $dataView['totale_cornee2023'] = $res['totale_cornee'];
+
+            }
+            if ($res['anno'] == date("Y")) {
+                $dataView['percentuale2024'] = $res['percentuale'];
+                $dataView['totale_cornee2024'] = $res['totale_cornee'];
+            }
+        }
+
+
+        if ($dataView['percentuale2023'] !== 0 && $dataView['percentuale2024'] !== 0) {
+            $dataView['incremento'] = number_format((($dataView['percentuale2024'] - $dataView['percentuale2023']) / $dataView['percentuale2023']) * 100, 2);
+        } else {
+
+            $dataView['incremento'] = 0;
+            $dataView['messaggioTmp'] = [
+                'text' => "Impossibile calcolare l'incremento. Dati insufficienti.",
+                'class' => 'text-danger'
+            ];
+        }
+
+        //calcolo punteggio sub.2
+        $punteggioTotale = $this->calcoloPunteggioSub2($dataView['incremento']);
+        $dataView = array_merge($punteggioTotale, $dataView);
+
+        //grafico Sub.2
         $dataView['chartDonazioni'] = Chartjs::build()
             ->name("OverallAvgTmpComplementaryBarChart")
             ->type("bar")
@@ -466,9 +672,68 @@ class HomeController extends Controller
             ->labels($labelsTmp)
             ->datasets([
                 [
-                    "label" => "Percentuale TMP",
+                    "label" => "Percentuale TMP per Anno",
                     "backgroundColor" => "rgba(38, 185, 154, 0.7)",
-                    "data" => $dataGraficoTmp
+                    "data" => $percentuali //percentuali per ogni anno
+                ]
+            ])
+            ->options([
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Distribuzione Percentuale per Anno'
+                    ],
+                    'legend' => [
+                        'display' => true
+                    ]
+                ],
+                'scales' => [
+                    'y' => [
+                        'beginAtZero' => true,
+                    ],
+                ],
+            ]);
+
+        /***************************Chart sub. 3************************************ */
+
+        $dataView['dataSelezionata'] = $request->annoSelezionato ?? date('Y');
+
+        $dataView['numeratoreSecondo'] = 0;
+        $dataView['denominatoreSecondo'] = 0;
+
+        foreach ($dataView['result'] as $risultato) {
+            if ($risultato['anno'] == $dataView['dataSelezionata']) {
+                $dataView['denominatoreSecondo'] = $risultato['percentuale'];
+                $dataView['denominatoreSecondo'] = (float) str_replace('%', '', $dataView['denominatoreSecondo']); // Conversione in float
+                $dataView['numeratoreSecondo'] = $risultato['numero_opposti'];
+            }
+        }
+
+         //calcoloPercentualeOpposizione
+        if ($dataView['denominatoreSecondo'] > 0) {
+            $dataView['percentualeOpposizione'] = number_format(($dataView['numeratoreSecondo'] / $dataView['denominatoreSecondo']) * 100, 2);
+            $percOpposizioneComplementare = 100 - $dataView['percentualeOpposizione'];
+        } else {
+            $dataView['percentualeOpposizione'] = 0;
+            $percOpposizioneComplementare = 100;
+
+        }
+
+        //grafico sub.3
+        $dataView['chartSubObiettivo3'] = Chartjs::build()
+            ->name("chartSubObiettivo3")
+            ->type("doughnut")
+            ->size(["width" => 300, "height" => 150])
+            ->labels($labelsTmp)
+            ->datasets([
+                [
+                    "label" => "Percentuale TMP",
+                    "backgroundColor" => [
+                        "rgba(38, 185, 154, 0.7)",
+                        "rgba(217, 83, 79, 0.7)",
+                    ],
+                    "data" => [($dataView['percentualeOpposizione']), ($percOpposizioneComplementare)]
                 ]
             ])
             ->options([
@@ -489,6 +754,85 @@ class HomeController extends Controller
                 ],
             ]);
 
+         //calcolo punteggio 3
+        if ($dataView['percentualeOpposizione'] <= 38) {
+         
+            // Obiettivo pienamente raggiunto
+            $dataView['messaggioTmpOpposizione'] = [
+                'textOpposizione' => date("Y") . ": Il tasso di opposizione è del " . $dataView['percentualeOpposizione'] . "%.Obiettivo pienamente raggiunto con punteggio: 1.5",
+                'classOpposizione' => 'text-success'
+            ];
+        } elseif ($dataView['percentualeOpposizione'] > 38 && $dataView['percentualeOpposizione'] <= 41) {
+            
+            // Obiettivo raggiunto all'80%
+            $dataView['messaggioTmpOpposizione'] = [
+                'textOpposizione' => date("Y") . ": Il tasso di opposizione è del " . $dataView['percentualeOpposizione'] . "%.Obiettivo raggiunto all'80% con punteggio: 1.2",
+                'classOpposizione' => 'text-warning'
+            ];
+        } elseif ($dataView['percentualeOpposizione'] > 41 && $dataView['percentualeOpposizione'] <= 45) {
+            
+            // Obiettivo raggiunto al 50%
+            $dataView['messaggioTmpOpposizione'] = [
+                'textOpposizione' => date("Y") . ": Il tasso di opposizione è del " . $dataView['percentualeOpposizione'] . "%.Obiettivo raggiunto al 50% con punteggio: 0.75",
+                'classOpposizione' => 'text-warning'
+            ];
+        } else {
+            
+            // Obiettivo non raggiunto
+            $dataView['messaggioTmpOpposizione'] = [
+
+                'textOpposizione' => date("Y") . ": Il tasso di opposizione è del " . $dataView['percentualeOpposizione'] . "%. Obiettivo non raggiunto con punteggio: 0",
+                'classOpposizione' => 'text-danger'
+
+            ];
+        }
+
+
+        /******************************Sub.ob 4************************************ */
+
+
+       //calcolo incremento sub.4
+        if ($dataView['totale_cornee2024'] != 0 && $dataView['totale_cornee2023'] != 0) {
+            $dataView['percIncrementoSub4'] = (($dataView['totale_cornee2024'] - $dataView['totale_cornee2023']) / $dataView['totale_cornee2023']) * 100;
+        } else {
+            $dataView['percIncrementoSub4'] = 0;
+        }
+
+
+       //grafico sub.4
+        $dataView['chartSubObiettivo4'] = Chartjs::build()
+            ->name("chartSubObiettivo4")
+            ->type("bar")
+            ->size(["width" => 300, "height" => 150])
+            ->labels($labelsTmp)
+            ->datasets([
+                [
+                    "label" => "Percentuale TMP",
+                    "backgroundColor" => "rgba(38, 185, 154, 0.7)",
+                    "data" => [$dataView['totale_cornee2023'], $dataView['totale_cornee2024']]
+                ]
+            ])
+            ->options([
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Distribuzione Percentuale: TMP e Differenza Media Totale'
+                    ],
+                    'legend' => [
+                        'display' => false
+                    ]
+                ],
+                'scales' => [
+                    'y' => [
+                        'beginAtZero' => true,
+                    ],
+                ],
+            ]);
+
+
+        $punteggioSub4 = $this->calcoloPunteggioSub4($dataView['percIncrementoSub4']);
+        $dataView = array_merge($punteggioSub4, $dataView);
 
         return view("donazioni")->with('dataView', $dataView);
     }
@@ -625,32 +969,39 @@ class HomeController extends Controller
 
         //*************Secondo grafico **********//
 
-            $dataView['datiFlussoM'] = DB::table('flows_m')
+        $dataView['datiFlussoM'] = DB::table('flows_m')
             ->select('ob5_num as numeratore_m', 'ob5_den as denominatore_m')
+            ->join('users_structures as us', 'flows_m.structure_id', '=', 'us.structure_id')
+            ->where('us.user_id', Auth::user()->id, )
             ->get();
 
-            $dataView['datiFlussoC'] = DB::table('flows_c')
+
+        $dataView['datiFlussoC'] = DB::table('flows_c')
             ->select('ob5_num as numeratore_c', 'ob5_den as denominatore_c')
+            ->join('users_structures as us', 'flows_c.structure_id', '=', 'us.structure_id')
+            ->where('us.user_id', Auth::user()->id, )
             ->get();
 
-            $numeratoreM = $dataView['datiFlussoM']->sum('numeratore_m');
-            $denominatoreM = $dataView['datiFlussoM']->sum('denominatore_m');
-            $numeratoreC = $dataView['datiFlussoC']->sum('numeratore_c');
-            $denominatoreC = $dataView['datiFlussoC']->sum('denominatore_c');
-            $dataView['numeratoreTotale'] = $numeratoreM + $numeratoreC;
-            $dataView['denominatoreTotale'] = $denominatoreM + $denominatoreC;
+        $numeratoreM = $dataView['datiFlussoM']->sum('numeratore_m');
+        $denominatoreM = $dataView['datiFlussoM']->sum('denominatore_m');
 
-            $dataView['percentuale'] =  ($dataView['denominatoreTotale'] > 0) ? number_format( $dataView['numeratoreTotale'] /  $dataView['denominatoreTotale'] * 100,2) : 0;
 
-            $dataView['percentualeComplementare'] =  100 - $dataView['percentuale'];
+        $numeratoreC = $dataView['datiFlussoC']->sum('numeratore_c');
+        $denominatoreC = $dataView['datiFlussoC']->sum('denominatore_c');
+        $dataView['numeratoreTotale'] = $numeratoreM + $numeratoreC;
+        $dataView['denominatoreTotale'] = $denominatoreM + $denominatoreC;
 
-      /*  $dataView['prestazioniInappropriate'] = 642;
-        $dataView['totalePrestazioni'] = 3963;
+        $dataView['percentuale'] = number_format($dataView['numeratoreTotale'] / $dataView['denominatoreTotale'] * 100, 2);
 
-        $dataView['percentualeCodiciDD'] = number_format($dataView['prestazioniInappropriate'] / $dataView['totalePrestazioni'] * 100, 2);
-*/
+        $dataView['percentualeComplementare'] = 100 - $dataView['percentuale'];
 
-        $dataView['codiciDD'] = Chartjs::build()
+        /*  $dataView['prestazioniInappropriate'] = 642;
+          $dataView['totalePrestazioni'] = 3963;
+
+          $dataView['percentualeCodiciDD'] = number_format($dataView['prestazioniInappropriate'] / $dataView['totalePrestazioni'] * 100, 2);
+        */
+
+        $dataView['codiciEsenzioneChart'] = Chartjs::build()
             ->name("chartCodiciDD")
             ->type("doughnut")
             ->size(["width" => 300, "height" => 150])
@@ -662,7 +1013,7 @@ class HomeController extends Controller
                         "rgba(38, 185, 154, 0.7)",
                         "rgba(255, 99, 132, 0.7)"
                     ],
-                    "data" => [$dataView['percentuale'],$dataView['percentualeComplementare'] ]
+                    "data" => [$dataView['percentuale'], $dataView['percentualeComplementare']]
 
                 ]
             ])
@@ -678,7 +1029,7 @@ class HomeController extends Controller
             ]);
 
 
-        /***********************MMG****************************/
+        /***********************Messaggio punteggio MMG****************************/
 
 
         if ($dataView['percentualeAderenti'] > 60) {
@@ -698,10 +1049,10 @@ class HomeController extends Controller
             ];
         }
 
-        /*****************D02 E D03*******************/
+        /********************Messagggio punteggio D02 E D03************************/
 
 
-        if ( $dataView['percentuale'] >= 0 &&  $dataView['percentuale'] <= 10) {
+        if ($dataView['percentuale'] >= 0 && $dataView['percentuale'] <= 10) {
             $dataView['messaggioTmpCodiciDD'] = [
                 'textCodiciDD' => "Pieno raggiungimento dell'obiettivo con punteggio: 1",
                 'classCodiciDD' => 'text-success'
@@ -749,7 +1100,7 @@ class HomeController extends Controller
 
     public function uploadFileScreening(Request $request)
     {
-        // Validate the file input
+
         $request->validate([
             'file' => 'required|file|mimes:pdf|max:5096',
         ]);
@@ -817,6 +1168,46 @@ class HomeController extends Controller
 
 
         return redirect()->route('caricamentoScreening', ['obiettivo' => $request->obiettivo]);
+
+    }
+
+
+    public function uploadDatiDonazione(Request $request)
+    {
+        $anno = $request->anno;
+        $structure_id = $request->structure_id;
+        $totale_accertamenti = $request->totale_accertamenti;
+        $numero_opposti = $request->numero_opposti;
+        $totale_cornee = $request->totale_cornee;
+        /*
+                $messages = [
+                    'tot_mmg.required' => 'Il totale MMG è obbligatorio.',
+                    'tot_mmg.numeric' => 'Il totale MMG deve essere un numero.',
+                    'mmg_coinvolti.required' => 'Il numero di MMG coinvolti è obbligatorio.',
+                    'mmg_coinvolti.numeric' => 'Il numero di MMG coinvolti deve essere un numero.',
+                    'mmg_coinvolti.lte' => 'Il numero di MMG coinvolti deve essere minore o uguale al totale MMG.',
+                    'year.required' => 'L\'anno è obbligatorio.',
+                    'year.integer' => 'L\'anno deve essere un numero intero.',
+                ];
+
+
+                $request->validate([
+                    'tot_mmg' => 'required|numeric',
+                    'mmg_coinvolti' => 'required|numeric|lte:tot_mmg', // mmg_coinvolti <= tot_mmg
+                    'year' => 'required|integer',
+                ], $messages);
+        */
+
+        Target6_data::create([
+            'totale_accertamenti' => $totale_accertamenti,
+            'numero_opposti' => $numero_opposti,
+            'totale_cornee' => $totale_cornee,
+            'anno' => $anno,
+            'structure_id' => $structure_id,
+        ]);
+
+
+        return redirect()->route('caricamentoDonazioni', ['obiettivo' => $request->obiettivo]);
 
     }
 
@@ -1013,17 +1404,35 @@ class HomeController extends Controller
 
 
 
-    public function downloadPdf(Request $request)
+    public function downloadPdf($obiettivo, Request $request)
     {
+        switch ($obiettivo) {
+            case 5:
+                $dataView['tableData'] = DB::table('insert_mmg')
+                    ->join('structures as s', 'insert_mmg.structure_id', '=', 's.id')
+                    ->select('mmg_totale', 'mmg_coinvolti', 'year', 'structure_id', 's.name as nome_struttura')
+                    ->get();
 
-        $dataView['tableData'] = DB::table('insert_mmg')
-            ->join('structures as s', 'insert_mmg.structure_id', '=', 's.id')
-            ->select('mmg_totale', 'mmg_coinvolti', 'year', 'structure_id', 's.name as nome_struttura')
-            ->get();
+                $pdf = PDF::loadView('pdfs.screeningPdf', $dataView);
 
-        $pdf = PDF::loadView('emails.screeningPdf', $dataView);
+                return $pdf->download('certificazione_completa.pdf');
+            case 6:
 
-        return $pdf->download('certificazione_completa.pdf');
+                $dataView['target6_data'] = DB::table('target6_data')
+                    ->whereIn(DB::raw('(anno, id)'), function ($query) {
+                        $query->select(DB::raw('anno, MAX(id)'))
+                            ->from('target6_data')
+                            ->groupBy('anno');
+                    })
+                    ->select('totale_accertamenti', 'anno', 'numero_opposti', 'totale_cornee')
+                    ->orderBy('anno', 'asc')
+                    ->get();
+
+                $pdf = PDF::loadView('pdfs.donazioniPdf', $dataView);
+
+                return $pdf->download('certificazione_completa.pdf');
+
+        }
     }
 
 
@@ -1048,19 +1457,19 @@ class HomeController extends Controller
         $dataFine = (new \DateTime($dataFine))->format('Y-m-d');
 
         $dataView['primoGrafico'] = DB::table('flows_sdo')
-        ->select('flows_sdo.ob10_1', 'flows_sdo.year', 'flows_sdo.month', 'flows_sdo.structure_id', 's.name as nome_struttura')
+            ->select('flows_sdo.ob10_1', 'flows_sdo.year', 'flows_sdo.month', 'flows_sdo.structure_id', 's.name as nome_struttura')
             ->join('structures as s', 'flows_sdo.structure_id', '=', 's.id')
             ->join('users_structures as us', 'flows_sdo.structure_id', '=', 'us.structure_id')
-            ->where('us.user_id', Auth::user()->id,)
+            ->where('us.user_id', Auth::user()->id, )
             ->whereRaw("STR_TO_DATE(CONCAT(year, '-', month, '-01'), '%Y-%m-%d') BETWEEN ? AND ?", [$dataInizio, $dataFine])
             ->get();
 
-            $dataView['denominatore'] = 250;
-            $mediaNumeratore = $dataView['primoGrafico']->avg('ob10_1') ;
+        $dataView['denominatore'] = 250;
+        $mediaNumeratore = $dataView['primoGrafico']->avg('ob10_1');
 
-            $percentuale =  ($mediaNumeratore / $dataView['denominatore']) * 100 ;
-    
-            $complementare = 100 - $percentuale;
+        $percentuale = ($mediaNumeratore / $dataView['denominatore']) * 100;
+
+        $complementare = 100 - $percentuale;
 
         //dd($complementaryValueTmp);
         //dd($dataView['primoGrafico']);
@@ -1093,40 +1502,40 @@ class HomeController extends Controller
                 ]
             ]);
 
-            if ($percentuale > 95) {
-                $dataView['messaggioTmp'] = [
-                    'text' => "Obiettivo raggiunto",
-                    'class' => 'text-success'
-                ];
-            } else {
-                $dataView['messaggioTmp'] = [
-                    'text' => "Obiettivo non raggiunto",
-                    'class' => 'text-danger'
-                ];
-            }
-    
+        if ($percentuale > 95) {
+            $dataView['messaggioTmp'] = [
+                'text' => "Obiettivo raggiunto",
+                'class' => 'text-success'
+            ];
+        } else {
+            $dataView['messaggioTmp'] = [
+                'text' => "Obiettivo non raggiunto",
+                'class' => 'text-danger'
+            ];
+        }
+
         /*********************************************************************************/
-/*
-        $dataView['prevenzioneDue'] = DB::table('flows_sdo')
-        ->select('ob10_2', 'year', 'month', 'structure_id', 's.name as nome_struttura')
-        ->join('structures as s', 'flows_sdo.structure_id', '=', 's.id')
-        ->whereRaw("STR_TO_DATE(CONCAT(year, '-', month, '-01'), '%Y-%m-%d') BETWEEN ? AND ?", [$dataInizio, $dataFine])
-        ->get();
-*/
+        /*
+                $dataView['prevenzioneDue'] = DB::table('flows_sdo')
+                ->select('ob10_2', 'year', 'month', 'structure_id', 's.name as nome_struttura')
+                ->join('structures as s', 'flows_sdo.structure_id', '=', 's.id')
+                ->whereRaw("STR_TO_DATE(CONCAT(year, '-', month, '-01'), '%Y-%m-%d') BETWEEN ? AND ?", [$dataInizio, $dataFine])
+                ->get();
+        */
 
         $dataView['prevenzioneDue'] = DB::table('flows_sdo')
             ->select('flows_sdo.ob10_2', 'flows_sdo.year', 'flows_sdo.month', 'flows_sdo.structure_id', 's.name as nome_struttura')
             ->join('structures as s', 'flows_sdo.structure_id', '=', 's.id')
             ->join('users_structures as us', 'flows_sdo.structure_id', '=', 'us.structure_id')
-            ->where('us.user_id', Auth::user()->id,)
-            ->whereRaw("STR_TO_DATE(CONCAT(flows_sdo.year, '-', flows_sdo.month, '-01'), '%Y-%m-%d') BETWEEN ? AND ?", ['2024-01-01', '2024-11-11'])
+            ->where('us.user_id', Auth::user()->id, )
+            ->whereRaw("STR_TO_DATE(CONCAT(flows_sdo.year, '-', flows_sdo.month, '-01'), '%Y-%m-%d') BETWEEN ? AND ?", [$dataInizio, $dataFine])
             ->get();
 
-      
+
 
         $dataView['denominatore'] = 100;
-        $mediaNumeratore = $dataView['prevenzioneDue']->avg('ob10_2') ;
-        $percentuale =  ($mediaNumeratore / $dataView['denominatore']) * 100 ;
+        $mediaNumeratore = $dataView['prevenzioneDue']->avg('ob10_2');
+        $percentuale = ($mediaNumeratore / $dataView['denominatore']) * 100;
         $complementare = 100 - $percentuale;
 
         $dataView['areaPrevenzionePrimaDose'] = Chartjs::build()
@@ -1156,32 +1565,32 @@ class HomeController extends Controller
                 ]
             ]);
 
-            if ($percentuale > 95) {
-                $dataView['messaggioTmpPrevenzioneDue'] = [
-                    'textPrevenzioneDue' => "Obiettivo raggiunto",
-                    'classPrevenzioneDue' => 'text-success'
-                ];
-            } else {
-                $dataView['messaggioTmpPrevenzioneDue'] = [
-                    'textPrevenzioneDue' => "Obiettivo non raggiunto",
-                    'classPrevenzioneDue' => 'text-danger'
-                ];
-            }
+        if ($percentuale > 95) {
+            $dataView['messaggioTmpPrevenzioneDue'] = [
+                'textPrevenzioneDue' => "Obiettivo raggiunto",
+                'classPrevenzioneDue' => 'text-success'
+            ];
+        } else {
+            $dataView['messaggioTmpPrevenzioneDue'] = [
+                'textPrevenzioneDue' => "Obiettivo non raggiunto",
+                'classPrevenzioneDue' => 'text-danger'
+            ];
+        }
 
         /***************************************************************************************/
 
         $dataView['prevenzioneTre'] = DB::table('flows_sdo')
-        ->select('flows_sdo.ob10_3', 'flows_sdo.year', 'flows_sdo.month', 'flows_sdo.structure_id', 's.name as nome_struttura')
-        ->join('structures as s', 'flows_sdo.structure_id', '=', 's.id')
-        ->join('users_structures as us', 'flows_sdo.structure_id', '=', 'us.structure_id')
-        ->where('us.user_id', Auth::user()->id,)
-        ->whereRaw("STR_TO_DATE(CONCAT(year, '-', month, '-01'), '%Y-%m-%d') BETWEEN ? AND ?", [$dataInizio, $dataFine])
-        ->get();
+            ->select('flows_sdo.ob10_3', 'flows_sdo.year', 'flows_sdo.month', 'flows_sdo.structure_id', 's.name as nome_struttura')
+            ->join('structures as s', 'flows_sdo.structure_id', '=', 's.id')
+            ->join('users_structures as us', 'flows_sdo.structure_id', '=', 'us.structure_id')
+            ->where('us.user_id', Auth::user()->id, )
+            ->whereRaw("STR_TO_DATE(CONCAT(year, '-', month, '-01'), '%Y-%m-%d') BETWEEN ? AND ?", [$dataInizio, $dataFine])
+            ->get();
 
 
         $dataView['denominatore'] = 150;
-        $mediaNumeratore = $dataView['prevenzioneTre']->avg('ob10_3') ;
-        $percentuale =  ($mediaNumeratore / $dataView['denominatore']) * 100 ;
+        $mediaNumeratore = $dataView['prevenzioneTre']->avg('ob10_3');
+        $percentuale = ($mediaNumeratore / $dataView['denominatore']) * 100;
         $complementare = 100 - $percentuale;
 
 
@@ -1214,17 +1623,17 @@ class HomeController extends Controller
             ]);
 
 
-            if ($percentuale > 80) {
-                $dataView['messaggioTmpPrevenzioneTre'] = [
-                    'textPrevenzioneTre' => "Obiettivo raggiunto",
-                    'classPrevenzioneTre' => 'text-success'
-                ];
-            } else {
-                $dataView['messaggioTmpPrevenzioneTre'] = [
-                    'textPrevenzioneTre' => "Obiettivo non raggiunto",
-                    'classPrevenzioneTre' => 'text-danger'
-                ];
-            }
+        if ($percentuale > 80) {
+            $dataView['messaggioTmpPrevenzioneTre'] = [
+                'textPrevenzioneTre' => "Obiettivo raggiunto",
+                'classPrevenzioneTre' => 'text-success'
+            ];
+        } else {
+            $dataView['messaggioTmpPrevenzioneTre'] = [
+                'textPrevenzioneTre' => "Obiettivo non raggiunto",
+                'classPrevenzioneTre' => 'text-danger'
+            ];
+        }
 
         /****************************************************************************************************/
 
@@ -1514,146 +1923,147 @@ class HomeController extends Controller
                 ]
             ]);
 
-      /********************************************************************************* */
+        /********************************************************************************* */
 
-      $dataView['mammellaTumore'] = Chartjs::build()
-      ->name("mammellaTumore")
-      ->type("doughnut")
-      ->size(["width" => 200, "height" => 100])
-      ->labels(['Non vaccinati', 'Vaccinati'])
-      ->datasets([
-          [
-              "label" => "Percentuali MMG",
-              "backgroundColor" => [
-                  "rgba(38, 185, 154, 0.7)",
-                  "rgba(255, 99, 132, 0.7)"
-              ],
-              "data" => [100, 200]
+        $dataView['mammellaTumore'] = Chartjs::build()
+            ->name("mammellaTumore")
+            ->type("doughnut")
+            ->size(["width" => 200, "height" => 100])
+            ->labels(['Non vaccinati', 'Vaccinati'])
+            ->datasets([
+                [
+                    "label" => "Percentuali MMG",
+                    "backgroundColor" => [
+                        "rgba(38, 185, 154, 0.7)",
+                        "rgba(255, 99, 132, 0.7)"
+                    ],
+                    "data" => [100, 200]
 
-          ]
-      ])
-      ->options([
-          'responsive' => true,
-          'plugins' => [
-              'title' => [
-                  'display' => true,
-                  'text' => 'Copertura vaccinale ciclo base'
+                ]
+            ])
+            ->options([
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Copertura vaccinale ciclo base'
 
-              ]
-          ]
-      ]);
+                    ]
+                ]
+            ]);
 
-/******************************************************************************************/
+        /******************************************************************************************/
 
 
         $dataView['chartDRG'] = Chartjs::build()
-        ->name("chartDRG")
-        ->type("line")
-        ->size(["width" => 300, "height" => 150])
-        ->labels(['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'])
-        ->datasets([
-            [
-                "label" => "Non Vaccinati",
-                "backgroundColor" => "rgba(38, 185, 154, 0.7)",
-                "borderColor" => "rgba(38, 185, 154, 1)",
-                "data" => [45, 76, 45, 433, 123, 333, 400, 333, 95, 150, 250, 180],
-                "fill" => false,
-                "lineTension" => 0.1
-            ],
-            [
-                "label" => "Vaccinati",
-                "backgroundColor" => "rgba(255, 99, 132, 0.7)",
-                "borderColor" => "rgba(255, 99, 132, 1)",
-                "data" => [435, 33, 22, 67, 111, 445, 33, 434, 35, 353, 353, 433],
-                "fill" => false,
-                "lineTension" => 0.1
-            ]
-        ])
-        ->options([
-            'responsive' => true,
-            'plugins' => [
-                'title' => [
-                    'display' => true,
-                    'text' => 'Copertura Vaccinale Ciclo Base per Mese'
+            ->name("chartDRG")
+            ->type("line")
+            ->size(["width" => 300, "height" => 150])
+            ->labels(['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'])
+            ->datasets([
+                [
+                    "label" => "Non Vaccinati",
+                    "backgroundColor" => "rgba(38, 185, 154, 0.7)",
+                    "borderColor" => "rgba(38, 185, 154, 1)",
+                    "data" => [45, 76, 45, 433, 123, 333, 400, 333, 95, 150, 250, 180],
+                    "fill" => false,
+                    "lineTension" => 0.1
+                ],
+                [
+                    "label" => "Vaccinati",
+                    "backgroundColor" => "rgba(255, 99, 132, 0.7)",
+                    "borderColor" => "rgba(255, 99, 132, 1)",
+                    "data" => [435, 33, 22, 67, 111, 445, 33, 434, 35, 353, 353, 433],
+                    "fill" => false,
+                    "lineTension" => 0.1
                 ]
-            ],
-            'scales' => [
-                'x' => [
-                    'beginAtZero' => true,
+            ])
+            ->options([
+                'responsive' => true,
+                'plugins' => [
                     'title' => [
                         'display' => true,
-                        'text' => 'Mesi'
+                        'text' => 'Copertura Vaccinale Ciclo Base per Mese'
                     ]
                 ],
-                'y' => [
-                    'beginAtZero' => true,
-                    'title' => [
-                        'display' => true,
-                        'text' => 'Numero di Persone'
+                'scales' => [
+                    'x' => [
+                        'beginAtZero' => true,
+                        'title' => [
+                            'display' => true,
+                            'text' => 'Mesi'
+                        ]
+                    ],
+                    'y' => [
+                        'beginAtZero' => true,
+                        'title' => [
+                            'display' => true,
+                            'text' => 'Numero di Persone'
+                        ]
                     ]
                 ]
-            ]
-        ]);
+            ]);
 
-    /********************************************************************************** */
+        /********************************************************************************** */
 
 
-    
-    $dataView['chartInfezioniPostChirurgiche'] = Chartjs::build()
-    ->name("chartInfezioniPostChirurgiche")
-    ->type("line")
-    ->size(["width" => 300, "height" => 150])
-    ->labels(['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'])
-    ->datasets([
-        [
-            "label" => "Non Vaccinati",
-            "backgroundColor" => "rgba(38, 185, 154, 0.7)",
-            "borderColor" => "rgba(38, 185, 154, 1)",
-            "data" => [45, 76, 45, 433, 123, 333, 400, 333, 95, 150, 250, 180],
-            "fill" => false,
-            "lineTension" => 0.1
-        ],
-        [
-            "label" => "Vaccinati",
-            "backgroundColor" => "rgba(255, 99, 132, 0.7)",
-            "borderColor" => "rgba(255, 99, 132, 1)",
-            "data" => [435, 33, 22, 67, 111, 445, 33, 434, 35, 353, 353, 433],
-            "fill" => false,
-            "lineTension" => 0.1
-        ]
-    ])
-    ->options([
-        'responsive' => true,
-        'plugins' => [
-            'title' => [
-                'display' => true,
-                'text' => 'Copertura Vaccinale Ciclo Base per Mese'
-            ]
-        ],
-        'scales' => [
-            'x' => [
-                'beginAtZero' => true,
-                'title' => [
-                    'display' => true,
-                    'text' => 'Mesi'
+
+        $dataView['chartInfezioniPostChirurgiche'] = Chartjs::build()
+            ->name("chartInfezioniPostChirurgiche")
+            ->type("line")
+            ->size(["width" => 300, "height" => 150])
+            ->labels(['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'])
+            ->datasets([
+                [
+                    "label" => "Non Vaccinati",
+                    "backgroundColor" => "rgba(38, 185, 154, 0.7)",
+                    "borderColor" => "rgba(38, 185, 154, 1)",
+                    "data" => [45, 76, 45, 433, 123, 333, 400, 333, 95, 150, 250, 180],
+                    "fill" => false,
+                    "lineTension" => 0.1
+                ],
+                [
+                    "label" => "Vaccinati",
+                    "backgroundColor" => "rgba(255, 99, 132, 0.7)",
+                    "borderColor" => "rgba(255, 99, 132, 1)",
+                    "data" => [435, 33, 22, 67, 111, 445, 33, 434, 35, 353, 353, 433],
+                    "fill" => false,
+                    "lineTension" => 0.1
                 ]
-            ],
-            'y' => [
-                'beginAtZero' => true,
-                'title' => [
-                    'display' => true,
-                    'text' => 'Numero di Persone'
+            ])
+            ->options([
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Copertura Vaccinale Ciclo Base per Mese'
+                    ]
+                ],
+                'scales' => [
+                    'x' => [
+                        'beginAtZero' => true,
+                        'title' => [
+                            'display' => true,
+                            'text' => 'Mesi'
+                        ]
+                    ],
+                    'y' => [
+                        'beginAtZero' => true,
+                        'title' => [
+                            'display' => true,
+                            'text' => 'Numero di Persone'
+                        ]
+                    ]
                 ]
-            ]
-        ]
-    ]);
+            ]);
 
         return view("garanzia-lea")->with("dataView", $dataView);
     }
 
 
 
-    public function fse(Request $request){
+    public function fse(Request $request)
+    {
 
         $dataView['dataInizioDefault'] = $request->data_inizio ?? date('Y') . '-01-01';
         $dataView['dataFineDefault'] = $request->data_fine ?? date('Y-m-d');
@@ -1668,139 +2078,306 @@ class HomeController extends Controller
 
 
         $dataView['chartDimissioniOspedaliere'] = Chartjs::build()
-        ->name("chartDimissioniOspedaliere")
-        ->type("doughnut")
-        ->size(["width" => 200, "height" => 100])
-        ->labels(['Non vaccinati', 'Vaccinati'])
-        ->datasets([
-            [
-                "label" => "Percentuali MMG",
-                "backgroundColor" => [
-                    "rgba(38, 185, 154, 0.7)",
-                    "rgba(255, 99, 132, 0.7)"
-                ],
-                "data" => [100, 200]
-  
-            ]
-        ])
-        ->options([
-            'responsive' => true,
-            'plugins' => [
-                'title' => [
-                    'display' => true,
-                    'text' => 'Copertura vaccinale ciclo base'
-  
+            ->name("chartDimissioniOspedaliere")
+            ->type("doughnut")
+            ->size(["width" => 200, "height" => 100])
+            ->labels(['Non vaccinati', 'Vaccinati'])
+            ->datasets([
+                [
+                    "label" => "Percentuali MMG",
+                    "backgroundColor" => [
+                        "rgba(38, 185, 154, 0.7)",
+                        "rgba(255, 99, 132, 0.7)"
+                    ],
+                    "data" => [100, 200]
+
                 ]
-            ]
-        ]);
-  
+            ])
+            ->options([
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Copertura vaccinale ciclo base'
 
-/********************************************************************************** */
+                    ]
+                ]
+            ]);
 
+        /*********************************************************************************/
 
+        $dataView['chartProntoSoccorso'] = Chartjs::build()
+            ->name("chartProntoSoccorso")
+            ->type("doughnut")
+            ->size(["width" => 200, "height" => 100])
+            ->labels(['Non vaccinati', 'Vaccinati'])
+            ->datasets([
+                [
+                    "label" => "Percentuali MMG",
+                    "backgroundColor" => [
+                        "rgba(38, 185, 154, 0.7)",
+                        "rgba(255, 99, 132, 0.7)"
+                    ],
+                    "data" => [100, 200]
 
-$dataView['chartRefertiLaboratorio'] = Chartjs::build()
-->name("chartRefertiLaboratorio")
-->type("doughnut")
-->size(["width" => 200, "height" => 100])
-->labels(['Non vaccinati', 'Vaccinati'])
-->datasets([
-    [
-        "label" => "Percentuali MMG",
-        "backgroundColor" => [
-            "rgba(38, 185, 154, 0.7)",
-            "rgba(255, 99, 132, 0.7)"
-        ],
-        "data" => [100, 200]
+                ]
+            ])
+            ->options([
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Copertura vaccinale ciclo base'
 
-    ]
-])
-->options([
-    'responsive' => true,
-    'plugins' => [
-        'title' => [
-            'display' => true,
-            'text' => 'Copertura vaccinale ciclo base'
+                    ]
+                ]
+            ]);
 
-        ]
-    ]
-]);
-
-
-/******************************************************************* */
-
-
-
-
-$dataView['chartRefertiProntoSoccorso'] = Chartjs::build()
-->name("chartRefertiProntoSoccorso")
-->type("doughnut")
-->size(["width" => 200, "height" => 100])
-->labels(['Non vaccinati', 'Vaccinati'])
-->datasets([
-    [
-        "label" => "Percentuali MMG",
-        "backgroundColor" => [
-            "rgba(38, 185, 154, 0.7)",
-            "rgba(255, 99, 132, 0.7)"
-        ],
-        "data" => [100, 200]
-
-    ]
-])
-->options([
-    'responsive' => true,
-    'plugins' => [
-        'title' => [
-            'display' => true,
-            'text' => 'Copertura vaccinale ciclo base'
-
-        ]
-    ]
-]);
+        /********************************************************************************** */
 
 
 
-/******************************************************************************** */
+        $dataView['chartRefertiLaboratorio'] = Chartjs::build()
+            ->name("chartRefertiLaboratorio")
+            ->type("doughnut")
+            ->size(["width" => 200, "height" => 100])
+            ->labels(['Non vaccinati', 'Vaccinati'])
+            ->datasets([
+                [
+                    "label" => "Percentuali MMG",
+                    "backgroundColor" => [
+                        "rgba(38, 185, 154, 0.7)",
+                        "rgba(255, 99, 132, 0.7)"
+                    ],
+                    "data" => [100, 200]
+
+                ]
+            ])
+            ->options([
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Copertura vaccinale ciclo base'
+
+                    ]
+                ]
+            ]);
 
 
-$dataView['chartRefertiRadiologia'] = Chartjs::build()
-->name("chartRefertiRadiologia")
-->type("doughnut")
-->size(["width" => 200, "height" => 100])
-->labels(['Non vaccinati', 'Vaccinati'])
-->datasets([
-    [
-        "label" => "Percentuali MMG",
-        "backgroundColor" => [
-            "rgba(38, 185, 154, 0.7)",
-            "rgba(255, 99, 132, 0.7)"
-        ],
-        "data" => [100, 200]
-
-    ]
-])
-->options([
-    'responsive' => true,
-    'plugins' => [
-        'title' => [
-            'display' => true,
-            'text' => 'Copertura vaccinale ciclo base'
-
-        ]
-    ]
-]);
+        /******************************************************************* */
 
 
 
 
+        $dataView['chartRefertiProntoSoccorso'] = Chartjs::build()
+            ->name("chartRefertiProntoSoccorso")
+            ->type("doughnut")
+            ->size(["width" => 200, "height" => 100])
+            ->labels(['Non vaccinati', 'Vaccinati'])
+            ->datasets([
+                [
+                    "label" => "Percentuali MMG",
+                    "backgroundColor" => [
+                        "rgba(38, 185, 154, 0.7)",
+                        "rgba(255, 99, 132, 0.7)"
+                    ],
+                    "data" => [100, 200]
+
+                ]
+            ])
+            ->options([
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Copertura vaccinale ciclo base'
+
+                    ]
+                ]
+            ]);
 
 
 
+        /******************************************************************************** */
+
+
+        $dataView['chartRefertiRadiologia'] = Chartjs::build()
+            ->name("chartRefertiRadiologia")
+            ->type("doughnut")
+            ->size(["width" => 200, "height" => 100])
+            ->labels(['Non vaccinati', 'Vaccinati'])
+            ->datasets([
+                [
+                    "label" => "Percentuali MMG",
+                    "backgroundColor" => [
+                        "rgba(38, 185, 154, 0.7)",
+                        "rgba(255, 99, 132, 0.7)"
+                    ],
+                    "data" => [100, 200]
+
+                ]
+            ])
+            ->options([
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Copertura vaccinale ciclo base'
+
+                    ]
+                ]
+            ]);
+
+        /********************************************************************************/
 
 
 
+        $dataView['chartSpecialisticaAmbulatoriale'] = Chartjs::build()
+            ->name("chartSpecialisticaAmbulatoriale")
+            ->type("doughnut")
+            ->size(["width" => 200, "height" => 100])
+            ->labels(['Non vaccinati', 'Vaccinati'])
+            ->datasets([
+                [
+                    "label" => "Percentuali MMG",
+                    "backgroundColor" => [
+                        "rgba(38, 185, 154, 0.7)",
+                        "rgba(255, 99, 132, 0.7)"
+                    ],
+                    "data" => [100, 200]
 
+                ]
+            ])
+            ->options([
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Copertura vaccinale ciclo base'
+
+                    ]
+                ]
+            ]);
+
+        /********************************************************************************** */
+
+
+
+        $dataView['chartCertificatiVaccinali'] = Chartjs::build()
+            ->name("chartCertificatiVaccinali")
+            ->type("doughnut")
+            ->size(["width" => 200, "height" => 100])
+            ->labels(['Non vaccinati', 'Vaccinati'])
+            ->datasets([
+                [
+                    "label" => "Percentuali MMG",
+                    "backgroundColor" => [
+                        "rgba(38, 185, 154, 0.7)",
+                        "rgba(255, 99, 132, 0.7)"
+                    ],
+                    "data" => [100, 200]
+
+                ]
+            ])
+            ->options([
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Copertura vaccinale ciclo base'
+
+                    ]
+                ]
+            ]);
+
+
+        /************************************************************************************** */
+
+        $dataView['chartDocumentiFSE'] = Chartjs::build()
+            ->name("chartDocumentiFSE")
+            ->type("doughnut")
+            ->size(["width" => 200, "height" => 100])
+            ->labels(['Non vaccinati', 'Vaccinati'])
+            ->datasets([
+                [
+                    "label" => "Percentuali MMG",
+                    "backgroundColor" => [
+                        "rgba(38, 185, 154, 0.7)",
+                        "rgba(255, 99, 132, 0.7)"
+                    ],
+                    "data" => [100, 200]
+
+                ]
+            ])
+            ->options([
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Copertura vaccinale ciclo base'
+
+                    ]
+                ]
+            ]);
+
+        /**************************************************************************************** */
+
+        $dataView['chartDocumentiCDA2'] = Chartjs::build()
+            ->name("chartDocumentiCDA2")
+            ->type("doughnut")
+            ->size(["width" => 200, "height" => 100])
+            ->labels(['Non vaccinati', 'Vaccinati'])
+            ->datasets([
+                [
+                    "label" => "Percentuali MMG",
+                    "backgroundColor" => [
+                        "rgba(38, 185, 154, 0.7)",
+                        "rgba(255, 99, 132, 0.7)"
+                    ],
+                    "data" => [100, 200]
+
+                ]
+            ])
+            ->options([
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Copertura vaccinale ciclo base'
+
+                    ]
+                ]
+            ]);
+
+        /********************************************************************************************* */
+
+        $dataView['chartDocumentiPades'] = Chartjs::build()
+            ->name("chartDocumentiPades")
+            ->type("doughnut")
+            ->size(["width" => 200, "height" => 100])
+            ->labels(['Non vaccinati', 'Vaccinati'])
+            ->datasets([
+                [
+                    "label" => "Percentuali MMG",
+                    "backgroundColor" => [
+                        "rgba(38, 185, 154, 0.7)",
+                        "rgba(255, 99, 132, 0.7)"
+                    ],
+                    "data" => [100, 200]
+
+                ]
+            ])
+            ->options([
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Copertura vaccinale ciclo base'
+
+                    ]
+                ]
+            ]);
 
 
         return view("fse")->with("dataView", $dataView);

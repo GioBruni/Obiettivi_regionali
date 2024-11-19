@@ -211,29 +211,7 @@
                                 <b>{{ __('AREA DELL\'ASSISTENZA DISTRETTUALE') }}</b>
                                 <br />
                             </div>
-
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-4 mb-3">
-                                        <label for="distretto_id" class="form-label">
-                                            <b>{{ __('Distretto:') }}</b>
-                                        </label>
-                                        <select id="distretto_id" class="form-control">
-                                            <option value="">{{ __('Tutti i distretti') }}</option>
-                                            <option value="Augusta">{{ __('AUGUSTA') }}</option>
-                                            <option value="Lentini">{{ __('LENTINI') }}</option>
-                                            <option value="Noto">{{ __('NOTO') }}</option>
-                                            <option value="Siracusa">{{ __('SIRACUSA') }}</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-3 mb-3 d-flex align-items-end">
-                                        <button id="searchButton2" class="btn btn-primary">Cerca</button>
-                                    </div>
-
-                                </div>
-                            </div>
-                            <hr class="my-4">
-
+                            <br>
                             <div id="ospedalizzazioneEtaAdulta">
                                 <h5 class="text-center text-secondary mb-3">
                                     {{ __('Tasso di ospedalizzazione standardizzato in età adulta (≥ 18 anni) per: complicanze (a breve e lungo termine) per diabete, broncopneumopatia cronica ostruttiva (BPCO) e scompenso cardiaco') }}
