@@ -2,9 +2,7 @@
 
 
 @section("bootstrapitalia_js")
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3"></script>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{{ asset(path: 'js/chart.js') }}" rel="text/javascript"></script>
 @endsection
 
 
