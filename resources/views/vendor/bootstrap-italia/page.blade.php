@@ -187,6 +187,10 @@
                                                                             <li>
                                                                                 <a class="list-item" href="{{ route("controller.obiettivo", ['obiettivo' => 5]) }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Obiettivo 5 - Screening</span></a>
                                                                             </li>
+
+                                                                            <li>
+                                                                                <a class="list-item" href="{{ route("controller.obiettivo", ['obiettivo' => 6]) }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Obiettivo 6 - Donazioni</span></a>
+                                                                            </li>
                                                                             
                                                                             <li>
                                                                                 <a class="list-item" href="{{ route("controller.obiettivo", ['obiettivo' => 8]) }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Obiettivo 8 - testo testo</span></a>
@@ -225,6 +229,11 @@
                                                                             <li>
                                                                                 <a class="list-item" href="{{ route("caricamentoScreening",['obiettivo' => 5])}}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Obiettivo 5 - Screening</span></a>
                                                                             </li>
+
+                                                                            <li>
+                                                                                <a class="list-item" href="{{ route("caricamentoDonazioni",['obiettivo' => 6])}}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Obiettivo 6 - Donazioni</span></a>
+                                                                            </li>
+                                                                            
                                                                         </ul>
                                                                     </div>
                                                                 </div>
