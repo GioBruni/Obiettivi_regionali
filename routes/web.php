@@ -47,6 +47,10 @@ Route::group(['middleware' => ['role:uploader']], routes: function (): void {
     Route::get('/caricamentoPercorsoCertificabilita', [HomeController::class, 'caricamentoPercorsoCertificabilita'])->name('caricamentoPercorsoCertificabilita');
     Route::get('/uploadTempiListeAttesa', [HomeController::class, 'uploadTempiListaAttesa'])->name('uploadTempiListeAttesa');
     Route::get('/tempiListeAttesa', [HomeController::class, 'tempiListeAttesa'])->name('tempiListeAttesa');
+    Route::get('/caricamentoFarmaci', [HomeController::class, 'caricamentoFarmaci'])->name('caricamentoFarmaci');
+    Route::post('/farmaciGarePdf', [PdfController::class, 'farmaciGarePdf'])->name('farmaci.gare.autocertificazione');
+    Route::post('/farmaciDeliberePdf', [PdfController::class, 'farmaciDeliberePdf'])->name( 'farmaci.gare.deliberazione');
+
     
     
     Route::post('/uploadObiettivo', [HomeController::class, 'uploadFileObiettivo'])->name('file.uploadObiettivo');

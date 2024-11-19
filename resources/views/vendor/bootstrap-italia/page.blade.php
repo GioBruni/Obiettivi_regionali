@@ -192,6 +192,9 @@
                                                                             <li>
                                                                                 <a class="list-item" href="{{ route("controller.obiettivo", ['obiettivo' => 8]) }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 8 - {{ config("constants.OBIETTIVO.8.text") }}</span></a>
                                                                             </li>                                                                          
+                                                                            <li>
+                                                                                <a class="list-item" href="{{ route("controller.obiettivo", ['obiettivo' => 9]) }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 9 - {{ config("constants.OBIETTIVO.9.text") }}</span></a>
+                                                                            </li>                                                                          
                                                                             <!--li><span class="divider"></span></li-->
                                                                         </ul>
                                                                     </div>
@@ -226,6 +229,9 @@
                                                                             <li>
                                                                                 <a class="list-item" href="{{ route("caricamentoPercorsoCertificabilita") }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 8 - {{ config("constants.OBIETTIVO.8.text") }}</span></a>
                                                                             </li>
+                                                                            <li>
+                                                                                <a class="list-item" href="{{ route("caricamentoFarmaci", ['obiettivo' => 9]) }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 9 - {{ config("constants.OBIETTIVO.9.text") }}</span></a>
+                                                                            </li>                                                                          
                                                                         </ul>
                                                                     </div>
                                                                 </div>

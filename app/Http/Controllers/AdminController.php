@@ -174,7 +174,7 @@ class AdminController extends Controller
             break;
             case 8: $dataView['titolo'] = config("constants.OBIETTIVO.8.text");
             break;
-            case 9: $dataView['titolo'] = "Ottimizzazione della gest del I ciclo di terapia";
+            case 9: $dataView['titolo'] = config("constants.OBIETTIVO.9.text");
             break;
         }
 

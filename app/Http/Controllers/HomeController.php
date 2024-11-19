@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\ChartTrait;
+use App\Models\Gare;
 use App\Models\LocationsUsers;
 use App\Models\PCT;
 use App\Models\UploatedFile;
@@ -119,7 +120,7 @@ class HomeController extends Controller
         $dataView['tooltip'] = config("constants.OBIETTIVO." . $obiettivo . ".tooltip");
         $dataView['obiettivo'] = $obiettivo;
         $dataView['strutture'] = Auth::user()->structures();
-        $dataView['categorie'] = DB::table('target_categories as tc')
+        $dataView['categorie'] = DB::table(table: 'target_categories as tc')
             ->where("target_number", $obiettivo)->get();
 
         return $dataView;
@@ -138,7 +139,6 @@ class HomeController extends Controller
                                     FROM uploated_files as u3
                                     WHERE u3.target_category_id = uf.target_category_id
                                     AND u3.created_at = uf.created_at)')
-            ->orderBy("tc.category")
             ->orderBy('uf.created_at', 'desc')
             ->orderBy('uf.updated_at', 'desc')
             ->get();
@@ -252,6 +252,28 @@ class HomeController extends Controller
 
     }
 
+    public function caricamentoFarmaci() {
+        $dataView = $this->initView(9);
+        $strutturaId = Auth::user()->firstStructureId()->id;
+        $dataView['PCT'] = PCT::where("structure_id", $strutturaId)
+            ->distinct("year")
+            ->latest()->get();
+        $dataView['gare'] = Gare::where("structure_id", $strutturaId)
+            ->distinct("year")
+            ->latest()->get();
+        $dataView['pct.denominatori'] = DB::table("flows_sdo")
+            ->select(DB::raw("sum(ob9_2) as tot"),"year")
+            ->where("structure_id", $strutturaId)
+            ->groupby("year")
+            ->orderby("year", "desc")
+            ->get();
+        $dataView['anni'] = DB::table('flows_sdo')
+            ->where("structure_id", $strutturaId)
+            ->distinct()
+            ->pluck("year");
+
+        return view("caricamentoFarmaci")->with("dataView", $dataView);
+    }
 
     public function showObiettivo(Request $request)
     {
@@ -530,7 +552,24 @@ class HomeController extends Controller
 
         $dataView['categorie'] = DB::table(table: 'target_categories as tc')
             ->where("target_number", $request->obiettivo)->get();
-        $dataView['file'] = $this->fileCaricati(5, $dataView['strutture']);
+        $dataView['file'] = DB::table('uploated_files as uf')
+            ->join('target_categories as tc', 'uf.target_category_id', '=', 'tc.id')
+            ->select('uf.id', 'uf.validator_user_id', 'uf.approved', 'uf.notes', 'uf.path', 'uf.filename', 'uf.target_category_id', 'tc.category', 'uf.updated_at', 'uf.user_id', 'uf.created_at')
+            ->where('uf.target_number', 5)
+            ->whereIn("uf.structure_id", $dataView['strutture']->pluck("id")->toArray())
+            ->whereRaw('uf.created_at = (SELECT MAX(u2.created_at)
+                                    FROM uploated_files as u2 
+                                    WHERE u2.target_category_id = uf.target_category_id)')
+            ->whereRaw('uf.updated_at = (SELECT MAX(u3.updated_at)
+                                    FROM uploated_files as u3
+                                    WHERE u3.target_category_id = uf.target_category_id
+                                    AND u3.created_at = uf.created_at)')
+            ->orderBy("tc.category")
+            ->orderBy('uf.created_at', 'desc')
+            ->orderBy('uf.updated_at', 'desc')
+            ->get();
+
+
 
         // Dati per la tabella nella view 
         $dataView['tableData'] = DB::table('insert_mmg')
@@ -783,23 +822,107 @@ class HomeController extends Controller
 
     public function indexFarmaci(Request $request)
     {
+        $strutturaId = Auth::user()->firstStructureId()->id;
+        $anno = $request->has("year") ? $request->year : date('Y');
+        if ($request->has("structure_id"))
+            $strutturaId = $request->structure_id;            
+
         $dataView['strutture'] = Auth::user()->structures();
-        $dataView['PCT'] = PCT::where("user_id", Auth::user()->id)
-            ->latest()->first();
+        $dataView['anni'] = DB::table('flows_sdo')
+            ->where("structure_id", $strutturaId)
+            ->distinct()
+            ->pluck("year");            
 
-        if (!($dataView['PCT'])) {
-            $pct = new PCT();
-            $pct->year = date('Y');
-            $pct->begin_month = 1;
-            $pct->end_month = date('n');
-            $pct->structure_id = $dataView['strutture']->first()->id;
+        $numeratore = PCT::join('uploated_files as f', 'target9_PCT.uploated_file_id', '=', 'f.id')
+            ->where('target9_PCT.year', $anno)
+            ->where('target9_PCT.structure_id', $strutturaId)
+            ->where('f.approved', 1)
+            ->orderBy('target9_PCT.created_at', 'desc')
+            //->select("numerator")
+            ->first();
+        $denominatore = DB::table("flows_sdo")
+            ->where("year", $anno)
+            ->where("structure_id", $strutturaId)
+            ->sum("ob9_2");
+        $rapporto = ($denominatore > 0 && isset($numeratore)) ? round($numeratore->numerator / $denominatore * 100, 2) : 0;
 
-            $dataView['PCT'] = $pct;
+        $dataView['pct'] = [
+            "numeratore" => $numeratore,
+            "denominatore" => $denominatore,
+            "rapporto" => $rapporto,
+        ];
+        $gareTotali = Gare::where('year', $anno)
+            ->where('structure_id', $strutturaId)
+            ->whereNotNull( "uploated_file_gara_id")
+            ->count();
+        $gareConDelibere = Gare::where('year', $anno)
+            ->where('structure_id', $strutturaId)
+            ->whereNotNull( "uploated_file_delibera_id")
+            ->count();
+        $rapporto = $gareTotali > 0 ? (($gareConDelibere / $gareTotali)*100) : 0;
+
+        /*
+        if ($rapporto >= 95) {
+            $risultato = 2.5;
+        } else {
+            $risultato = round((($rapporto / 95) * 2.5), 2);
         }
+        */
+        $dataView['gare'] = [
+            "totali" => $gareTotali,
+            "conDelibere" => $gareConDelibere,
+            "rapporto" => $rapporto,
+        ];
+
+        $dataView['chart91'] = Chartjs::build()
+            ->name("Gare")
+            ->type("doughnut")
+            ->size(["width" => 300, "height" => 150])
+            ->labels(['Gare con delibere', 'Gare totali'])
+            ->datasets([
+                [
+                    "label" => "Gare (?)",
+                    "backgroundColor" => [
+                        "rgba(38, 185, 154, 0.7)",
+                        "rgba(255, 99, 132, 0.7)"
+                    ],
+                    "data" => [$gareConDelibere, $gareTotali]
+
+                ]
+                ]);
+            /*
+            ->options([
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Gare'
+
+                    ]
+                ]
+            ]);*/
+/*
+            if ($percentuale > 95) {
+                $dataView['messaggioTmp'] = [
+                    'text' => "Obiettivo raggiunto",
+                    'class' => 'text-success'
+                ];
+            } else {
+                $dataView['messaggioTmp'] = [
+                    'text' => "Obiettivo non raggiunto",
+                    'class' => 'text-danger'
+                ];
+            }
+*/
 
         return view("farmaci")->with("dataView", $dataView);
     }
 
+
+    public function farmaciPCT(Request $request)
+    {
+
+    }
 
     public function importTarget1(Request $request)
     {
