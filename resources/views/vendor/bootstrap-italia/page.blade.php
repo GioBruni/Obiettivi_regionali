@@ -186,15 +186,9 @@
                                                                             <li>
                                                                                 <a class="list-item" href="{{ route("controller.obiettivo", ['obiettivo' => 3]) }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 3 - {{ config("constants.OBIETTIVO.3.text") }}</span></a>
                                                                             </li>
-
                                                                             <li>
-                                                                                <a class="list-item" href="{{ route("controller.obiettivo", ['obiettivo' => 6]) }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Obiettivo 6 - Donazioni</span></a>
+                                                                                <a class="list-item" href="{{ route("controller.obiettivo", ['obiettivo' => 6]) }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 6 - {{ config("constants.OBIETTIVO.6.text") }}</span></a>
                                                                             </li>
-
-                                                                            <li>
-                                                                                <a class="list-item" href="{{ route("controller.obiettivo", ['obiettivo' => 6]) }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Obiettivo 6 - Donazioni</span></a>
-                                                                            </li>
-                                                                            
                                                                             <li>
                                                                                 <a class="list-item" href="{{ route("controller.obiettivo", ['obiettivo' => 5]) }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 5 - {{ config("constants.OBIETTIVO.5.text") }}</span></a>
                                                                             </li>                                                    
@@ -236,16 +230,14 @@
                                                                                 <a class="list-item" href="{{ route("caricamentoScreening",['obiettivo' => 5])}}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 5 - {{config("constants.OBIETTIVO.5.text")}}</span></a>
                                                                             </li>
                                                                             <li>
+                                                                                <a class="list-item" href="{{ route("caricamentoDonazioni",['obiettivo' => 6])}}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 6 - {{config("constants.OBIETTIVO.6.text")}}</span></a>
+                                                                            </li>
+                                                                            <li>
                                                                                 <a class="list-item" href="{{ route("caricamentoPercorsoCertificabilita") }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 8 - {{ config("constants.OBIETTIVO.8.text") }}</span></a>
                                                                             </li>
                                                                             <li>
                                                                                 <a class="list-item" href="{{ route("caricamentoFarmaci", ['obiettivo' => 9]) }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 9 - {{ config("constants.OBIETTIVO.9.text") }}</span></a>
                                                                             </li>                                                                          
-
-                                                                            <li>
-                                                                                <a class="list-item" href="{{ route("caricamentoDonazioni",['obiettivo' => 6])}}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Obiettivo 6 - Donazioni</span></a>
-                                                                            </li>
-                                                                            
                                                                         </ul>
                                                                     </div>
                                                                 </div>
