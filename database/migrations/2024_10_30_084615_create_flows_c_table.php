@@ -21,7 +21,6 @@ return new class extends Migration
             $table->datetime("created_at")->useCurrent();
             $table->date("file_date");
             $table->integer("ob1_1")->nullable();
-            $table->integer("ob5_4")->nullable();
             $table->integer("ia1_3")->nullable();
             $table->integer("ia1_4")->nullable();
             $table->integer("ia1_5")->nullable();

@@ -43,17 +43,19 @@ Route::group(['middleware' => ['role:uploader']], routes: function (): void {
     })->name('showFileUpload');*/
 
     Route::get('/showObiettivo/{obiettivo}', [HomeController::class, 'showObiettivo'])->name('showObiettivo');
+    Route::get('/caricamentoPuntoNascite', [HomeController::class, 'caricamentoPuntoNascite'])->name('caricamentoPuntoNascite');
+    Route::get('/caricamentoPercorsoCertificabilita', [HomeController::class, 'caricamentoPercorsoCertificabilita'])->name('caricamentoPercorsoCertificabilita');
+    Route::get('/uploadTempiListeAttesa', [HomeController::class, 'uploadTempiListaAttesa'])->name('uploadTempiListeAttesa');
+    Route::get('/tempiListeAttesa', [HomeController::class, 'tempiListeAttesa'])->name('tempiListeAttesa');
+    
+    
     Route::post('/uploadObiettivo', [HomeController::class, 'uploadFileObiettivo'])->name('file.uploadObiettivo');
     Route::get('/farmaciIndex', [HomeController::class, 'indexFarmaci'])->name(name: 'indexFarmaci');
     Route::post('/farmaciAutodichiarazione', [PdfController::class, 'farmaciAutodichiarazionePdf'])->name('farmaci.pct.autocertificazione');
     Route::post('/farmaciAutodichiarazioneUpolad', [PdfController::class, 'farmaciAutodichiarazionePdfUpolad'])->name('farmaci.pct.upload');
-    Route::get('/uploadTempiListeAttesa', function() {
-        return view("uploadTempiListaAttesa");
-    })->name('uploadTempiListeAttesa');
     
     Route::post('/uploadTempiListeAttesa', [HomeController::class, 'importTarget1'])->name('file.uploadTempiListeAttesa');
     //Route::get(uri: '/indexAmbulatoriale', [HomeController::class, 'indexAmbulatoriale'])->name(name: 'indexAmbulatoriale');
-    Route::get('/tempiListeAttesa', [HomeController::class, 'tempiListeAttesa'])->name('tempiListeAttesa');
 
     Route::get('/prontoSoccorso', [HomeController::class, 'prontoSoccorso'])->name('prontoSoccorso');
     Route::get('/caricamentoScreening/{obiettivo}', [HomeController::class, 'caricamentoScreening'])->name('caricamentoScreening');
