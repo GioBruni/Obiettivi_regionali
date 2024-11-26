@@ -6,7 +6,6 @@ use App\ChartTrait;
 use App\Models\Gare;
 use App\Models\LocationsUsers;
 use App\Models\PCT;
-use App\Models\Target1;
 use App\Models\Target6_data;
 use App\Models\Target7_data;
 use App\Models\UploatedFile;
@@ -287,9 +286,7 @@ class HomeController extends Controller
         $dataView['obiettivo'] = $obiettivo;
         $dataView['strutture'] = Auth::user()->structures();
         $dataView['categorie'] = DB::table(table: 'target_categories as tc')
-            ->where("target_number", $obiettivo)
-            ->orderBy("order")
-            ->get();
+            ->where("target_number", $obiettivo)->get();
 
         return $dataView;
     }
@@ -415,22 +412,13 @@ class HomeController extends Controller
 
     }
 
-    public function uploadTempiListaAttesa(Request $request) {
+    public function uploadTempiListaAttesa()
+    {
         $dataView = $this->initView(1);
         $dataView['files'] = null;
 
-        $tmpAnno = isset($request->year) ? $request->year : date('Y');
-        $tmpStruttura = isset($request->structure_id) ? $request->structure_id : Auth::user()->firstStructureId()->id;
-        $target = Target1::where("year", $tmpAnno)->where("structure_id", $tmpStruttura)->first();
-        $dataView['year'] = $tmpAnno;
-        if($target) {
-            $dataView['numeroAgende'] = $target->numero_agende;
-            $dataView['prestazioniSpecialistaRiferimento'] = $target->prestazioni_specialista_riferimento;
-            $dataView['prestazioniSpecialistaPrecedente'] = $target->prestazioni_specialista_precedente;
-            $dataView['prestazioniMMGRiferimento'] = $target->prestazioni_MMG_riferimento;
-            $dataView['prestazioniMMGPrecedente'] = $target->prestazioni_MMG_precedente;
-        }
         return view("uploadTempiListaAttesa")->with("dataView", $dataView);
+
     }
 
     public function caricamentoFarmaci()
@@ -657,7 +645,7 @@ class HomeController extends Controller
         //Denominatore preso dal flusso
         $dataView['denominatore'] = DB::table('flows_sdo')
             ->join('users_structures AS us', 'flows_sdo.structure_id', '=', 'us.structure_id')
-            ->where('us.user_id', 7)
+            ->where('us.user_id',7 )
             ->select(
                 DB::raw('MAX(flows_sdo.ob6) as ob6'),
                 DB::raw('MAX(flows_sdo.id) as id'),
@@ -1059,11 +1047,8 @@ class HomeController extends Controller
         $dataView['numeratoreTotale'] = $numeratoreM + $numeratoreC;
         $dataView['denominatoreTotale'] = $denominatoreM + $denominatoreC;
 
-        if ($dataView['denominatoreTotale'] > 0) {
-            $dataView['percentuale'] = number_format($dataView['numeratoreTotale'] / $dataView['denominatoreTotale'] * 100, 2);
-        } else {
-            $dataView['percentuale'] = 0;
-        }
+        $dataView['percentuale'] = number_format($dataView['numeratoreTotale'] / $dataView['denominatoreTotale'] * 100, 2);
+
         $dataView['percentualeComplementare'] = 100 - $dataView['percentuale'];
 
         /*  $dataView['prestazioniInappropriate'] = 642;
@@ -1242,68 +1227,6 @@ class HomeController extends Controller
 
     }
 
-    public function saveTempiListeAttesa(Request $request)
-    {
-
-        $year = $request->year;
-        $structure_id = $request->structure_id;
-        $numero_agende = $request->numeroAgende;
-        $prestazioni_specialista_riferimento = $request->prestazioniSpecialistaRiferimento;
-        $prestazioni_specialista_precedente = $request->prestazioniSpecialistaPrecedente;
-        $prestazioni_MMG_riferimento = $request->prestazioniMMGRiferimento;
-        $prestazioni_MMG_precedente = $request->prestazioniMMGPrecedente;
-//dd($request);
-        $request->validate([
-            'year' => 'required|integer',
-            'structure_id' => 'required|numeric',
-            'numeroAgende' => 'required|numeric|gte:10', // numeroAgende >= 10
-            'prestazioniSpecialistaRiferimento' => 'required|numeric', 
-            'prestazioniSpecialistaPrecedente' => 'required|numeric', 
-            'prestazioniMMGRiferimento' => 'required|numeric', 
-            'prestazioniMMGPrecedente' => 'required|numeric', 
-        ]);
-
-
-        $target = Target1::where("year", $year)
-            ->where("structure_id", $structure_id)
-            ->exists();
-        if ($target) {
-            Target1::where("year", $year)
-            ->where("structure_id", $structure_id)
-            ->update([
-                'numero_agende' => $numero_agende,
-                'prestazioni_specialista_riferimento' => $prestazioni_specialista_riferimento, 
-                'prestazioni_specialista_precedente' => $prestazioni_specialista_precedente, 
-                'prestazioni_MMG_riferimento' => $prestazioni_MMG_riferimento, 
-                'prestazioni_MMG_precedente' => $prestazioni_MMG_precedente,     
-            ]);
-        } else {
-            Target1::create( [
-                'year' => $year,
-                'structure_id' => $structure_id,
-                'numero_agende' => $numero_agende,
-                'prestazioni_specialista_riferimento' => $prestazioni_specialista_riferimento, 
-                'prestazioni_specialista_precedente' => $prestazioni_specialista_precedente, 
-                'prestazioni_MMG_riferimento' => $prestazioni_MMG_riferimento, 
-                'prestazioni_MMG_precedente' => $prestazioni_MMG_precedente,         
-            ]);    
-        }
-        $data = [
-            'anno' => $year,
-            'struttura' => Structure::where("id", $structure_id)->first(),
-            'numero_agende' => $numero_agende,
-            'prestazioni_specialista_riferimento' => $prestazioni_specialista_riferimento, 
-            'prestazioni_specialista_precedente' => $prestazioni_specialista_precedente, 
-            'prestazioni_MMG_riferimento' => $prestazioni_MMG_riferimento, 
-            'prestazioni_MMG_precedente' => $prestazioni_MMG_precedente,         
-            'data' => date('d/m/Y'),
-        ];
-
-        $pdf = new PdfController();
-        return $pdf->tempiListeAttesaAutodichiarazionePdf($data);
-        //return redirect()->route('uploadTempiListeAttesa')->with('success', 'Dati caricati con successo. Firmare il pdf e inoltrarlo tramite modulo presente nella pagina.');
-    }
-
 
     public function uploadDatiDonazione(Request $request)
     {
@@ -1408,7 +1331,7 @@ class HomeController extends Controller
             \Log::info("prova: " . $existingRecord->id);
             $existingRecord->update(array_merge($fieldsToUpdate, ['updated_at' => now()]));
         } else {
-            \Log::info("aaa");
+            \Log::info("Creating a new record");
             Target7_data::create(array_merge($fieldsToUpdate, [
                 'anno' => $anno,
                 'structure_id' => $structureId,
@@ -2294,11 +2217,28 @@ class HomeController extends Controller
         $dataView['prevenzioneTre'] = DB::table('target7_data')
             ->select('*')
             ->where('anno', "=",  $dataView['dataSelezionata'])
+            ->where('structure_id', '=', Auth::user()->firstStructureId()->id)
             ->get();
 
-        //numeratori
+      
+            //numeratori
+            $dataView['dimissioniOspedaliere'] = 0;
+            $dataView['dimissioniPS'] = 0;
+            $dataView['prestazioniLab'] = 0;
+            $dataView['prestazioniRadiologia'] = 0;
+            $dataView['specialisticaAmbulatoriale'] = 0;
+            $dataView['vaccinati'] = 0;
+            $dataView['certificatiIndicizzati'] = 0;
+            $dataView['documentiIndicizzati'] = 0;
+            $dataView['documentiIndicizzatiCDA2'] = 0;
+            $dataView['documentiCDA2'] = 0;
+            $dataView['documentiPades'] = 0;
+            $dataView['documentiIndicizzatiPades'] = 0;
+            $dataView['ob7'] = 0;
+
+
         foreach ($dataView['prevenzioneTre'] as $row) {
-            $dataView['dimissioniOspedaliere'] = $row->dimissioni_ospedaliere;
+            $dataView['dimissioniOspedaliere'] = $row->dimissioni_ospedaliere ;
             $dataView['dimissioniPS'] = $row->dimissioni_ps;
             $dataView['prestazioniLab'] = $row->prestazioni_laboratorio;
             $dataView['prestazioniRadiologia'] = $row->prestazioni_radiologia;
@@ -2312,11 +2252,13 @@ class HomeController extends Controller
             $dataView['documentiIndicizzatiPades'] = $row->documenti_indicizzati_pades;
         }
 
+    
+   
 
         // Estrai i dati del denominatore
         $dataView['denominatore'] = DB::table('flows_sdo')
             ->join('users_structures AS us', 'flows_sdo.structure_id', '=', 'us.structure_id')
-            ->where('us.user_id', 7)
+            ->where('us.user_id', Auth::user()->id)
             ->where('flows_sdo.year',  $dataView['dataSelezionata']) // Filtro per l'anno corrente
             ->select(
                 DB::raw('MAX(flows_sdo.ob7_1) as ob7'),
@@ -2353,7 +2295,6 @@ class HomeController extends Controller
 
                     ],
                     "data" => [$dataView['percentualeDimissioniOspedaliere'], $dataView['percentualeDimissioniOspedaliereComplementare'],]
-
                 ]
             ])
             ->options([
@@ -2378,19 +2319,15 @@ class HomeController extends Controller
             $dataView['ob7PS'] = $row->ia1_2;
         }
 
-      
         if ($dataView['dimissioniPS'] != 0) {
             $dataView['percentualePS'] = round($dataView['dimissioniPS'] / $dataView['ob7PS']  * 100, 2);
            
             $dataView['percentualeComplementarePS'] = 100 - $dataView['percentualePS'];
-          
         } else {
             $dataView['percentualePS'] = 0; 
             $dataView['percentualeComplementarePS'] = 100;
         }
         
-
-
         $dataView['chartProntoSoccorso'] = Chartjs::build()
             ->name("chartProntoSoccorso")
             ->type("doughnut")
@@ -2774,7 +2711,7 @@ class HomeController extends Controller
             ->name("chartDocumentiPades")
             ->type("doughnut")
             ->size(["width" => 200, "height" => 100])
-            ->labels(['Intervento >= 2 giorni', 'Intervento <= 2 giorni'])
+            ->labels(['Pades', 'Non pades'])
             ->datasets([
                 [
                     "label" => "Percentuali MMG",
@@ -2783,8 +2720,7 @@ class HomeController extends Controller
                         "rgb(255, 0, 0)",
                         
                     ],
-                    "data" => [20,40]
-
+                    "data" => [2,3]
                 ]
             ])
             ->options([
@@ -2797,7 +2733,6 @@ class HomeController extends Controller
                     ]
                 ]
             ]);
-
 
 
         return view("esisti")->with("dataView", $dataView);
