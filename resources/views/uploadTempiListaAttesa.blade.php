@@ -67,7 +67,7 @@
                                         </div>
                                     @endif
                                     
-                                    <form action="{{ route('file.uploadTempiListeAttesa') }}" method="POST" enctype="multipart/form-data">
+                                    <form action="{{ route('importTarget1') }}" method="POST" enctype="multipart/form-data">
                                         @csrf
                                         <div class="row">
                                             <div class="col-3">
@@ -104,77 +104,169 @@
                             @endif
                             <div class="box mt-4">
                                 <div class="card-header bg-primary text-white mb-3">
+                                Generazione autocertificazione da firmare elettronicamente
+                                </div>
+                                <div class="card-body">
+                                    @if ($errors->any())
+                                        <div class="alert alert-danger mt-1" role="alert">
+                                            <h4 class="alert-heading px-5">Dato non importato</h4>
+                                            <ul>
+                                                @foreach ($errors->all() as $error)
+                                                    <li>{{ $error }}</li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                    @endif
+                                    <div class="box mt-4">
+                                        <form method="POST" action="{{ route('saveTempiListeAttesa') }}">
+                                            @csrf
+                                            <input type="hidden" name="obiettivo" value="{{ $dataView['obiettivo'] }}" />
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <label for="categoria">Anno di riferimento</label>
+                                                    <div class="form-group">
+                                                        <select class="form-control" name="year" id="year">
+                                                            @for ($year = date('Y'); $year >= 2023; $year--)
+                                                            <option value="{{ $year }}" {{ $year == date('Y') || (isset($dataView['year']) && $year == $dataView['year']) ? "selected" : "" }}>
+                                                                {{ $year }}
+                                                            </option>
+                                                            @endfor
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label for="categoria">Seleziona la struttura</label>
+                                                    <div class="form-group">
+                                                        <select class="form-control" name="structure_id" required>
+                                                            <option value="">-- Seleziona --</option>
+                                                            @foreach ($dataView['strutture'] as $rowStruttura)
+                                                            <option value="{{ $rowStruttura->id }}" {{ count($dataView['strutture']) == 1 || (isset($dataView['structure_id']) && $rowStruttura->id == $dataView['structure_id']) ? "selected" : "" }}>
+                                                                {{ $rowStruttura->name }}
+                                                            </option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label for="categoria">Numero di agende dedicate ai PTDA aziendali</label>
+                                                    <div class="form-group">
+                                                        <input type="number" class="form-control" name="numeroAgende" value="{{ isset($dataView['numeroAgende']) ? $dataView['numeroAgende'] : "" }}" required>
+                                                        @error('numeroAgende')
+                                                            <div class="alert alert-danger mt-2">{{ $message }}</div>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <label for="categoria">Num prest. di controllo prescritte dallo specialista ambulatoriale (Anno di riferimento)</label>
+                                                    <div class="form-group">
+                                                        <input type="number" class="form-control" name="prestazioniSpecialistaRiferimento" value="{{ isset($dataView['prestazioniSpecialistaRiferimento']) ? $dataView['prestazioniSpecialistaRiferimento'] : "" }}" required>
+                                                        @error('prestazioniSpecialistaRiferimento')
+                                                            <div class="alert alert-danger mt-2">{{ $message }}</div>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="categoria">Num prest. di controllo prescritte dallo specialista ambulatoriale (Anno precedente rispetto a quello di riferimento)</label>
+                                                    <div class="form-group">
+                                                        <input type="number" class="form-control" name="prestazioniSpecialistaPrecedente" value="{{ isset($dataView['prestazioniSpecialistaPrecedente']) ? $dataView['prestazioniSpecialistaPrecedente'] : "" }}" required>
+                                                        @error('prestazioniSpecialistaPrecedente')
+                                                            <div class="alert alert-danger mt-2">{{ $message }}</div>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <label for="categoria">Num prest. di controllo prescritte da MMG/PLS (Anno di riferimento)</label>
+                                                    <div class="form-group">
+                                                        <input type="number" class="form-control" name="prestazioniMMGRiferimento" value="{{ isset($dataView['prestazioniMMGRiferimento']) ? $dataView['prestazioniMMGRiferimento'] : "" }}" required>
+                                                        @error('prestazioniMMGRiferimento')
+                                                            <div class="alert alert-danger mt-2">{{ $message }}</div>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="categoria">Num prest. di controllo prescritte da MMG/PLS (Anno precedente rispetto a quello di riferimento)</label>
+                                                    <div class="form-group">
+                                                        <input type="number" class="form-control" name="prestazioniMMGPrecedente" value="{{ isset($dataView['prestazioniMMGPrecedente']) ? $dataView['prestazioniMMGPrecedente'] : "" }}" required>
+                                                        @error('prestazioniMMGPrecedente')
+                                                            <div class="alert alert-danger mt-2">{{ $message }}</div>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex justify-content-end mt-3">
+                                                <button type="submit" class="btn btn-primary btn-sm" id="submitBtn" >
+                                                    <i class="bi bi-floppy"></i>&nbsp;&nbsp;{{ __('Salva') }}
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="box mt-4">
+                                <div class="card-header bg-primary text-white mb-3">
                                     Caricamento dati
                                 </div>
                                 <div class="card-body">
-                                <div class="box mt-4">
+                                    @if ($errors->any())
+                                        <div class="alert alert-danger mt-1" role="alert">
+                                            <h4 class="alert-heading px-5">Dato non importato</h4>
+                                            <ul>
+                                                @foreach ($errors->all() as $error)
+                                                    <li>{{ $error }}</li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                    @endif
                                     <form action="{{ route('file.uploadObiettivo') }}" method="POST" enctype="multipart/form-data">
                                         @csrf
-                                        <input type="hidden" name="obiettivo" value="{{ $dataView['obiettivo'] }}" />
+                                        <input type="hidden" name="obiettivo" value="1">
                                         <div class="row">
-                                            <div class="col-md-6">
+                                            <div class="col-md-4">
+                                                <label for="categoria">Anno di riferimento</label>
+                                                <div class="form-group">
+                                                    <select class="form-control" name="anno">
+                                                        @for ($year = date('Y'); $year >= 2023; $year--)
+                                                        <option value="{{ $year }}">
+                                                            {{ $year }}
+                                                        </option>
+                                                        @endfor
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
                                                 <label for="categoria">Seleziona la struttura</label>
                                                 <div class="form-group">
                                                     <select class="form-control" name="structure_id" required>
                                                         <option value="">-- Seleziona --</option>
                                                         @foreach ($dataView['strutture'] as $rowStruttura)
-                                                        <option value="{{ $rowStruttura->id }}" {{ count($dataView['strutture']) == 1 ? "selected" : "" }}>
+                                                        <option value="{{ $rowStruttura->id }}">
                                                             {{ $rowStruttura->name }}
                                                         </option>
                                                         @endforeach
                                                     </select>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">
-                                                <label for="categoria">Anno di riferimento</label>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <label for="file">Seleziona il file PDF firmato (Max 5MB)</label>
                                                 <div class="form-group">
-                                                    <select class="form-control" name="anno">
-                                                        @for ($anno = date('Y'); $anno >= 2023; $anno--)
-                                                        <option value="{{ $anno }}" {{ $anno == date('Y') ? "selected" : "" }}>
-                                                            {{ $anno }}
-                                                        </option>
-                                                        @endfor
-                                                    </select>
+                                                    <input type="file" class="form-control" id="file" name="file" accept=".pdf" required>
+                                                    <div id="file-error" class="alert alert-danger mt-2" style="display:none;">Il file supera i 5MB</div>
+                                                    @error('file')
+                                                        <div class="alert alert-danger mt-2">{{ $message }}</div>
+                                                    @enderror
                                                 </div>
+                                                <button type="submit" class="btn btn-primary">Carica</button>                            
                                             </div>
                                         </div>
-                                        @if (count(value: $dataView['categorie']) > 0)
-                                            <div class="row align-top">
-                                                <div class="col-md-6">
-                                                    <label for="categoria">Seleziona la categoria</label>
-                                                    <div class="form-group">
-                                                        <select class="form-control" name="categoria" id="categoriaSelect" required>
-                                                            <option value="" data-description="&nbsp;">-- Seleziona --</option>
-                                                            @foreach ($dataView['categorie'] as $rowCategoria)
-                                                            <option value="{{ $rowCategoria->id }}" data-description="{{ $rowCategoria->description }}">
-                                                                {{ $rowCategoria->category }}
-                                                            </option>
-                                                            @endforeach
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label for="categoriaDescription">Descrizione</label>
-                                                    <div id="categoriaDescription" style="margin-top: 0; border: 1px solid #ccc; padding: 5px; border-radius: 5px;">
-                                                        <span id="descriptionText">&nbsp;</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
-                                        <label for="file">Seleziona il file PDF della checklist (Max 5MB)</label>
-                                        <div class="form-group">
-                                            <input type="file" class="form-control" id="file" name="file" accept=".pdf" required>
-                                            <div id="file-error" class="alert alert-danger mt-2" style="display:none;">Il file supera i 5MB</div>
-                                            @error('file')
-                                                <div class="alert alert-danger mt-2">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                        <button type="submit" class="btn btn-primary">Carica</button>
                                     </form>
                                 </div>
                             </div>
-                            </div>
-
                         </div>
                     </div>
                 </div>
@@ -195,11 +287,9 @@
             }
         });
 
-        $("#categoriaSelect").change(function() {
-            var selectedOption = $(this).find('option:selected');
-            var description = selectedOption.attr('data-description');
+        $("#year").change(function() {
 
-            $('#descriptionText').text(description); 
+            window.location.href = "{{ route("uploadTempiListeAttesa" ) }}" + "/" + $(this).val();
         });
 
     });

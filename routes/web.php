@@ -45,11 +45,11 @@ Route::group(['middleware' => ['role:uploader']], routes: function (): void {
     Route::get('/showObiettivo/{obiettivo}', [HomeController::class, 'showObiettivo'])->name('showObiettivo');
     Route::get('/caricamentoPuntoNascite', [HomeController::class, 'caricamentoPuntoNascite'])->name('caricamentoPuntoNascite');
     Route::get('/caricamentoPercorsoCertificabilita', [HomeController::class, 'caricamentoPercorsoCertificabilita'])->name('caricamentoPercorsoCertificabilita');
-    Route::get('/uploadTempiListeAttesa', [HomeController::class, 'uploadTempiListaAttesa'])->name('uploadTempiListeAttesa');
     Route::get('/tempiListeAttesa', [HomeController::class, 'tempiListeAttesa'])->name('tempiListeAttesa');
     Route::get('/caricamentoFarmaci', [HomeController::class, 'caricamentoFarmaci'])->name('caricamentoFarmaci');
     Route::post('/farmaciGarePdf', [PdfController::class, 'farmaciGarePdf'])->name('farmaci.gare.autocertificazione');
     Route::post('/farmaciDeliberePdf', [PdfController::class, 'farmaciDeliberePdf'])->name( 'farmaci.gare.deliberazione');
+    Route::get('/uploadTempiListeAttesa/{year?}', [HomeController::class, 'uploadTempiListaAttesa'])->name('uploadTempiListeAttesa');
 
     
     
@@ -58,8 +58,9 @@ Route::group(['middleware' => ['role:uploader']], routes: function (): void {
     Route::post('/farmaciAutodichiarazione', [PdfController::class, 'farmaciAutodichiarazionePdf'])->name('farmaci.pct.autocertificazione');
     Route::post('/farmaciAutodichiarazioneUpolad', [PdfController::class, 'farmaciAutodichiarazionePdfUpolad'])->name('farmaci.pct.upload');
     
-    Route::post('/uploadTempiListeAttesa', [HomeController::class, 'importTarget1'])->name('file.uploadTempiListeAttesa');
+    Route::post('/importTarget1', [HomeController::class, 'importTarget1'])->name('importTarget1');
     //Route::get(uri: '/indexAmbulatoriale', [HomeController::class, 'indexAmbulatoriale'])->name(name: 'indexAmbulatoriale');
+    Route::post('/saveTempiListeAttesa', [HomeController::class, 'saveTempiListeAttesa'])->name('saveTempiListeAttesa');
 
     Route::get('/prontoSoccorso', [HomeController::class, 'prontoSoccorso'])->name('prontoSoccorso');
     Route::get('/caricamentoScreening/{obiettivo}', [HomeController::class, 'caricamentoScreening'])->name('caricamentoScreening');

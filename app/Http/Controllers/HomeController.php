@@ -6,6 +6,7 @@ use App\ChartTrait;
 use App\Models\Gare;
 use App\Models\LocationsUsers;
 use App\Models\PCT;
+use App\Models\Target1;
 use App\Models\Target6_data;
 use App\Models\Target7_data;
 use App\Models\UploatedFile;
@@ -286,7 +287,9 @@ class HomeController extends Controller
         $dataView['obiettivo'] = $obiettivo;
         $dataView['strutture'] = Auth::user()->structures();
         $dataView['categorie'] = DB::table(table: 'target_categories as tc')
-            ->where("target_number", $obiettivo)->get();
+            ->where("target_number", $obiettivo)
+            ->orderBy("order")
+            ->get();
 
         return $dataView;
     }
@@ -412,13 +415,22 @@ class HomeController extends Controller
 
     }
 
-    public function uploadTempiListaAttesa()
-    {
+    public function uploadTempiListaAttesa(Request $request) {
         $dataView = $this->initView(1);
         $dataView['files'] = null;
 
+        $tmpAnno = isset($request->year) ? $request->year : date('Y');
+        $tmpStruttura = isset($request->structure_id) ? $request->structure_id : Auth::user()->firstStructureId()->id;
+        $target = Target1::where("year", $tmpAnno)->where("structure_id", $tmpStruttura)->first();
+        $dataView['year'] = $tmpAnno;
+        if($target) {
+            $dataView['numeroAgende'] = $target->numero_agende;
+            $dataView['prestazioniSpecialistaRiferimento'] = $target->prestazioni_specialista_riferimento;
+            $dataView['prestazioniSpecialistaPrecedente'] = $target->prestazioni_specialista_precedente;
+            $dataView['prestazioniMMGRiferimento'] = $target->prestazioni_MMG_riferimento;
+            $dataView['prestazioniMMGPrecedente'] = $target->prestazioni_MMG_precedente;
+        }
         return view("uploadTempiListaAttesa")->with("dataView", $dataView);
-
     }
 
     public function caricamentoFarmaci()
@@ -1047,8 +1059,11 @@ class HomeController extends Controller
         $dataView['numeratoreTotale'] = $numeratoreM + $numeratoreC;
         $dataView['denominatoreTotale'] = $denominatoreM + $denominatoreC;
 
-        $dataView['percentuale'] = number_format($dataView['numeratoreTotale'] / $dataView['denominatoreTotale'] * 100, 2);
-
+        if ($dataView['denominatoreTotale'] > 0) {
+            $dataView['percentuale'] = number_format($dataView['numeratoreTotale'] / $dataView['denominatoreTotale'] * 100, 2);
+        } else {
+            $dataView['percentuale'] = 0;
+        }
         $dataView['percentualeComplementare'] = 100 - $dataView['percentuale'];
 
         /*  $dataView['prestazioniInappropriate'] = 642;
@@ -1225,6 +1240,68 @@ class HomeController extends Controller
 
         return redirect()->route('caricamentoScreening', ['obiettivo' => $request->obiettivo]);
 
+    }
+
+    public function saveTempiListeAttesa(Request $request)
+    {
+
+        $year = $request->year;
+        $structure_id = $request->structure_id;
+        $numero_agende = $request->numeroAgende;
+        $prestazioni_specialista_riferimento = $request->prestazioniSpecialistaRiferimento;
+        $prestazioni_specialista_precedente = $request->prestazioniSpecialistaPrecedente;
+        $prestazioni_MMG_riferimento = $request->prestazioniMMGRiferimento;
+        $prestazioni_MMG_precedente = $request->prestazioniMMGPrecedente;
+//dd($request);
+        $request->validate([
+            'year' => 'required|integer',
+            'structure_id' => 'required|numeric',
+            'numeroAgende' => 'required|numeric|gte:10', // numeroAgende >= 10
+            'prestazioniSpecialistaRiferimento' => 'required|numeric', 
+            'prestazioniSpecialistaPrecedente' => 'required|numeric', 
+            'prestazioniMMGRiferimento' => 'required|numeric', 
+            'prestazioniMMGPrecedente' => 'required|numeric', 
+        ]);
+
+
+        $target = Target1::where("year", $year)
+            ->where("structure_id", $structure_id)
+            ->exists();
+        if ($target) {
+            Target1::where("year", $year)
+            ->where("structure_id", $structure_id)
+            ->update([
+                'numero_agende' => $numero_agende,
+                'prestazioni_specialista_riferimento' => $prestazioni_specialista_riferimento, 
+                'prestazioni_specialista_precedente' => $prestazioni_specialista_precedente, 
+                'prestazioni_MMG_riferimento' => $prestazioni_MMG_riferimento, 
+                'prestazioni_MMG_precedente' => $prestazioni_MMG_precedente,     
+            ]);
+        } else {
+            Target1::create( [
+                'year' => $year,
+                'structure_id' => $structure_id,
+                'numero_agende' => $numero_agende,
+                'prestazioni_specialista_riferimento' => $prestazioni_specialista_riferimento, 
+                'prestazioni_specialista_precedente' => $prestazioni_specialista_precedente, 
+                'prestazioni_MMG_riferimento' => $prestazioni_MMG_riferimento, 
+                'prestazioni_MMG_precedente' => $prestazioni_MMG_precedente,         
+            ]);    
+        }
+        $data = [
+            'anno' => $year,
+            'struttura' => Structure::where("id", $structure_id)->first(),
+            'numero_agende' => $numero_agende,
+            'prestazioni_specialista_riferimento' => $prestazioni_specialista_riferimento, 
+            'prestazioni_specialista_precedente' => $prestazioni_specialista_precedente, 
+            'prestazioni_MMG_riferimento' => $prestazioni_MMG_riferimento, 
+            'prestazioni_MMG_precedente' => $prestazioni_MMG_precedente,         
+            'data' => date('d/m/Y'),
+        ];
+
+        $pdf = new PdfController();
+        return $pdf->tempiListeAttesaAutodichiarazionePdf($data);
+        //return redirect()->route('uploadTempiListeAttesa')->with('success', 'Dati caricati con successo. Firmare il pdf e inoltrarlo tramite modulo presente nella pagina.');
     }
 
 

@@ -15,6 +15,16 @@ use DB;
 class PdfController extends Controller
 {
 
+    public function tempiListeAttesaAutodichiarazionePdf($data)
+    {
+        // Carica la vista e passa i dati
+        $pdf = PDF::loadView('pdfs.tempiListaAttesaAutodichiarazione', $data);
+
+        // Scarica il PDF
+        return $pdf->download('tempiListaAttesa.pdf');
+    }
+
+
     public function farmaciGarePdf(Request $request)
     {
         $request->validate([
@@ -54,7 +64,7 @@ class PdfController extends Controller
             ->get();
 
         return redirect()->back()->with('success', 'File di gara caricato con successo.')
-            ->with("dataView", $dataView);
+            ->with( "dataView", $dataView);
     }
 
 
