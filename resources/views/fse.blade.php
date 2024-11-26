@@ -22,18 +22,28 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-5 mb-3">
-                            <label for="data_inizio">Data Inizio:</label>
-                            <input type="date" name="data_inizio" id="data_inizio" class="form-control"
-                                value={{$dataView['dataInizioDefault']}}>
-                        </div>
-                        <div class="col-md-5 mb-3">
-                            <label for="data_fine">Data Fine:</label>
-                            <input type="date" name="data_fine" id="data_fine" class="form-control"
-                                value={{$dataView['dataFineDefault']}}>
-                        </div>
-                        <div class="col-md-2 mb-3 d-flex align-items-end">
-                            <button id="searchButton" class="btn btn-primary w-100">Cerca</button>
+                        <div class="container">
+                            <form action="{{ route('fse') }}" method="GET" enctype="multipart/form-data">
+                                <div class="row align-items-end">
+                                    <div class="col-md-6">
+                                        <div class="form-group d-flex">
+                                            <select id="annoSelezionato" class="form-control mr-2" name="annoSelezionato">
+                                                @php
+                                                $annoCorrente = date('Y');
+                                                $annoMinimo = 2023; 
+                                                $annoSelezionato = request('annoSelezionato', $annoCorrente);
+                                                for ($anno = $annoCorrente; $anno >= $annoMinimo; $anno--) {
+                                                    $selected = ($anno == $annoSelezionato) ? 'selected' : '';
+                                                    echo "<option value=\"$anno\" $selected>$anno</option>";
+                                                }
+                                                @endphp
+                                            </select>
+                                            <button type="submit" class="btn btn-primary">Cerca</button>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" name="annoCorrente" value="{{ $annoCorrente }}">
+                                </div>
+                            </form>
                         </div>
 
                         <div id="indicatore1" class="row justify-content-center">
@@ -67,12 +77,11 @@
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
-
                                                                 <tr>
-                                                                    <td></td>
-                                                                    <td></td>
-                                                                    <td></td>
-                                                                    <td></td>
+                                                                    <td>{{$dataView['dimissioniOspedaliere']}}</td>
+                                                                    <td>{{$dataView['ob7']}}</td>
+                                                                    <td>{{$dataView['percentualeDimissioniOspedaliere']}}</td>
+                                                                    <td>{{$dataView['percentualeDimissioniOspedaliereComplementare']}}</td>
                                                                 </tr>
 
                                                             </tbody>
@@ -107,10 +116,10 @@
                                                             <tbody>
 
                                                                 <tr>
-                                                                    <td></td>
-                                                                    <td></td>
-                                                                    <td></td>
-                                                                    <td></td>
+                                                                     <td>{{$dataView['dimissioniPS'] }}</td>
+                                                                    <td>{{$dataView['ob7PS']}}</td>
+                                                                    <td>{{$dataView['percentualePS']}}</td>
+                                                                    <td>{{$dataView['percentualeComplementarePS']}}</td>
                                                                 </tr>
                                                             </tbody>
                                                         </table>
@@ -137,19 +146,19 @@
                                                         <table class="table table-striped">
                                                             <thead>
                                                                 <tr>
-                                                                    <th>Verbali indicizzati</th>
-                                                                    <th>Dimissioni</th>
-                                                                    <th>% Verbali Indicizzati</th>
-                                                                    <th>% Verbali Non Indicizzati</th>
+                                                                    <th>Referti indicizzati</th>
+                                                                    <th>Prestazioni di laboratorio</th>
+                                                                    <th>% Referti Indicizzati</th>
+                                                                    <th>% Referti Non Indicizzati</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
 
                                                                 <tr>
-                                                                    <td></td>
-                                                                    <td></td>
-                                                                    <td></td>
-                                                                    <td></td>
+                                                                    <td>{{$dataView['prestazioniLab']}}</td>
+                                                                    <td>{{$dataView['PrestazioniLabDen']}}</td>
+                                                                    <td>{{$dataView['percentualePrestLab']}}</td>
+                                                                    <td>{{$dataView['percentualeComplementarePrestLab']}}</td>
                                                                 </tr>
 
                                                             </tbody>
@@ -175,19 +184,19 @@
                                                         <table class="table table-striped">
                                                             <thead>
                                                                 <tr>
-                                                                    <th>Verbali indicizzati</th>
-                                                                    <th>Dimissioni</th>
-                                                                    <th>% Verbali Indicizzati</th>
-                                                                    <th>% Verbali Non Indicizzati</th>
+                                                                    <th>Referti indicizzati</th>
+                                                                    <th>Prestazioni di radiologia</th>
+                                                                    <th>% Referti Indicizzati</th>
+                                                                    <th>% Referti Non Indicizzati</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
 
                                                                 <tr>
-                                                                    <td></td>
-                                                                    <td></td>
-                                                                    <td></td>
-                                                                    <td></td>
+                                                                    <td>{{$dataView['prestazioniRadiologia']}}</td>
+                                                                    <td>{{$dataView['PrestazioniRadDen']}}</td>
+                                                                    <td>{{$dataView['percentualeRefRadiologia']}}</td>
+                                                                    <td>{{$dataView['percentualeComplementareRefRadiologia']}}</td>
                                                                 </tr>
                                                             </tbody>
                                                         </table>
@@ -214,19 +223,19 @@
                                                         <table class="table table-striped">
                                                             <thead>
                                                                 <tr>
-                                                                    <th>Verbali indicizzati</th>
-                                                                    <th>Dimissioni</th>
-                                                                    <th>% Verbali Indicizzati</th>
-                                                                    <th>% Verbali Non Indicizzati</th>
+                                                                    <th>Referti indicizzati</th>
+                                                                    <th>Prestazioni di specialistica ambulatoriale</th>
+                                                                    <th>% Referti Indicizzati</th>
+                                                                    <th>% Referti Non Indicizzati</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
 
                                                                 <tr>
-                                                                    <td></td>
-                                                                    <td></td>
-                                                                    <td></td>
-                                                                    <td></td>
+                                                                    <td>{{$dataView['specialisticaAmbulatoriale']}}</td>
+                                                                    <td>{{$dataView['PrestazioniAmbulatoriale']}}</td>
+                                                                    <td>{{$dataView['percentualeSpecAmbulatoriale']}}</td>
+                                                                    <td>{{$dataView['percentualeComplementareSpecAmbulatoriale']}}</td>
                                                                 </tr>
                                                             </tbody>
                                                         </table>
@@ -252,19 +261,21 @@
                                                         <table class="table table-striped">
                                                             <thead>
                                                                 <tr>
-                                                                    <th>Verbali indicizzati</th>
-                                                                    <th>Dimissioni</th>
-                                                                    <th>% Verbali Indicizzati</th>
-                                                                    <th>% Verbali Non Indicizzati</th>
+                                                                    <th>Certificati indicizzati</th>
+                                                                    <th>Vaccinati</th>
+                                                                    <th>% Certificati Indicizzati</th>
+                                                                    <th>% Certificati Non Indicizzati</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
 
                                                                 <tr>
-                                                                    <td></td>
-                                                                    <td></td>
-                                                                    <td></td>
-                                                                    <td></td>
+                                                                    <td>{{$dataView['certificatiIndicizzati']}}</td>
+                                                                    <td>{{$dataView['vaccinati']}}</td>
+                                                                    <td>{{$dataView['percentualeVaccinati']}}</td>
+                                                                    
+                                                                    <td>{{  $dataView['percentualeComplementareVaccinati']  }}</td>
+                                                                    
                                                                 </tr>
                                                             </tbody>
                                                         </table>
@@ -289,33 +300,28 @@
                                                         <table class="table table-striped">
                                                             <thead>
                                                                 <tr>
-                                                                    <th>Verbali indicizzati</th>
-                                                                    <th>Dimissioni</th>
-                                                                    <th>% Verbali Indicizzati</th>
-                                                                    <th>% Verbali Non Indicizzati</th>
+                                                                    <th>Documenti indicizzati</th>
+                                                                    <th>Prestazioni erogate</th>
+                                                                    <th>% Documenti Indicizzati</th>
+                                                                    <th>% Documenti Non Indicizzati</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
-
                                                                 <tr>
-                                                                    <td></td>
-                                                                    <td></td>
-                                                                    <td></td>
-                                                                    <td></td>
+                                                                    <td>{{$dataView['documentiIndicizzati']}}</td>
+                                                                    <td>{{$dataView['prestazioniErogate']}}</td>
+                                                                    <td>{{ $dataView['percentualeDocumentazioneFse']}}</td>
+                                                                    <td>{{$dataView['percentualeComplementareDocumentazioneFse']}}</td>
                                                                 </tr>
                                                             </tbody>
                                                         </table>
+                                                        <div class="legend p-3 border rounded mt-3 ">
+                                                            Calcolo punteggio
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-
-
-
-
-
-
-
                                     </div>
                                 </div>
                             </div>
@@ -349,20 +355,21 @@
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
-
                                                                 <tr>
-                                                                    <td></td>
-                                                                    <td></td>
-                                                                    <td></td>
-                                                                    <td></td>
+                                                                    <td>{{$dataView['documentiIndicizzati']}}</td>
+                                                                    <td>{{$dataView['documentiIndicizzatiCDA2'] }}</td>
+                                                                    <td>{{$dataView['percentualeDocumentiCDA2']}}</td>
+                                                                    <td>{{$dataView['percentualeComplementareDocumentiCDA2']}}</td>
                                                                 </tr>
                                                             </tbody>
                                                         </table>
+                                                        <div class="legend p-3 border rounded mt-3 ">
+                                                            Calcolo punteggio
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-
                                     </div>
                                 </div>
                             </div>
@@ -396,25 +403,25 @@
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
-
                                                                 <tr>
-                                                                    <td></td>
-                                                                    <td></td>
-                                                                    <td></td>
-                                                                    <td></td>
+                                                                    <td>{{$dataView['documentiPades']}}</td>
+                                                                    <td>{{$dataView['documentiIndicizzatiPades']}}</td>
+                                                                    <td>{{$dataView['percentualePades']}}</td>
+                                                                    <td>{{$dataView['percentualeComplementarePades']}}</td>
                                                                 </tr>
                                                             </tbody>
                                                         </table>
+                                                        <div class="legend p-3 border rounded mt-3 ">
+                                                            Calcolo punteggio
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-
                                     </div>
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>

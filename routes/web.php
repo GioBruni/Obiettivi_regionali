@@ -64,10 +64,14 @@ Route::group(['middleware' => ['role:uploader']], routes: function (): void {
     Route::get('/prontoSoccorso', [HomeController::class, 'prontoSoccorso'])->name('prontoSoccorso');
     Route::get('/caricamentoScreening/{obiettivo}', [HomeController::class, 'caricamentoScreening'])->name('caricamentoScreening');
     Route::get('/caricamentoDonazioni/{obiettivo}', [AdminController::class, 'caricamentoDonazioni'])->name('caricamentoDonazioni');
+    Route::get('/caricamentoFse/{obiettivo}', [HomeController::class, 'caricamentoFse'])->name('caricamentoFse');
+    Route::get('/caricamentoGaranziaLea/{obiettivo}', [HomeController::class, 'caricamentoGaranziaLea'])->name('caricamentoGaranziaLea');
     Route::get('/donazioni', [HomeController::class, 'donazioni'])->name('donazioni');
     Route::get('/screening', [HomeController::class, 'screening'])->name('screening');
+    Route::get('/esiti', [HomeController::class, 'esiti'])->name('esiti');
     Route::post('/uploadFileScreening', [HomeController::class, 'uploadFileScreening'])->name('uploadFileScreening');
     Route::post('/uploadDatiDonazione', [HomeController::class, 'uploadDatiDonazione'])->name('uploadDatiDonazione');
+    Route::post('/uploadDatiFse', [HomeController::class, 'uploadDatiFse'])->name('uploadDatiFse');
     Route::get('/downloadPdf/{obiettivo}', [HomeController::class, 'downloadPdf'])->name('downloadPdf');
     Route::post('/mmgRegister', [HomeController::class, 'mmgRegister'])->name('mmgRegister');
     Route::get('/garanziaLea', [HomeController::class, 'garanziaLea'])->name('garanziaLea');

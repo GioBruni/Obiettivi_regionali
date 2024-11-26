@@ -28,8 +28,8 @@ return [
             'icon' => 'fas fa-bed-pulse',
             'text' => 'Esiti',
             'tooltip' => 'Esiti',
-            'route' => null, //route('chart-esiti')
-            'enable' => false,
+            'route' => '/esiti',
+            'enable' => true,
         ],
         '3' => [
             'icon' => 'fa-solid fa-person-pregnant',
@@ -64,6 +64,7 @@ return [
             'text' => 'Fascicolo Sanitario Elettronico',
             'tooltip' => 'Fascicolo Sanitario Elettronico',
             'route' => "/fse",
+            
             'enable' => true,
         ],
         '8' => [

@@ -232,12 +232,20 @@
                                                                             <li>
                                                                                 <a class="list-item" href="{{ route("caricamentoDonazioni",['obiettivo' => 6])}}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 6 - {{config("constants.OBIETTIVO.6.text")}}</span></a>
                                                                             </li>
+
+                                                                            <li>
+                                                                                <a class="list-item" href="{{ route("caricamentoFse",['obiettivo' => 7])}}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 7 - {{config("constants.OBIETTIVO.7.text")}}</span></a>
+                                                                            </li>
+
                                                                             <li>
                                                                                 <a class="list-item" href="{{ route("caricamentoPercorsoCertificabilita") }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 8 - {{ config("constants.OBIETTIVO.8.text") }}</span></a>
                                                                             </li>
                                                                             <li>
                                                                                 <a class="list-item" href="{{ route("caricamentoFarmaci", ['obiettivo' => 9]) }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 9 - {{ config("constants.OBIETTIVO.9.text") }}</span></a>
-                                                                            </li>                                                                          
+                                                                            </li>      
+                                                                            <li>
+                                                                                <a class="list-item" href="{{ route("caricamentoGaranziaLea",['obiettivo' => 10])}}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 10 - {{config("constants.OBIETTIVO.10.text")}}</span></a>
+                                                                            </li>                                                                    
                                                                         </ul>
                                                                     </div>
                                                                 </div>
