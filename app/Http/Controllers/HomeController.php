@@ -6,6 +6,7 @@ use App\ChartTrait;
 use App\Models\Gare;
 use App\Models\LocationsUsers;
 use App\Models\PCT;
+use App\Models\Target1;
 use App\Models\Target6_data;
 use App\Models\Target7_data;
 use App\Models\UploatedFile;
@@ -22,7 +23,7 @@ use App\Models\InsertMmg;
 use PDF;
 use App\Models\Structure;
 use App\Http\Controllers\DateTime;
-
+use Illuminate\Support\Facades\Validator;
 
 class HomeController extends Controller
 {
@@ -309,6 +310,25 @@ class HomeController extends Controller
             ->orderBy('uf.updated_at', 'desc')
             ->get();
     }
+
+
+    protected function mmgData($strutture) {
+        return DB::table(table: 'insert_mmg as mmg')
+            ->join('structures as s', 'mmg.structure_id', '=', 's.id')
+            ->whereIn("mmg.structure_id", $strutture->pluck("id")->toArray())
+            ->select('mmg.mmg_totale', 'mmg.mmg_coinvolti', 'mmg.year', 'mmg.structure_id', 's.name as nome_struttura')
+            ->get();
+    }
+
+    
+    protected function screeningCommon() {
+        $dataView = $this->initView(5);
+        $dataView['tableData'] = $this->mmgData(Auth::user()->structures());
+
+        return $dataView;
+    }
+
+
     /**
      * Show the application dashboard.
      *
@@ -680,9 +700,6 @@ class HomeController extends Controller
             $percentuali[] = $percentuale;
             $labelsTmp[] = $target->anno;
         }
-
-
-
         // $dataView['result'] = collect($dataView['result'])->sortBy('anno')->values()->all();
 
         $dataView['totale_cornee2024'] = 0;
@@ -894,7 +911,6 @@ class HomeController extends Controller
     }
 
 
-
     public function tempiListeAttesa(Request $request)
     {
         $tmpAnno = isset($request->anno) ? $request->anno : date('Y');
@@ -935,127 +951,121 @@ class HomeController extends Controller
     }
 
 
-
     public function screening(Request $request)
     {
-
-        // Mi serve per prendere i dati solo per il file di obiettivo 5
-        /*$dataView['file'] = DB::table('uploated_files as up')
-            ->join('target_categories as tc', 'up.target_category_id', '=', 'tc.id')
-            ->where('up.user_id', Auth::user()->id)
-            ->where('up.target_number', 5)
-            ->select('up.target_number', 'up.target_category_id', 'tc.category', 'up.validator_user_id', 'up.approved', 'up.created_at')
-            ->get();
-*/
-
-        $dataView['strutture'] = Auth::user()->structures();
-
-        $dataView['categorie'] = DB::table(table: 'target_categories as tc')
-            ->where("target_number", $request->obiettivo)->get();
-        $dataView['file'] = DB::table('uploated_files as uf')
-            ->join('target_categories as tc', 'uf.target_category_id', '=', 'tc.id')
-            ->select('uf.id', 'uf.validator_user_id', 'uf.approved', 'uf.notes', 'uf.path', 'uf.filename', 'uf.target_category_id', 'tc.category', 'uf.updated_at', 'uf.user_id', 'uf.created_at')
-            ->where('uf.target_number', 5)
-            ->whereIn("uf.structure_id", $dataView['strutture']->pluck("id")->toArray())
-            ->whereRaw('uf.created_at = (SELECT MAX(u2.created_at)
-                                    FROM uploated_files as u2 
-                                    WHERE u2.target_category_id = uf.target_category_id)')
-            ->whereRaw('uf.updated_at = (SELECT MAX(u3.updated_at)
-                                    FROM uploated_files as u3
-                                    WHERE u3.target_category_id = uf.target_category_id
-                                    AND u3.created_at = uf.created_at)')
-            ->orderBy("tc.category")
-            ->orderBy('uf.created_at', 'desc')
-            ->orderBy('uf.updated_at', 'desc')
-            ->get();
-
-
-
-        // Dati per la tabella nella view 
-        $dataView['tableData'] = DB::table('insert_mmg')
-            ->join('structures as s', 'insert_mmg.structure_id', '=', 's.id')
-            ->select('mmg_totale', 'mmg_coinvolti', 'year', 'structure_id', 's.name as nome_struttura')
-            ->get();
+        $dataView = $this->screeningCommon();
+        $dataView['file'] = $this->fileCaricati(5, $dataView['strutture']);
 
         //avrò solo una riga nel db (per ora)
-        $record = DB::table('insert_mmg')->select('mmg_totale', 'mmg_coinvolti')->first();
-        $dataView['noData'] = false;
+        $record = $dataView['tableData']->first();
 
-
+        $noData = false;
         if ($record && $record->mmg_totale != 0) {
             $dataView['percentualeAderenti'] = ($record->mmg_coinvolti / $record->mmg_totale) * 100;
-            $dataView['percentualeNonAderenti'] = 100 - $dataView['percentualeAderenti'];
+            $percentualeNonAderenti = 100 - $dataView['percentualeAderenti'];
         } else {
             $dataView['percentualeAderenti'] = 0;
-            $dataView['percentualeNonAderenti'] = 0;
-            $dataView['noData'] = true;
+            $percentualeNonAderenti = 0;
+            $noData = true;
         }
+        $dataView['percentualeAderenti'] = round($dataView['percentualeAderenti'], 2);
+        $percentualeNonAderenti = round($percentualeNonAderenti, 2);
 
-        $dataView['percentualeAderenti'] = number_format($dataView['percentualeAderenti'], 2);
+        $idR = DB::table("target5_data")
+            ->select(DB::raw("concat(month, '/', year) as mese"), "mammografico", "cercocarcinoma", "colonretto")
+            ->where("year", date('Y'))
+            ->where('structure_id', Auth::user()->firstStructureId()->id)
+            ->orderBy("year", "desc")
+            ->orderby("month");
 
+        $dataView['lineChart'] = $this->showChart("line", "IndicatoriDiRisultatoTarget5"
+        , $idR->pluck("mese")->toArray() // labels
+        , [
+            [
+                "label" => "Memmografico",
+                "data" => $idR->pluck("mammografico")->toArray(),
+            ],
+            [
+                "label" => "Cervicocarcinoma",
+                "data" => $idR->pluck("cercocarcinoma")->toArray(),
+            ],
+            [
+                "label" => "test",
+                "data" => $idR->pluck("colonretto")->toArray(),
+            ]
+        ] //datasets
+        , [
+            'responsive' => true,
+            'plugins' => [
 
-        $dataView['mmgChart'] = Chartjs::build()
-            ->name("OverallAvgTmpComplementaryBarChart")
-            ->type("doughnut")
-            ->size(["width" => 300, "height" => 150])
-            ->labels(['MMG Aderenti', 'MMG non aderenti'])
-            ->datasets([
+                'scales' => [
+                    "x" => [
+                        "title" => [
+                            'display' => true,
+                            'text' => 'Mese'
+                        ]
+                    ],
+                    "y" => [
+                        "title" => [
+                            'display' => true,
+                            'text' => 'Indicatore LEA %'
+                        ]
+                    ],
+                ],
+
+            ]
+        ] // options
+        );
+
+        $dataView['mmgChart'] = $this->showChart("doughnut", "OverallAvgTmpComplementaryBarChart"
+            , ['MMG Aderenti', 'MMG non aderenti'] // labels
+            , [
                 [
                     "label" => "Percentuali MMG",
                     "backgroundColor" => [
                         "rgba(38, 185, 154, 0.7)",
                         "rgba(255, 99, 132, 0.7)"
                     ],
-                    "data" => $dataView['noData']
+                    "data" => $noData
                         ? [0, 0]
-                        : [$dataView['percentualeAderenti'], number_format($dataView['percentualeNonAderenti'], 2)]
+                        : [$dataView['percentualeAderenti'], $percentualeNonAderenti]
                 ]
-            ])
-            ->options([
+            ] //datasets
+            , [
                 'responsive' => true,
                 'plugins' => [
                     'title' => [
                         'display' => true,
-                        'text' => $dataView['noData']
+                        'text' => $noData
                             ? 'Non ci sono dati disponibili'
                             : 'Distribuzione Percentuale: MMG aderenti e Non aderenti'
                     ]
                 ]
-            ]);
+            ] // options
+        );
 
         //*************Secondo grafico **********//
 
-        $dataView['datiFlussoM'] = DB::table('flows_m')
+        $datiFlussoM = DB::table('flows_m')
             ->select('ob5_num as numeratore_m', 'ob5_den as denominatore_m')
-            ->join('users_structures as us', 'flows_m.structure_id', '=', 'us.structure_id')
-            ->where('us.user_id', Auth::user()->id, )
+            ->where('structure_id', Auth::user()->firstStructureId()->id)
             ->get();
 
 
-        $dataView['datiFlussoC'] = DB::table('flows_c')
+        $datiFlussoC = DB::table('flows_c')
             ->select('ob5_num as numeratore_c', 'ob5_den as denominatore_c')
-            ->join('users_structures as us', 'flows_c.structure_id', '=', 'us.structure_id')
-            ->where('us.user_id', Auth::user()->id, )
+            ->where('structure_id', Auth::user()->firstStructureId()->id)
             ->get();
 
-        $numeratoreM = $dataView['datiFlussoM']->sum('numeratore_m');
-        $denominatoreM = $dataView['datiFlussoM']->sum('denominatore_m');
+        $dataView['numeratoreTotale'] = $datiFlussoM->sum('numeratore_m') + $datiFlussoC->sum('numeratore_c');
+        $dataView['denominatoreTotale'] = $datiFlussoM->sum('denominatore_m') + $datiFlussoC->sum('denominatore_c');
 
-
-        $numeratoreC = $dataView['datiFlussoC']->sum('numeratore_c');
-        $denominatoreC = $dataView['datiFlussoC']->sum('denominatore_c');
-        $dataView['numeratoreTotale'] = $numeratoreM + $numeratoreC;
-        $dataView['denominatoreTotale'] = $denominatoreM + $denominatoreC;
-
-        $dataView['percentuale'] = number_format($dataView['numeratoreTotale'] / $dataView['denominatoreTotale'] * 100, 2);
-
+        if ($dataView['denominatoreTotale'] > 0) {
+            $dataView['percentuale'] = number_format($dataView['numeratoreTotale'] / $dataView['denominatoreTotale'] * 100, 2);
+        } else {
+            $dataView['percentuale'] = 0;
+        }
         $dataView['percentualeComplementare'] = 100 - $dataView['percentuale'];
-
-        /*  $dataView['prestazioniInappropriate'] = 642;
-          $dataView['totalePrestazioni'] = 3963;
-
-          $dataView['percentualeCodiciDD'] = number_format($dataView['prestazioniInappropriate'] / $dataView['totalePrestazioni'] * 100, 2);
-        */
 
         $dataView['codiciEsenzioneChart'] = Chartjs::build()
             ->name("chartCodiciDD")
@@ -1126,6 +1136,7 @@ class HomeController extends Controller
         return view("screening")->with("dataView", $dataView);
     }
 
+
     public function uploadFileObiettivo(Request $request)
     {
         $request->validate([
@@ -1188,7 +1199,7 @@ class HomeController extends Controller
 
     public function mmgRegister(Request $request)
     {
-
+        $dataView = $this->screeningCommon();
 
         $anno = $request->year;
         $tot_mmg = $request->tot_mmg;
@@ -1205,26 +1216,26 @@ class HomeController extends Controller
             'year.integer' => 'L\'anno deve essere un numero intero.',
         ];
 
-
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'tot_mmg' => 'required|numeric',
             'mmg_coinvolti' => 'required|numeric|lte:tot_mmg', // mmg_coinvolti <= tot_mmg
             'year' => 'required|integer',
         ], $messages);
+        
+        if ($validator->fails()) {
+            $dataView['errorsMMG'] = $validator->errors()->getMessages();
+        } else {
+            InsertMmg::create([
+                'mmg_totale' => $tot_mmg,
+                'mmg_coinvolti' => $mmg_coinvolti,
+                'year' => $anno,
+                'structure_id' => $structure_id,
 
+            ]);
+        }
 
-
-        InsertMmg::create([
-            'mmg_totale' => $tot_mmg,
-            'mmg_coinvolti' => $mmg_coinvolti,
-            'year' => $anno,
-            'structure_id' => $structure_id,
-
-        ]);
-
-
-        return redirect()->route('caricamentoScreening', ['obiettivo' => $request->obiettivo]);
-
+        return redirect()->route("caricamentoScreening");
+        //return view("caricamentoScreening")->with("dataView", $dataView);
     }
 
 
@@ -1493,6 +1504,66 @@ class HomeController extends Controller
         return view("uploadTempiListaAttesa")->with("dataView", $dataView);
     }
 
+    public function importTarget5LEA(Request $request)
+    {
+        $dataView = $this->screeningCommon();
+
+        $file = $request->file('fileCSV');
+        $fileContents = file($file->getPathname());
+        $colonneAttese = 5;
+        $row = 0;
+        $errori = [];
+        foreach ($fileContents as $line) {
+            $row += 1;
+            $data = str_getcsv($line);
+
+            if (count($data) !== $colonneAttese) {
+                $errori[$row][] = "Il numero di colonne deve essere " . $colonneAttese . "; letto: " . count($data);
+            }
+            if (!is_numeric($data[0]) || $data[0] <= 2022 || $data[0] > date('Y')) {
+                $errori[$row][] = "Anno errato: " . $data[0];
+            }
+            if (!is_numeric($data[1]) || $data[1] <= 0 || $data[1] > 12) {
+                $errori[$row][] = "Mese errato: " . $data[1];
+            }
+            if (!is_numeric($data[2]) || $data[2] < 0) {
+                $errori[$row][] = "Numero popolazione bersaglio mammografico errato: " . $data[2];
+            }
+            if (!is_numeric($data[3]) || $data[3] < 0) {
+                $errori[$row][] = "Numero popolazione bersaglio cervicocarcinoma errato: " . $data[3];
+            }
+            if (!is_numeric($data[4]) || $data[4] < 0) {
+                $errori[$row][] = "Numero popolazione bersaglio colon-retto errato: " . $data[4];
+            }
+        }
+        if (count($errori) == 0) {
+            foreach ($fileContents as $line) {
+                $data = str_getcsv($line);
+        
+                Target5::updateOrInsert(
+                    [
+                        'structure_id' => Auth::user()->firstStructureId()->id, 
+                        'year' => $data[0],
+                        'month' => $data[1],
+                    ],
+                    [
+                        'structure_id' => Auth::user()->firstStructureId()->id,
+                        'year' => $data[0],
+                        'month' => $data[1],
+                        'mammografico' => $data[2],
+                        'cercocarcinoma' => $data[3],
+                        'colonretto' => $data[4],
+                    ]
+                );
+            }
+            $dataView['successCSV'] = "CSV importato correttamente";
+        } else
+            $dataView['errorsCSV'] = $errori;
+
+
+        return view("caricamentoScreening")->with("dataView", $dataView);
+    }
+
     public function getDescription($id)
     {
         $description = DB::table('target_categories')
@@ -1507,33 +1578,7 @@ class HomeController extends Controller
 
     public function caricamentoScreening(Request $request)
     {
-
-        $dataView['categorie'] = DB::table("target_categories")
-            ->where("target_number", $request->obiettivo)
-            ->orderBy("order")
-            ->get();
-
-        $dataView['structures'] = Auth::user()->structures();
-        $dataView['titolo'] = config("constants.OBIETTIVO.5.text");
-        $dataView['icona'] = config("constants.OBIETTIVO.5.icon");
-        $dataView['tooltip'] = config("constants.OBIETTIVO.5.tooltip");
-
-        $dataView['file'] = DB::table('uploated_files as up')
-            ->join('target_categories as tc', 'up.target_category_id', '=', 'tc.id')
-            ->where('up.user_id', Auth::user()->id)
-            ->where('up.target_number', $request->obiettivo)
-            ->select('up.target_number', 'up.target_category_id', 'tc.category', 'up.validator_user_id', 'up.approved', 'up.created_at')
-            ->get();
-
-
-        // Dati per la tabella nella view 
-        $dataView['tableData'] = DB::table('insert_mmg')
-            ->select('mmg_totale', 'mmg_coinvolti', 'year', 'structure_id')
-            ->get();
-
-
-        $dataView['obiettivo'] = $request->obiettivo;
-
+        $dataView = $this->screeningCommon();
         return view('caricamentoScreening')->with("dataView", $dataView);
     }
 
@@ -1543,11 +1588,7 @@ class HomeController extends Controller
     {
         switch ($obiettivo) {
             case 5:
-                $dataView['tableData'] = DB::table('insert_mmg')
-                    ->join('structures as s', 'insert_mmg.structure_id', '=', 's.id')
-                    ->select('mmg_totale', 'mmg_coinvolti', 'year', 'structure_id', 's.name as nome_struttura')
-                    ->get();
-
+                $dataView['tableData'] = $this->mmgData(Auth::user()->structures());
                 $pdf = PDF::loadView('pdfs.screeningPdf', $dataView);
 
                 return $pdf->download('certificazione_completa.pdf');

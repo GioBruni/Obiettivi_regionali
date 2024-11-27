@@ -24,9 +24,23 @@
 
                     <div class="card shadow-sm border-0">
                         <div class="card-header bg-primary text-white">
-                            <b
-                                class="h4">{{ __('Coinvolgimento e collaborazione MMG per il counseling e la prenotazione diretta dei pazienti in età target non-responder (%MMG aderenti)') }}</b>
-                            <br />
+                            <b>{{ __('Indicatori di risultato') }}</b>
+                        </div>
+
+                        <div class="row justify-content-center mt-4">
+                            <div class="col-md-12 text-center">
+                                <div style="width: 100%; margin: auto;">
+                                    <x-chartjs-component :chart="$dataView['lineChart']" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <br>
+
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-primary text-white">
+                            <b>{{ __('Coinvolgimento e collaborazione MMG per il counseling e la prenotazione diretta dei pazienti in età target non-responder (%MMG aderenti)') }}</b>
                         </div>
 
                         <div class="row justify-content-center mt-4">
@@ -79,9 +93,7 @@
 
                     <div class="card shadow-sm border-0">
                         <div class="card-header bg-primary text-white">
-                            <b
-                                class="h4">{{ __('In applicazione della circolare prot. n. 42278 del 15/12/2022, regolamentazione dell\'accesso ai test di screening scoraggiando l\'uso opportunistico dei codici di esenzione D02 e D03') }}</b>
-                            <br />
+                            <b>{{ __('In applicazione della circolare prot. n. 42278 del 15/12/2022, regolamentazione dell\'accesso ai test di screening scoraggiando l\'uso opportunistico dei codici di esenzione D02 e D03') }}</b>
                         </div>
 
                         <div class="row justify-content-center mt-4">

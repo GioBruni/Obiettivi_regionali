@@ -63,7 +63,8 @@ Route::group(['middleware' => ['role:uploader']], routes: function (): void {
     Route::post('/saveTempiListeAttesa', [HomeController::class, 'saveTempiListeAttesa'])->name('saveTempiListeAttesa');
 
     Route::get('/prontoSoccorso', [HomeController::class, 'prontoSoccorso'])->name('prontoSoccorso');
-    Route::get('/caricamentoScreening/{obiettivo}', [HomeController::class, 'caricamentoScreening'])->name('caricamentoScreening');
+    Route::get('/caricamentoScreening', [HomeController::class, 'caricamentoScreening'])->name('caricamentoScreening');
+    Route::post('/importTarget5LEA', [HomeController::class, 'importTarget5LEA'])->name('importTarget5LEA');
     Route::get('/caricamentoDonazioni/{obiettivo}', [AdminController::class, 'caricamentoDonazioni'])->name('caricamentoDonazioni');
     Route::get('/caricamentoFse/{obiettivo}', [HomeController::class, 'caricamentoFse'])->name('caricamentoFse');
     Route::get('/caricamentoGaranziaLea/{obiettivo}', [HomeController::class, 'caricamentoGaranziaLea'])->name('caricamentoGaranziaLea');
