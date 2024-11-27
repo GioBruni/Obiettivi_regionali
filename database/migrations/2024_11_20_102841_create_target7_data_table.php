@@ -13,18 +13,18 @@ return new class extends Migration
     {
         Schema::create('target7_data', function (Blueprint $table) {
             $table->id();
-            $table->integer("dimissioni_ospedaliere");
-            $table->integer("dimissioni_ps");
-            $table->integer("prestazioni_laboratorio");
-            $table->integer("prestazioni_radiologia");
-            $table->integer("prestazioni_ambulatoriali");
-            $table->integer("vaccinati");
-            $table->integer("certificati_indicizzati");
-            $table->integer("documenti_indicizzati");
-            $table->integer("documenti_cda2");
-            $table->integer("documenti_indicizzati_cda2");
-            $table->integer("documenti_pades");
-            $table->integer("documenti_indicizzati_pades");
+            $table->integer("dimissioni_ospedaliere")->nullable();
+            $table->integer("dimissioni_ps")->nullable();
+            $table->integer("prestazioni_laboratorio")->nullable();
+            $table->integer("prestazioni_radiologia")->nullable();
+            $table->integer("prestazioni_ambulatoriali")->nullable();
+            $table->integer("vaccinati")->nullable();
+            $table->integer("certificati_indicizzati")->nullable();
+            $table->integer("documenti_indicizzati")->nullable();
+            $table->integer("documenti_cda2")->nullable();
+            $table->integer("documenti_indicizzati_cda2")->nullable();
+            $table->integer("documenti_pades")->nullable();
+            $table->integer("documenti_indicizzati_pades")->nullable();
             $table->unsignedBigInteger("structure_id");
             $table->integer("anno");
             $table->datetime("created_at")->useCurrent();

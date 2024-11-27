@@ -2242,84 +2242,43 @@ class HomeController extends Controller
     {
         $dataView['dataSelezionata'] = $request->annoSelezionato ?? date('Y');
        
-/*
-        $dataView['dataInizioDefault'] = $request->data_inizio ?? date('Y') . '-01-01';
-        $dataView['dataFineDefault'] = $request->data_fine ?? date('Y-m-d');
-
-        $dataInizio = $request->data_inizio ?: $dataView['dataInizioDefault'];
-        $dataFine = $request->data_fine ?: $dataView['dataFineDefault'];
-
-        $dataInizio = (new \DateTime($dataInizio))->format('Y-m-d');
-        $dataFine = (new \DateTime($dataFine))->format('Y-m-d');
-*/
-
-
         /*****************************Dimissioni Ospedaliere**********************************/
 
         $dataView['prevenzioneTre'] = DB::table('target7_data')
             ->select('*')
             ->where('anno', "=",  $dataView['dataSelezionata'])
             ->where('structure_id', '=', Auth::user()->firstStructureId()->id)
-            ->get();
+            ->first();
 
       
-            //numeratori
-            $dataView['dimissioniOspedaliere'] = 0;
-            $dataView['dimissioniPS'] = 0;
-            $dataView['prestazioniLab'] = 0;
-            $dataView['prestazioniRadiologia'] = 0;
-            $dataView['specialisticaAmbulatoriale'] = 0;
-            $dataView['vaccinati'] = 0;
-            $dataView['certificatiIndicizzati'] = 0;
-            $dataView['documentiIndicizzati'] = 0;
-            $dataView['documentiIndicizzatiCDA2'] = 0;
-            $dataView['documentiCDA2'] = 0;
-            $dataView['documentiPades'] = 0;
-            $dataView['documentiIndicizzatiPades'] = 0;
-            $dataView['ob7'] = 0;
-
-
-        foreach ($dataView['prevenzioneTre'] as $row) {
-            $dataView['dimissioniOspedaliere'] = $row->dimissioni_ospedaliere ;
-            $dataView['dimissioniPS'] = $row->dimissioni_ps;
-            $dataView['prestazioniLab'] = $row->prestazioni_laboratorio;
-            $dataView['prestazioniRadiologia'] = $row->prestazioni_radiologia;
-            $dataView['specialisticaAmbulatoriale'] = $row->prestazioni_ambulatoriali;
-            $dataView['vaccinati'] = $row->vaccinati;
-            $dataView['certificatiIndicizzati'] = $row->certificati_indicizzati;
-            $dataView['documentiIndicizzati'] = $row->documenti_indicizzati;
-            $dataView['documentiIndicizzatiCDA2'] = $row->documenti_indicizzati_cda2;
-            $dataView['documentiCDA2'] = $row->documenti_cda2;
-            $dataView['documentiPades'] = $row->documenti_pades;
-            $dataView['documentiIndicizzatiPades'] = $row->documenti_indicizzati_pades;
-        }
-
-    
-   
+        //numeratori
+        $dataView['dimissioniOspedaliere'] = isset($dataView['prevenzioneTre']->dimissioni_ospedaliere) ? $dataView['prevenzioneTre']->dimissioni_ospedaliere : 0;
+        $dataView['dimissioniPS'] = isset($dataView['prevenzioneTre']->dimissioni_ps) ? $dataView['prevenzioneTre']->dimissioni_ps : 0;
+        $dataView['prestazioniLab'] = isset($dataView['prevenzioneTre']->prestazioni_laboratorio) ? $dataView['prevenzioneTre']->prestazioni_laboratorio : 0;
+        $dataView['prestazioniRadiologia'] = isset($dataView['prevenzioneTre']->prestazioni_radiologia) ? $dataView['prevenzioneTre']->prestazioni_radiologia : 0;
+        $dataView['specialisticaAmbulatoriale'] = isset($dataView['prevenzioneTre']->prestazioni_ambulatoriali) ? $dataView['prevenzioneTre']->prestazioni_ambulatoriali : 0;
+        $dataView['vaccinati'] = isset($dataView['prevenzioneTre']->vaccinati) ? $dataView['prevenzioneTre']->vaccinati : 0;
+        $dataView['certificatiIndicizzati'] = isset($dataView['prevenzioneTre']->certificati_indicizzati) ? $dataView['prevenzioneTre']->certificati_indicizzati : 0;
+        $dataView['documentiIndicizzati'] = isset($dataView['prevenzioneTre']->documenti_indicizzati) ? $dataView['prevenzioneTre']->documenti_indicizzati : 0;
+        $dataView['documentiIndicizzatiCDA2'] = isset($dataView['prevenzioneTre']->documenti_indicizzati_cda2) ? $dataView['prevenzioneTre']->documenti_indicizzati_cda2 : 0;
+        $documentiCDA2 = isset($dataView['prevenzioneTre']->documenti_cda2) ? $dataView['prevenzioneTre']->documenti_cda2 : 0;
+        $dataView['documentiPades'] = isset($dataView['prevenzioneTre']->documenti_pades) ? $dataView['prevenzioneTre']->documenti_pades : 0;
+        $dataView['documentiIndicizzatiPades'] = isset($dataView['prevenzioneTre']->documenti_indicizzati_pades) ? $dataView['prevenzioneTre']->documenti_indicizzati_pades : 0;
 
         // Estrai i dati del denominatore
-        $dataView['denominatore'] = DB::table('flows_sdo')
-            ->join('users_structures AS us', 'flows_sdo.structure_id', '=', 'us.structure_id')
-            ->where('us.user_id', Auth::user()->id)
-            ->where('flows_sdo.year',  $dataView['dataSelezionata']) // Filtro per l'anno corrente
-            ->select(
-                DB::raw('MAX(flows_sdo.ob7_1) as ob7'),
-                DB::raw('MAX(flows_sdo.id) as id'),
-                'flows_sdo.year'
-            )
-            ->groupBy('flows_sdo.year')
-            ->orderByDesc('flows_sdo.year')
-            ->get();
+        $denominatore = DB::table('flows_sdo')
+            ->where('structure_id', '=', Auth::user()->firstStructureId()->id)
+            ->where('year',  $dataView['dataSelezionata']) // Filtro per l'anno corrente
+            ->select('ob7_1')
+            ->orderByDesc('month')
+            ->first();
 
-        foreach ($dataView['denominatore'] as $row) {
-            $dataView['ob7'] = $row->ob7;
-        }
+        $dataView['ob7'] = $denominatore->ob7_1;
 
-
-        // if (isset($dataView['dimissioniOspedaliere']) && isset($dataView['ob7']) && $dataView['ob7'] != 0) {
-        $dataView['percentualeDimissioniOspedaliere'] = round(($dataView['dimissioniOspedaliere'] / $dataView['ob7']) * 100, 2);
-        // }
-
+        if (isset($dataView['dimissioniOspedaliere']) && isset($dataView['ob7']) && $dataView['ob7'] != 0) {
+            $dataView['percentualeDimissioniOspedaliere'] = round(($dataView['dimissioniOspedaliere'] / $dataView['ob7']) * 100, 2);
+        } else 
+            $dataView['percentualeDimissioniOspedaliere'] = 0;
         $dataView['percentualeDimissioniOspedaliereComplementare'] = 100 - $dataView['percentualeDimissioniOspedaliere'];
 
         $dataView['chartDimissioniOspedaliere'] = Chartjs::build()
@@ -2333,8 +2292,6 @@ class HomeController extends Controller
                     "backgroundColor" => [
                         "rgb(60, 179, 113)",
                         "rgb(255, 0, 0)",
-                        
-
                     ],
                     "data" => [$dataView['percentualeDimissioniOspedaliere'], $dataView['percentualeDimissioniOspedaliereComplementare'],]
                 ]
@@ -2352,23 +2309,18 @@ class HomeController extends Controller
 
         /*****************************Dimissioni Pronto Soccorso****************************************************/
 
-        $dataView['denoProntoSoccorso'] = DB::table('flows_emur')
-            ->select('ia1_2', 'year', 'month')
+        $dataView['ob7PS'] = DB::table('flows_emur')
+            //->select('ia1_2', 'year', 'month')
+            ->where('structure_id', '=', Auth::user()->firstStructureId()->id)
             ->where('year', "=", date('Y'))
-            ->get();
+            ->sum('ia1_2');
 
-        foreach ($dataView['denoProntoSoccorso'] as $row) {
-            $dataView['ob7PS'] = $row->ia1_2;
-        }
-
-        if ($dataView['dimissioniPS'] != 0) {
-            $dataView['percentualePS'] = round($dataView['dimissioniPS'] / $dataView['ob7PS']  * 100, 2);
-           
-            $dataView['percentualeComplementarePS'] = 100 - $dataView['percentualePS'];
+        if ($dataView['ob7PS'] > 0) {
+            $dataView['percentualePS'] = round($dataView['dimissioniPS'] / $dataView['ob7PS']  * 100, 2);           
         } else {
             $dataView['percentualePS'] = 0; 
-            $dataView['percentualeComplementarePS'] = 100;
         }
+        $dataView['percentualeComplementarePS'] = 100 - $dataView['percentualePS'];
         
         $dataView['chartProntoSoccorso'] = Chartjs::build()
             ->name("chartProntoSoccorso")
@@ -2393,31 +2345,36 @@ class HomeController extends Controller
                     'title' => [
                         'display' => true,
                         'text' => ''
-
                     ]
                 ]
             ]);
 
         /*********************Prestazioni di Laboratorio****************************** */
 
-        $dataView['denFlussoC'] = DB::table('flows_c')
-            ->select('ia1_3', 'ia1_4', 'ia1_5', 'ia1_6', 'year', 'month')
+        $denFlussoC = DB::table('flows_c')
+            ->select('ia1_3', 'ia1_4', 'ia1_5', 'ia1_6')
             ->where('year', "=", date('Y'))
+            ->where('structure_id', '=', Auth::user()->firstStructureId()->id)
             ->get();
 
-        foreach ($dataView['denFlussoC'] as $dati) {
-            $dataView['PrestazioniLabDen'] = $dati->ia1_3;
-            $dataView['PrestazioniRadDen'] = $dati->ia1_4;
-            $dataView['PrestazioniAmbulatoriale'] = $dati->ia1_5;
-            $dataView['prestazioniErogate'] = $dati->ia1_6;
-
+        $dataView['PrestazioniLabDen'] = 0;
+        $dataView['PrestazioniRadDen'] = 0;
+        $dataView['PrestazioniAmbulatoriale'] = 0;
+        $dataView['prestazioniErogate'] = 0;
+        foreach ($denFlussoC as $dati) {
+            $dataView['PrestazioniLabDen'] += $dati->ia1_3;
+            $dataView['PrestazioniRadDen'] += $dati->ia1_4;
+            $dataView['PrestazioniAmbulatoriale'] += $dati->ia1_5;
+            $dataView['prestazioniErogate'] += $dati->ia1_6;
         }
 
    
-
-        $dataView['percentualePrestLab'] = round($dataView['prestazioniLab'] / $dataView['PrestazioniLabDen'] * 100, 2);
+        if ($dataView['PrestazioniLabDen'] > 0) {
+            $dataView['percentualePrestLab'] = round($dataView['prestazioniLab'] / $dataView['PrestazioniLabDen'] * 100, 2);
+        } else {
+            $dataView['percentualePrestLab'] = 0;
+        }
         $dataView['percentualeComplementarePrestLab'] = 100 - $dataView['percentualePrestLab'];
-
 
 
         $dataView['chartRefertiLaboratorio'] = Chartjs::build()
@@ -2452,8 +2409,11 @@ class HomeController extends Controller
   
         /*********************Ref radiologia*********************************************************** */
 
-
-        $dataView['percentualeRefRadiologia'] = round($dataView['prestazioniRadiologia'] / $dataView['PrestazioniRadDen'] * 100, 2);
+        if ($dataView['PrestazioniRadDen'] > 0) {
+            $dataView['percentualeRefRadiologia'] = round($dataView['prestazioniRadiologia'] / $dataView['PrestazioniRadDen'] * 100, 2);
+        } else {
+            $dataView['percentualeRefRadiologia'] = 0;
+        }
         $dataView['percentualeComplementareRefRadiologia'] = 100 - $dataView['percentualeRefRadiologia'];
 
         $dataView['chartRefertiRadiologia'] = Chartjs::build()
@@ -2479,14 +2439,17 @@ class HomeController extends Controller
                     'title' => [
                         'display' => true,
                         'text' => ''
-
                     ]
                 ]
             ]);
 
         /**********************Specialistica Ambulatoriale**********************************************************/
 
-        $dataView['percentualeSpecAmbulatoriale'] = round($dataView['specialisticaAmbulatoriale'] / $dataView['PrestazioniAmbulatoriale'] * 100, 2);
+        if ($dataView['PrestazioniAmbulatoriale'] > 0) {
+            $dataView['percentualeSpecAmbulatoriale'] = round($dataView['specialisticaAmbulatoriale'] / $dataView['PrestazioniAmbulatoriale'] * 100, 2);
+        } else {
+            $dataView['percentualeSpecAmbulatoriale'] = 0;
+        }
         $dataView['percentualeComplementareSpecAmbulatoriale'] = 100 - $dataView['percentualeSpecAmbulatoriale'];
 
         $dataView['chartSpecialisticaAmbulatoriale'] = Chartjs::build()
@@ -2522,15 +2485,12 @@ class HomeController extends Controller
 
 
 
-        if ($dataView['vaccinati'] != 0) {
+        if ($dataView['vaccinati'] > 0) {
             $dataView['percentualeVaccinati'] = round($dataView['certificatiIndicizzati'] / $dataView['vaccinati'] * 100, 2);
-            $dataView['percentualeComplementareVaccinati'] = 100 - $dataView['percentualeVaccinati'];
         } else {
             $dataView['percentualeVaccinati'] = 0; 
-            $dataView['percentualeComplementareVaccinati'] = 100;
         }
-        
-      
+        $dataView['percentualeComplementareVaccinati'] = 100 - $dataView['percentualeVaccinati'];
 
         $dataView['chartCertificatiVaccinali'] = Chartjs::build()
             ->name("chartCertificatiVaccinali")
@@ -2545,7 +2505,6 @@ class HomeController extends Controller
                         "rgb(255, 0, 0)",
                     ],
                     "data" => [$dataView['percentualeVaccinati'], $dataView['percentualeComplementareVaccinati']]
-
                 ]
             ])
             ->options([
@@ -2561,10 +2520,11 @@ class HomeController extends Controller
 
 
         /**************************Documentazione FSE************************************************************ */
-
-
-
-        $dataView['percentualeDocumentazioneFse'] = round($dataView['documentiIndicizzati'] / $dataView['prestazioniErogate'] * 100, 2);
+        if ($dataView['prestazioniErogate'] > 0) {
+            $dataView['percentualeDocumentazioneFse'] = round($dataView['documentiIndicizzati'] / $dataView['prestazioniErogate'] * 100, 2);
+        } else {
+            $dataView['percentualeDocumentazioneFse'] = 0;
+        }
         $dataView['percentualeComplementareDocumentazioneFse'] = 100 - $dataView['percentualeDocumentazioneFse'];
 
         $dataView['chartDocumentiFSE'] = Chartjs::build()
@@ -2596,14 +2556,12 @@ class HomeController extends Controller
         /***************************Documenti in CDA2************************************************************* */
 
 
-        if ($dataView['documentiIndicizzatiCDA2'] != 0) {
-            $dataView['percentualeDocumentiCDA2'] = round($dataView['documentiCDA2'] / $dataView['documentiIndicizzatiCDA2'] * 100, 2);
-            $dataView['percentualeComplementareDocumentiCDA2'] = 100 - $dataView['percentualeDocumentiCDA2'];
+        if ($dataView['documentiIndicizzatiCDA2'] > 0) {
+            $dataView['percentualeDocumentiCDA2'] = round($documentiCDA2 / $dataView['documentiIndicizzatiCDA2'] * 100, 2);
         } else {
             $dataView['percentualeDocumentiCDA2'] = 0; 
-            $dataView['percentualeComplementareDocumentiCDA2'] = 100;
         }
-        
+        $dataView['percentualeComplementareDocumentiCDA2'] = 100 - $dataView['percentualeDocumentiCDA2'];
 
         $dataView['chartDocumentiCDA2'] = Chartjs::build()
             ->name("chartDocumentiCDA2")
@@ -2634,14 +2592,12 @@ class HomeController extends Controller
             ]);
 
         /***************************Documenti Pades************************************************************ */
-        if ($dataView['documentiIndicizzatiPades'] != 0) {
+        if ($dataView['documentiIndicizzatiPades'] > 0) {
             $dataView['percentualePades'] = round($dataView['documentiPades'] / $dataView['documentiIndicizzatiPades'] * 100, 2);
-            $dataView['percentualeComplementarePades'] = 100 - $dataView['percentualePades'];
         } else {
             $dataView['percentualePades'] = 0; 
-            $dataView['percentualeComplementarePades'] = 100;
         }
-        
+        $dataView['percentualeComplementarePades'] = 100 - $dataView['percentualePades'];
 
         $dataView['chartDocumentiPades'] = Chartjs::build()
             ->name("chartDocumentiPades")
@@ -2670,10 +2626,6 @@ class HomeController extends Controller
                     ]
                 ]
             ]);
-
-           // $punteggio = $this->punteggioOb7_1($dataView);
-          //  $dataView = array_merge($punteggio, $dataView);
-
 
         return view("fse")->with("dataView", $dataView);
     }
