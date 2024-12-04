@@ -22,6 +22,7 @@ return [
             'text' => 'Prestazioni sanitarie',
             'tooltip' => 'Riduzione dei tempi delle liste di attesa delle prestazioni sanitarie ',
             'route' => "/tempiListeAttesa",
+            'routeAdmin' => "/admin/tempiListeAttesa",
             'enable' => true,
         ],
         '2' => [
@@ -29,6 +30,7 @@ return [
             'text' => 'Esiti',
             'tooltip' => 'Esiti',
             'route' => '/esiti',
+            'routeAdmin' => "/admin/esiti",
             'enable' => true,
         ],
         '3' => [
@@ -36,6 +38,7 @@ return [
             'text' => 'Checklist punti nascita',
             'tooltip' => 'Rispetto degli standard di sicurezza dei punti nascita',
             'route' => "/showObiettivo/3",
+            'routeAdmin' => "/admin/puntiNascita",
             'enable' => true,
         ],
         '4' => [
@@ -43,6 +46,7 @@ return [
             'text' => 'Sovraffollamento PS',
             'tooltip' => 'Pronto Soccorso - Gestione del sovraffollamento',
             'route' => "/prontoSoccorso",
+            'routeAdmin' => "/admin/prontoSoccorso",
             'enable' => true,
         ],
         '5' => [
@@ -50,6 +54,7 @@ return [
             'text' => 'Screening',
             'tooltip' => 'Screening oncologici',
             'route' => "/screening",
+            'routeAdmin' => "/admin/screening",
             'enable' => true,
         ],
         '6' => [
@@ -57,6 +62,7 @@ return [
             'text' => 'Donazioni',
             'tooltip' => 'Donazione sangue, plasma, organi e tessuti',
             'route' => "/donazioni",
+            'routeAdmin' => "/admin/donazioni",
             'enable' => true,
         ],
         '7' => [
@@ -64,7 +70,7 @@ return [
             'text' => 'Fascicolo Sanitario Elettronico',
             'tooltip' => 'Fascicolo Sanitario Elettronico',
             'route' => "/fse",
-            
+            'routeAdmin' => "/admin/fse",
             'enable' => true,
         ],
         '8' => [
@@ -72,6 +78,7 @@ return [
             'text' => 'Percorso attuativo di certificabilità',
             'tooltip' => 'Percorso attuativo di certificabilità (P.A.C.)',
             'route' => "/showObiettivo/8",
+            'routeAdmin' => "/admin/showObiettivo/8",
             'enable' => true,
         ],
         '9' => [
@@ -79,6 +86,7 @@ return [
             'text' => 'Farmaci',
             'tooltip' => 'Approvvigionamento farmaci e gestione I ciclo di terapia',
             'route' => "/farmaciIndex",
+            'routeAdmin' => "/admin/farmaciIndex",
             'enable' => true,
         ],
         '10' => [
@@ -86,6 +94,7 @@ return [
             'text' => 'Garanzia dei LEA',
             'tooltip' => 'Area della Performance: garanzia dei LEA nell\'Area della Prevenzione, dell\'Assistenza Territoriale e dell\'Assistenza Ospedaliera secondo il Nuovo Sistema di Garanzia (NSG)',
             'route' => "/garanziaLea",
+            'routeAdmin' => "/admin/garanziaLea",
             'enable' => true,
         ]
     ],

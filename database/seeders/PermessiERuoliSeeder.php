@@ -22,7 +22,7 @@ class PermessiERuoliSeeder extends Seeder
         $uploader = Role::create(['name' => 'uploader']);
         $uploader->givePermissionTo('upload files');
 
-        $userManager = Role::create(['name' => 'user manager']);
+        $userManager = Role::create(['name' => 'user_manager']);
         $userManager->givePermissionTo('create users');
     }
 }

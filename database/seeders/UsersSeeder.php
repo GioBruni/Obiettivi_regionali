@@ -18,8 +18,8 @@ class UsersSeeder extends Seeder
             'password' => bcrypt('123QWEasd!"£'),
         ]);
     
-        // Assegna il ruolo di "uploader" e "user manager"
-        $user->assignRole(['uploader', 'user manager', 'controller']);   
+        // Assegna il ruolo di "uploader" e "nager"
+        $user->assignRole(['uploader', 'user_manager', 'controller']);   
 
         $user = User::create([
             'name' => 'Amministratore',
@@ -33,7 +33,7 @@ class UsersSeeder extends Seeder
             'password' => bcrypt('ciao'),
         ]);
     
-        // Assegna il ruolo di "uploader" e "user manager"
-        $user->assignRole(['uploader', 'user manager', 'controller']);   
+        // Assegna il ruolo di "uploader" e "usermanager"
+        $user->assignRole(['uploader', 'user_manager', 'controller']);   
     }
 }

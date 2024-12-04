@@ -98,7 +98,7 @@ class HomeController extends Controller
 
         foreach ($categories as $category) {
             $tmp = DB::table("uploated_files")
-                ->leftJoin("result_target3", "result_target3.uploated_file_id", "=", "uploated_files.id")
+                ->leftJoin("target3_data", "target3_data.uploated_file_id", "=", "uploated_files.id")
                 ->where("target_number", $obiettivo)
                 ->where("structure_id", $strutturaId)
                 ->where("target_category_id", $category->id)
@@ -295,7 +295,7 @@ class HomeController extends Controller
 
     protected function fileCaricati($obiettivo, $strutture)
     {
-        return DB::table('uploated_files as uf')
+        return DB::table(table: 'uploated_files as uf')
             ->join('target_categories as tc', 'uf.target_category_id', '=', 'tc.id')
             ->select('uf.id', 'uf.validator_user_id', 'uf.approved', 'uf.notes', 'uf.path', 'uf.filename', 'uf.target_category_id', 'tc.category', 'uf.updated_at', 'uf.user_id', 'uf.created_at')
             ->where('uf.target_number', $obiettivo)
@@ -307,6 +307,7 @@ class HomeController extends Controller
                                     FROM uploated_files as u3
                                     WHERE u3.target_category_id = uf.target_category_id
                                     AND u3.created_at = uf.created_at)')
+            ->orderBy("tc.category")
             ->orderBy('uf.created_at', 'desc')
             ->orderBy('uf.updated_at', 'desc')
             ->get();
@@ -323,12 +324,60 @@ class HomeController extends Controller
 
     
     protected function screeningCommon() {
-        $dataView = $this->initView(5);
+        $dataView = $this->initView(obiettivo: 5);
         $dataView['tableData'] = $this->mmgData(Auth::user()->structures());
 
         return $dataView;
     }
 
+    protected function donazioniCommon() {
+        $dataView = $this->initView(6);
+    
+        /*
+        $dataView['file'] = DB::table('uploated_files as up')
+        ->join('target_categories as tc', 'up.target_category_id', '=', 'tc.id')
+        ->where('up.user_id', Auth::user()->id)
+        ->where('up.target_number', 6)
+        ->select('up.target_number', 'up.target_category_id', 'tc.category', 'up.validator_user_id', 'up.approved', 'up.created_at')
+        ->get();
+   */
+        $dataView['file'] = $this->fileCaricati(6, $dataView['strutture']);
+
+        // Dati per la tabella nella view 
+        $dataView['tableData'] = DB::table('target6_data')
+        ->select('totale_accertamenti', 'numero_opposti','totale_cornee', 'anno', 'structure_id', 's.name')
+        ->join('structures as s', 'target6_data.structure_id', '=', 's.id')
+        ->get();
+
+        return $dataView;
+    }
+
+    protected function chartFSE($name, $labels, $data) {
+        return $this->showChart("doughnut", $name,
+            $labels,
+            [
+                [
+                    "label" => "",
+                    "backgroundColor" => [
+                        "rgb(60, 179, 113)",
+                        "rgb(255, 0, 0)",
+                        
+                    ],
+                    "data" => $data
+
+                ]
+            ],
+            [
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => ''
+                    ]
+                ]
+            ]
+        );
+    }
 
     /**
      * Show the application dashboard.
@@ -338,6 +387,7 @@ class HomeController extends Controller
     public function index()
     {
         if (Auth::user()->hasRole("uploader")) {
+
             $dataView['userStructures'] = LocationsUsers::where("user_id", Auth::user()->id)
                 ->leftJoin("structures", "structures.id", "=", "users_structures.structure_id")
                 ->leftJoin("structure_type", "structure_type.code", "=", "structures.type")
@@ -373,7 +423,7 @@ class HomeController extends Controller
                 $obiettivo = 9;
                 $punteggioRaggiunto[$obiettivo] = 0;
                 $tmp = DB::table("uploated_files")
-                    ->join("result_target3", "result_target3.uploated_file_id", "=", "uploated_files.id")
+                    ->join("target3_data", "target3_data.uploated_file_id", "=", "uploated_files.id")
                     ->where("target_number", $obiettivo)
                     ->where("structure_id", $struttura->structure_id)
                     ->select("numerator", "denominator", "uploated_files.approved")
@@ -501,7 +551,7 @@ class HomeController extends Controller
                     ->pluck('s.company_code');
         */
 
-        $dataView['flowEmur'] = DB::table('flows_EMUR as fe')
+        $dataView['flowEmur'] = DB::table('flows_emur as fe')
             //->join('structures as s', 'fe.structure_id', '=', 's.id')
             ->leftJoin('users_structures as us', 'fe.structure_id', '=', 'us.structure_id')
             //->select('fe.tmp', 'fe.year AS anno', 'fe.month AS mese', 's.name AS nome_struttura', 's.company_code', 'fe.boarding', 's.id')
@@ -630,128 +680,74 @@ class HomeController extends Controller
 
     public function donazioni(Request $request)
     {
-        $dataView['strutture'] = Auth::user()->structures();
-        $dataView['categorie'] = DB::table(table: 'target_categories as tc')
-            ->where("target_number", $request->obiettivo)->get();
+        $dataView = $this->initView(6);
+        $dataView['file'] = $this->fileCaricati(6, $dataView['strutture']);
 
-        $dataView['file'] = DB::table('uploated_files as uf')
-            ->join('target_categories as tc', 'uf.target_category_id', '=', 'tc.id')
-            ->select('uf.id', 'uf.validator_user_id', 'uf.approved', 'uf.notes', 'uf.path', 'uf.filename', 'uf.target_category_id', 'tc.category', 'uf.updated_at', 'uf.user_id', 'uf.created_at')
-            ->where('uf.target_number', 6)
-            ->whereIn("uf.structure_id", $dataView['strutture']->pluck("id")->toArray())
-            ->whereRaw('uf.created_at = (SELECT MAX(u2.created_at)
-                                    FROM uploated_files as u2 
-                                    WHERE u2.target_category_id = uf.target_category_id)')
-            ->whereRaw('uf.updated_at = (SELECT MAX(u3.updated_at)
-                                    FROM uploated_files as u3
-                                    WHERE u3.target_category_id = uf.target_category_id
-                                    AND u3.created_at = uf.created_at)')
-            ->orderBy("tc.category")
-            ->orderBy('uf.created_at', 'desc')
-            ->orderBy('uf.updated_at', 'desc')
-            ->get();
-
-
-        // Numeratore sub.2
+        // Numeratori sub.2
         $dataView['target6_data'] = DB::table('target6_data')
-            ->whereIn(DB::raw('(anno, id)'), function ($query) {
-                $query->select(DB::raw('anno, MAX(id)'))
-                    ->from('target6_data')
-                    ->groupBy('anno');
-            })
             ->select('totale_accertamenti', 'anno', 'numero_opposti', 'totale_cornee')
-            ->orderBy('anno', 'asc')
+            ->orderBy('anno')
             ->get();
 
         //Denominatore preso dal flusso
-        $dataView['denominatore'] = DB::table('flows_sdo')
-            ->join('users_structures AS us', 'flows_sdo.structure_id', '=', 'us.structure_id')
-            ->where('us.user_id',7 )
+        $denominatore = DB::table('flows_sdo')
+            ->where('structure_id', Auth::user()->firstStructureId()->id)
             ->select(
-                DB::raw('MAX(flows_sdo.ob6) as ob6'),
-                DB::raw('MAX(flows_sdo.id) as id'),
-                'flows_sdo.year'
+                DB::raw('MAX(ob6) as ob6'),
+                DB::raw('MAX(id) as id'),
+                'year'
             )
-            ->groupBy('flows_sdo.year')
-            ->orderByDesc('flows_sdo.year')
+            ->groupBy('year')
+            ->orderByDesc('year')
             ->get();
 
-
-        //$dataView['punteggioTotale'] = 0;
-        $percentuali = [];
         $labelsTmp = [];
         $dataView['result'] = [];
 
-
         // Calcolo la percentuale per ogni anno
         foreach ($dataView['target6_data'] as $target) {
-            $denominatore = $dataView['denominatore']->firstWhere('year', $target->anno);
-
-            $percentuale = ($target->totale_accertamenti / $denominatore->ob6) * 100;
+            $denominatoreTmp = $denominatore->firstWhere('year', operator: $target->anno);
+            if($target->anno == 2023) {
+                $accertamenti2023 = $target->totale_accertamenti;
+                $cornee2023 = $target->totale_cornee;
+            }
+            $percentualeAccertamenti = ($denominatoreTmp->ob6 != 0) ? round(($target->totale_accertamenti / $denominatoreTmp->ob6) * 100, 2) : 0;
+            $percentualeCornee = ($denominatoreTmp->ob6 != 0) ? round(($target->totale_cornee / $denominatoreTmp->ob6) * 100, 2) : 0;
             $dataView['result'][] = [
                 'anno' => $target->anno,
-                'percentuale' => $percentuale,
+                'percentualeAccertamenti' => $percentualeAccertamenti,
+                'percentualeCornee' => $percentualeCornee,
                 'totale_accertamenti' => $target->totale_accertamenti,
                 'numero_opposti' => $target->numero_opposti,
                 'totale_cornee' => $target->totale_cornee,
-                'ob6_sum' => $denominatore->ob6
+                'incrementoAccertamenti' => ($target->anno > 2023 && $accertamenti2023 != 0) ? round((($target->totale_accertamenti - $accertamenti2023) / $accertamenti2023) * 100, 2): 0,
+                'incrementoCornee' => ($target->anno > 2023 && $cornee2023 != 0) ? round((($target->totale_cornee - $cornee2023) / $cornee2023) * 100, 2): 0,
             ];
-
-
-            $percentuali[] = $percentuale;
             $labelsTmp[] = $target->anno;
         }
-        // $dataView['result'] = collect($dataView['result'])->sortBy('anno')->values()->all();
-
-        $dataView['totale_cornee2024'] = 0;
-        $dataView['totale_cornee2023'] = 0;
-        $dataView['percentuale2024'] = 0;
-        $dataView['percentuale2023'] = 0;
-        $dataView['percentuale'] = $percentuali;
-
-
-        foreach ($dataView['result'] as $res) {
-            if ($res['anno'] == 2023) {
-                $dataView['percentuale2023'] = $res['percentuale'];
-                $dataView['totale_cornee2023'] = $res['totale_cornee'];
-
-            }
-            if ($res['anno'] == date("Y")) {
-                $dataView['percentuale2024'] = $res['percentuale'];
-                $dataView['totale_cornee2024'] = $res['totale_cornee'];
+        $incrementoSub2AnnoCorrente = 0;
+        $incrementoSub4AnnoCorrente = 0;
+        foreach($dataView['result'] as $row) {
+            if ($row['anno'] == date('Y')) {
+                $incrementoSub2AnnoCorrente = $row['incrementoAccertamenti'];
+                $incrementoSub4AnnoCorrente = $row['incrementoCornee'];
             }
         }
-
-
-        if ($dataView['percentuale2023'] !== 0 && $dataView['percentuale2024'] !== 0) {
-            $dataView['incremento'] = number_format((($dataView['percentuale2024'] - $dataView['percentuale2023']) / $dataView['percentuale2023']) * 100, 2);
-        } else {
-
-            $dataView['incremento'] = 0;
-            $dataView['messaggioTmp'] = [
-                'text' => "Impossibile calcolare l'incremento. Dati insufficienti.",
-                'class' => 'text-danger'
-            ];
-        }
-
         //calcolo punteggio sub.2
-        $punteggioTotale = $this->calcoloPunteggioSub2($dataView['incremento']);
+        $punteggioTotale = $this->calcoloPunteggioSub2($incrementoSub2AnnoCorrente);
         $dataView = array_merge($punteggioTotale, $dataView);
 
         //grafico Sub.2
-        $dataView['chartDonazioni'] = Chartjs::build()
-            ->name("OverallAvgTmpComplementaryBarChart")
-            ->type("bar")
-            ->size(["width" => 300, "height" => 150])
-            ->labels($labelsTmp)
-            ->datasets([
+        $dataView['chartDonazioni'] = $this->showChart("doughnut", "OverallAvgTmpComplementaryBarChart",
+            $labelsTmp,
+            [
                 [
                     "label" => "Percentuale TMP per Anno",
                     "backgroundColor" => "rgba(38, 185, 154, 0.7)",
-                    "data" => $percentuali //percentuali per ogni anno
+                    "data" => array_column($dataView['result'], 'percentualeAccertamenti') //percentuali per ogni anno
                 ]
-            ])
-            ->options([
+            ],
+            [
                 'responsive' => true,
                 'plugins' => [
                     'title' => [
@@ -771,46 +767,41 @@ class HomeController extends Controller
 
         /***************************Chart sub. 3************************************ */
 
-        $dataView['dataSelezionata'] = $request->annoSelezionato ?? date('Y');
+        $dataSelezionata = $request->annoSelezionato ?? date('Y');
 
         $dataView['numeratoreSecondo'] = 0;
         $dataView['denominatoreSecondo'] = 0;
 
         foreach ($dataView['result'] as $risultato) {
-            if ($risultato['anno'] == $dataView['dataSelezionata']) {
-                $dataView['denominatoreSecondo'] = $risultato['percentuale'];
-                $dataView['denominatoreSecondo'] = (float) str_replace('%', '', $dataView['denominatoreSecondo']); // Conversione in float
+            if ($risultato['anno'] == $dataSelezionata) {
+                $dataView['denominatoreSecondo'] = $risultato['totale_accertamenti'];
+                //$dataView['denominatoreSecondo'] = (float) str_replace('%', '', $dataView['denominatoreSecondo']); // Conversione in float
                 $dataView['numeratoreSecondo'] = $risultato['numero_opposti'];
             }
         }
 
         //calcoloPercentualeOpposizione
         if ($dataView['denominatoreSecondo'] > 0) {
-            $dataView['percentualeOpposizione'] = number_format(($dataView['numeratoreSecondo'] / $dataView['denominatoreSecondo']) * 100, 2);
-            $percOpposizioneComplementare = 100 - $dataView['percentualeOpposizione'];
+            $dataView['percentualeOpposizione'] = round(($dataView['numeratoreSecondo'] / $dataView['denominatoreSecondo']) * 100, 2);
         } else {
             $dataView['percentualeOpposizione'] = 0;
-            $percOpposizioneComplementare = 100;
-
         }
+        $percOpposizioneComplementare = 100 - $dataView['percentualeOpposizione'];
 
         //grafico sub.3
-        $dataView['chartSubObiettivo3'] = Chartjs::build()
-            ->name("chartSubObiettivo3")
-            ->type("doughnut")
-            ->size(["width" => 300, "height" => 150])
-            ->labels($labelsTmp)
-            ->datasets([
+        $dataView['chartSubObiettivo3'] = $this->showChart("doughnut", "chartSubObiettivo3",
+        $labelsTmp,
+        [
                 [
                     "label" => "Percentuale TMP",
                     "backgroundColor" => [
                         "rgba(38, 185, 154, 0.7)",
                         "rgba(217, 83, 79, 0.7)",
                     ],
-                    "data" => [($dataView['percentualeOpposizione']), ($percOpposizioneComplementare)]
+                    "data" => [$dataView['percentualeOpposizione'], $percOpposizioneComplementare]
                 ]
-            ])
-            ->options([
+            ],
+            [
                 'responsive' => true,
                 'plugins' => [
                     'title' => [
@@ -826,7 +817,8 @@ class HomeController extends Controller
                         'beginAtZero' => true,
                     ],
                 ],
-            ]);
+            ]
+            );
 
         //calcolo punteggio 3
         if ($dataView['percentualeOpposizione'] <= 38) {
@@ -861,32 +853,19 @@ class HomeController extends Controller
             ];
         }
 
-
         /******************************Sub.ob 4************************************ */
 
-
-        //calcolo incremento sub.4
-        if ($dataView['totale_cornee2024'] != 0 && $dataView['totale_cornee2023'] != 0) {
-            $dataView['percIncrementoSub4'] = (($dataView['totale_cornee2024'] - $dataView['totale_cornee2023']) / $dataView['totale_cornee2023']) * 100;
-        } else {
-            $dataView['percIncrementoSub4'] = 0;
-        }
-
-
         //grafico sub.4
-        $dataView['chartSubObiettivo4'] = Chartjs::build()
-            ->name("chartSubObiettivo4")
-            ->type("bar")
-            ->size(["width" => 300, "height" => 150])
-            ->labels($labelsTmp)
-            ->datasets([
+        $dataView['chartSubObiettivo4'] = $this->showChart("bar", "chartSubObiettivo4",
+            $labelsTmp,
+            [
                 [
                     "label" => "Percentuale TMP",
                     "backgroundColor" => "rgba(38, 185, 154, 0.7)",
-                    "data" => [$dataView['totale_cornee2023'], $dataView['totale_cornee2024']]
+                    "data" => array_column($dataView['result'], 'totale_cornee'), //[$totaleCornee2023, $totaleCornee2024]
                 ]
-            ])
-            ->options([
+            ],
+            [
                 'responsive' => true,
                 'plugins' => [
                     'title' => [
@@ -905,7 +884,7 @@ class HomeController extends Controller
             ]);
 
 
-        $punteggioSub4 = $this->calcoloPunteggioSub4($dataView['percIncrementoSub4']);
+        $punteggioSub4 = $this->calcoloPunteggioSub4($incrementoSub4AnnoCorrente);
         $dataView = array_merge($punteggioSub4, $dataView);
 
         return view("donazioni")->with('dataView', $dataView);
@@ -924,19 +903,16 @@ class HomeController extends Controller
         $dataView['meseInizio'] = $tmpMeseInizio;
         $dataView['meseFine'] = $tmpMeseFine;
 
-        $dataView['tempiListeAttesa'] = Chartjs::build()
-            ->name("tempiListeAttesa")
-            ->type("doughnut")
-            ->size(["width" => 300, "height" => 150])
-            ->labels(['Num. prest. amb. I accesso pubblico o privato accreditate / Num. prest. amb. erogate'])
-            ->datasets([
+        $dataView['tempiListeAttesa'] = $this->showChart("doughnut", "tempiListeAttesa",
+            ['Num. prest. amb. I accesso pubblico o privato accreditate / Num. prest. amb. erogate'],
+            [
                 [
                     "label" => "Percentuale TMP",
                     "backgroundColor" => "rgba(38, 185, 154, 0.7)",
                     "data" => [$dataView['percentuale']]
                 ]
-            ])
-            ->options([
+            ],
+            [
                 'responsive' => true,
                 'plugins' => [
                     'title' => [
@@ -951,6 +927,66 @@ class HomeController extends Controller
         return view("tempiListeAttesa")->with("dataView", $dataView);
     }
 
+    public function saveTempiListeAttesa(Request $request)
+    {
+
+        $year = $request->year;
+        $structure_id = $request->structure_id;
+        $numero_agende = $request->numeroAgende;
+        $prestazioni_specialista_riferimento = $request->prestazioniSpecialistaRiferimento;
+        $prestazioni_specialista_precedente = $request->prestazioniSpecialistaPrecedente;
+        $prestazioni_MMG_riferimento = $request->prestazioniMMGRiferimento;
+        $prestazioni_MMG_precedente = $request->prestazioniMMGPrecedente;
+//dd($request);
+        $request->validate([
+            'year' => 'required|integer',
+            'structure_id' => 'required|numeric',
+            'numeroAgende' => 'required|numeric|gte:0', // numeroAgende >= 0
+            'prestazioniSpecialistaRiferimento' => 'required|numeric', 
+            'prestazioniSpecialistaPrecedente' => 'required|numeric', 
+            'prestazioniMMGRiferimento' => 'required|numeric', 
+            'prestazioniMMGPrecedente' => 'required|numeric', 
+        ]);
+
+
+        $target = Target1::where("year", $year)
+            ->where("structure_id", $structure_id)
+            ->exists();
+        if ($target) {
+            Target1::where("year", $year)
+            ->where("structure_id", $structure_id)
+            ->update([
+                'numero_agende' => $numero_agende,
+                'prestazioni_specialista_riferimento' => $prestazioni_specialista_riferimento, 
+                'prestazioni_specialista_precedente' => $prestazioni_specialista_precedente, 
+                'prestazioni_MMG_riferimento' => $prestazioni_MMG_riferimento, 
+                'prestazioni_MMG_precedente' => $prestazioni_MMG_precedente,     
+            ]);
+        } else {
+            Target1::create( [
+                'year' => $year,
+                'structure_id' => $structure_id,
+                'numero_agende' => $numero_agende,
+                'prestazioni_specialista_riferimento' => $prestazioni_specialista_riferimento, 
+                'prestazioni_specialista_precedente' => $prestazioni_specialista_precedente, 
+                'prestazioni_MMG_riferimento' => $prestazioni_MMG_riferimento, 
+                'prestazioni_MMG_precedente' => $prestazioni_MMG_precedente,         
+            ]);    
+        }
+        $data = [
+            'anno' => $year,
+            'struttura' => Structure::where("id", $structure_id)->first(),
+            'numero_agende' => $numero_agende,
+            'prestazioni_specialista_riferimento' => $prestazioni_specialista_riferimento, 
+            'prestazioni_specialista_precedente' => $prestazioni_specialista_precedente, 
+            'prestazioni_MMG_riferimento' => $prestazioni_MMG_riferimento, 
+            'prestazioni_MMG_precedente' => $prestazioni_MMG_precedente,         
+            'data' => date('d/m/Y'),
+        ];
+
+        $pdf = new PdfController();
+        return $pdf->tempiListeAttesaAutodichiarazionePdf($data);
+    }
 
     public function screening(Request $request)
     {
@@ -962,15 +998,12 @@ class HomeController extends Controller
 
         $noData = false;
         if ($record && $record->mmg_totale != 0) {
-            $dataView['percentualeAderenti'] = ($record->mmg_coinvolti / $record->mmg_totale) * 100;
-            $percentualeNonAderenti = 100 - $dataView['percentualeAderenti'];
+            $dataView['percentualeAderenti'] = round(($record->mmg_coinvolti / $record->mmg_totale) * 100, 2);
         } else {
             $dataView['percentualeAderenti'] = 0;
-            $percentualeNonAderenti = 0;
             $noData = true;
         }
-        $dataView['percentualeAderenti'] = round($dataView['percentualeAderenti'], 2);
-        $percentualeNonAderenti = round($percentualeNonAderenti, 2);
+        $percentualeNonAderenti = round(100 - $dataView['percentualeAderenti'], 2);
 
         $idR = DB::table("target5_data")
             ->select(DB::raw("concat(month, '/', year) as mese"), "mammografico", "cercocarcinoma", "colonretto")
@@ -1027,9 +1060,7 @@ class HomeController extends Controller
                         "rgba(38, 185, 154, 0.7)",
                         "rgba(255, 99, 132, 0.7)"
                     ],
-                    "data" => $noData
-                        ? [0, 0]
-                        : [$dataView['percentualeAderenti'], $percentualeNonAderenti]
+                    "data" => [$dataView['percentualeAderenti'], $percentualeNonAderenti]
                 ]
             ] //datasets
             , [
@@ -1062,7 +1093,7 @@ class HomeController extends Controller
         $dataView['denominatoreTotale'] = $datiFlussoM->sum('denominatore_m') + $datiFlussoC->sum('denominatore_c');
 
         if ($dataView['denominatoreTotale'] > 0) {
-            $dataView['percentuale'] = number_format($dataView['numeratoreTotale'] / $dataView['denominatoreTotale'] * 100, 2);
+            $dataView['percentuale'] = round($dataView['numeratoreTotale'] / $dataView['denominatoreTotale'] * 100, 2);
         } else {
             $dataView['percentuale'] = 0;
         }
@@ -1081,7 +1112,6 @@ class HomeController extends Controller
                         "rgba(255, 99, 132, 0.7)"
                     ],
                     "data" => [$dataView['percentuale'], $dataView['percentualeComplementare']]
-
                 ]
             ])
             ->options([
@@ -1090,15 +1120,12 @@ class HomeController extends Controller
                     'title' => [
                         'display' => true,
                         'text' => '% Prestazioni inappropriate'
-
                     ]
                 ]
             ]);
 
 
         /***********************Messaggio punteggio MMG****************************/
-
-
         if ($dataView['percentualeAderenti'] > 60) {
             $dataView['messaggioTmp'] = [
                 'text' => "Raggiungimento dell'obiettivo con punteggio: 2",
@@ -1117,22 +1144,17 @@ class HomeController extends Controller
         }
 
         /********************Messagggio punteggio D02 E D03************************/
-
-
         if ($dataView['percentuale'] >= 0 && $dataView['percentuale'] <= 10) {
             $dataView['messaggioTmpCodiciDD'] = [
                 'textCodiciDD' => "Pieno raggiungimento dell'obiettivo con punteggio: 1",
                 'classCodiciDD' => 'text-success'
             ];
-
         } elseif ($dataView['percentuale'] > 10) {
             $dataView['messaggioTmpCodiciDD'] = [
                 'textCodiciDD' => "Obiettivo non raggiunto con punteggio: 0",
                 'classCodiciDD' => 'text-danger'
             ];
-
         }
-
 
         return view("screening")->with("dataView", $dataView);
     }
@@ -1240,6 +1262,14 @@ class HomeController extends Controller
     }
 
 
+    public function caricamentoDonazioni(Request $request){
+
+        $dataView = $this->donazioniCommon();
+        return view("caricamentoDonazioni")->with('dataView', $dataView);
+    }
+
+    
+
     public function uploadDatiDonazione(Request $request)
     {
         $anno = $request->anno;
@@ -1247,37 +1277,53 @@ class HomeController extends Controller
         $totale_accertamenti = $request->totale_accertamenti;
         $numero_opposti = $request->numero_opposti;
         $totale_cornee = $request->totale_cornee;
-        /*
-                $messages = [
-                    'tot_mmg.required' => 'Il totale MMG è obbligatorio.',
-                    'tot_mmg.numeric' => 'Il totale MMG deve essere un numero.',
-                    'mmg_coinvolti.required' => 'Il numero di MMG coinvolti è obbligatorio.',
-                    'mmg_coinvolti.numeric' => 'Il numero di MMG coinvolti deve essere un numero.',
-                    'mmg_coinvolti.lte' => 'Il numero di MMG coinvolti deve essere minore o uguale al totale MMG.',
-                    'year.required' => 'L\'anno è obbligatorio.',
-                    'year.integer' => 'L\'anno deve essere un numero intero.',
-                ];
+
+        $messages = [
+            'totale_accertamenti.required' => 'Il totale accertamenti è obbligatorio.',
+            'totale_accertamenti.numeric' => 'Il totale accertamenti deve essere un numero.',
+            'totale_accertamenti.gte' => 'Il totale accertamenti deve essere positivo.',
+            'numero_opposti.required' => 'Il numero opposti è obbligatorio.',
+            'numero_opposti.numeric' => 'Il numero opposti deve essere un numero.',
+            'numero_opposti.gte' => 'Il totale opposti deve essere positivo.',
+            'numero_opposti.lte' => 'Il numero opposti deve essere minore o uguale al totale accertamenti.',
+            'totale_cornee.required' => 'Il numero cornee è obbligatorio.',
+            'totale_cornee.numeric' => 'Il numero cornee deve essere un numero intero.',
+            'totale_cornee.gte' => 'Il totale cornee deve essere positivo.',
+            'totale_cornee.lte' => 'Il totale cornee deve essere minore o uguale al totale accertamenti.',
+        ];
 
 
-                $request->validate([
-                    'tot_mmg' => 'required|numeric',
-                    'mmg_coinvolti' => 'required|numeric|lte:tot_mmg', // mmg_coinvolti <= tot_mmg
-                    'year' => 'required|integer',
-                ], $messages);
-        */
+        $validator = Validator::make($request->all(), [
+            'totale_accertamenti' => 'required|numeric|gte:0',
+            'numero_opposti' => 'required|numeric|gte:0|lte:totale_accertamenti', // numero_opposti <= totale_accertamenti
+            'totale_cornee' => 'required|numeric|gte:0|lte:totale_accertamenti', // totale_cornee <= totale_accertamenti
+        ], $messages);
 
-        Target6_data::create([
-            'totale_accertamenti' => $totale_accertamenti,
-            'numero_opposti' => $numero_opposti,
-            'totale_cornee' => $totale_cornee,
-            'anno' => $anno,
-            'structure_id' => $structure_id,
-        ]);
+        $dataView = $this->donazioniCommon();
 
+        if ($validator->fails()) {
+            $dataView['errors'] = $validator->errors()->getMessages();
+        } else {
 
-        return redirect()->route('caricamentoDonazioni', ['obiettivo' => $request->obiettivo]);
+            Target6_data::updateOrInsert(
+                [
+                    'structure_id' => $structure_id, 
+                    'anno' => $anno,
+                ],
+                [
+                    'structure_id' => $structure_id,
+                    'anno' => $anno,
+                    'totale_accertamenti' => $totale_accertamenti,
+                    'numero_opposti' => $numero_opposti,
+                    'totale_cornee' => $totale_cornee,
+                ]
+            );
+        }
+
+        return view("caricamentoDonazioni")->with('dataView', $dataView);
 
     }
+
     public function uploadDatiFse(Request $request)
     {
         $selezioneServizio = $request->input('prestazioni_ospedaliere');
@@ -2240,77 +2286,52 @@ class HomeController extends Controller
 
     public function fse(Request $request)
     {
-        $dataView['dataSelezionata'] = $request->annoSelezionato ?? date('Y');
+        $dataSelezionata = $request->annoSelezionato ?? date('Y');
        
         /*****************************Dimissioni Ospedaliere**********************************/
-
-        $dataView['prevenzioneTre'] = DB::table('target7_data')
-            ->select('*')
-            ->where('anno', "=",  $dataView['dataSelezionata'])
+        $prevenzioneTre = DB::table('target7_data')
+            ->where('anno', "=",  $dataSelezionata)
             ->where('structure_id', '=', Auth::user()->firstStructureId()->id)
             ->first();
 
       
         //numeratori
-        $dataView['dimissioniOspedaliere'] = isset($dataView['prevenzioneTre']->dimissioni_ospedaliere) ? $dataView['prevenzioneTre']->dimissioni_ospedaliere : 0;
-        $dataView['dimissioniPS'] = isset($dataView['prevenzioneTre']->dimissioni_ps) ? $dataView['prevenzioneTre']->dimissioni_ps : 0;
-        $dataView['prestazioniLab'] = isset($dataView['prevenzioneTre']->prestazioni_laboratorio) ? $dataView['prevenzioneTre']->prestazioni_laboratorio : 0;
-        $dataView['prestazioniRadiologia'] = isset($dataView['prevenzioneTre']->prestazioni_radiologia) ? $dataView['prevenzioneTre']->prestazioni_radiologia : 0;
-        $dataView['specialisticaAmbulatoriale'] = isset($dataView['prevenzioneTre']->prestazioni_ambulatoriali) ? $dataView['prevenzioneTre']->prestazioni_ambulatoriali : 0;
-        $dataView['vaccinati'] = isset($dataView['prevenzioneTre']->vaccinati) ? $dataView['prevenzioneTre']->vaccinati : 0;
-        $dataView['certificatiIndicizzati'] = isset($dataView['prevenzioneTre']->certificati_indicizzati) ? $dataView['prevenzioneTre']->certificati_indicizzati : 0;
-        $dataView['documentiIndicizzati'] = isset($dataView['prevenzioneTre']->documenti_indicizzati) ? $dataView['prevenzioneTre']->documenti_indicizzati : 0;
-        $dataView['documentiIndicizzatiCDA2'] = isset($dataView['prevenzioneTre']->documenti_indicizzati_cda2) ? $dataView['prevenzioneTre']->documenti_indicizzati_cda2 : 0;
-        $documentiCDA2 = isset($dataView['prevenzioneTre']->documenti_cda2) ? $dataView['prevenzioneTre']->documenti_cda2 : 0;
-        $dataView['documentiPades'] = isset($dataView['prevenzioneTre']->documenti_pades) ? $dataView['prevenzioneTre']->documenti_pades : 0;
-        $dataView['documentiIndicizzatiPades'] = isset($dataView['prevenzioneTre']->documenti_indicizzati_pades) ? $dataView['prevenzioneTre']->documenti_indicizzati_pades : 0;
+        $dataView['dimissioniOspedaliere'] = isset($prevenzioneTre->dimissioni_ospedaliere) ? $prevenzioneTre->dimissioni_ospedaliere : 0;
+        $dataView['dimissioniPS'] = isset($prevenzioneTre->dimissioni_ps) ? $prevenzioneTre->dimissioni_ps : 0;
+        $dataView['prestazioniLab'] = isset($prevenzioneTre->prestazioni_laboratorio) ? $prevenzioneTre->prestazioni_laboratorio : 0;
+        $dataView['prestazioniRadiologia'] = isset($prevenzioneTre->prestazioni_radiologia) ? $prevenzioneTre->prestazioni_radiologia : 0;
+        $dataView['specialisticaAmbulatoriale'] = isset($prevenzioneTre->prestazioni_ambulatoriali) ? $prevenzioneTre->prestazioni_ambulatoriali : 0;
+        $dataView['vaccinati'] = isset($prevenzioneTre->vaccinati) ? $prevenzioneTre->vaccinati : 0;
+        $dataView['certificatiIndicizzati'] = isset($prevenzioneTre->certificati_indicizzati) ? $prevenzioneTre->certificati_indicizzati : 0;
+        $dataView['documentiIndicizzati'] = isset($prevenzioneTre->documenti_indicizzati) ? $prevenzioneTre->documenti_indicizzati : 0;
+        $dataView['documentiIndicizzatiCDA2'] = isset($prevenzioneTre->documenti_indicizzati_cda2) ? $prevenzioneTre->documenti_indicizzati_cda2 : 0;
+        $documentiCDA2 = isset($prevenzioneTre->documenti_cda2) ? $prevenzioneTre->documenti_cda2 : 0;
+        $dataView['documentiPades'] = isset($prevenzioneTre->documenti_pades) ? $prevenzioneTre->documenti_pades : 0;
+        $dataView['documentiIndicizzatiPades'] = isset($prevenzioneTre->documenti_indicizzati_pades) ? $prevenzioneTre->documenti_indicizzati_pades : 0;
 
         // Estrai i dati del denominatore
         $denominatore = DB::table('flows_sdo')
             ->where('structure_id', '=', Auth::user()->firstStructureId()->id)
-            ->where('year',  $dataView['dataSelezionata']) // Filtro per l'anno corrente
+            ->where('year',  $dataSelezionata) // Filtro per l'anno corrente
             ->select('ob7_1')
             ->orderByDesc('month')
             ->first();
 
         $dataView['ob7'] = $denominatore->ob7_1;
 
-        if (isset($dataView['dimissioniOspedaliere']) && isset($dataView['ob7']) && $dataView['ob7'] != 0) {
+        if ($dataView['ob7'] != 0) {
             $dataView['percentualeDimissioniOspedaliere'] = round(($dataView['dimissioniOspedaliere'] / $dataView['ob7']) * 100, 2);
         } else 
             $dataView['percentualeDimissioniOspedaliere'] = 0;
         $dataView['percentualeDimissioniOspedaliereComplementare'] = 100 - $dataView['percentualeDimissioniOspedaliere'];
 
-        $dataView['chartDimissioniOspedaliere'] = Chartjs::build()
-            ->name("chartDimissioniOspedaliere")
-            ->type("doughnut")
-            ->size(["width" => 200, "height" => 100])
-            ->labels(['Indicizzati', 'Non indicizzati'])
-            ->datasets([
-                [
-                    "label" => "Percentuali MMG",
-                    "backgroundColor" => [
-                        "rgb(60, 179, 113)",
-                        "rgb(255, 0, 0)",
-                    ],
-                    "data" => [$dataView['percentualeDimissioniOspedaliere'], $dataView['percentualeDimissioniOspedaliereComplementare'],]
-                ]
-            ])
-            ->options([
-                'responsive' => true,
-                'plugins' => [
-                    'title' => [
-                        'display' => true,
-                        'text' => ''
-
-                    ]
-                ]
-            ]);
+        $dataView['chartDimissioniOspedaliere'] = $this->chartFSE("chartDimissioniOspedaliere",
+            ['Indicizzati', 'Non indicizzati'],
+            [$dataView['percentualeDimissioniOspedaliere'], $dataView['percentualeDimissioniOspedaliereComplementare']]
+        );
 
         /*****************************Dimissioni Pronto Soccorso****************************************************/
-
-        $dataView['ob7PS'] = DB::table('flows_emur')
-            //->select('ia1_2', 'year', 'month')
+        $dataView['ob7PS'] = DB::table('')
             ->where('structure_id', '=', Auth::user()->firstStructureId()->id)
             ->where('year', "=", date('Y'))
             ->sum('ia1_2');
@@ -2322,35 +2343,11 @@ class HomeController extends Controller
         }
         $dataView['percentualeComplementarePS'] = 100 - $dataView['percentualePS'];
         
-        $dataView['chartProntoSoccorso'] = Chartjs::build()
-            ->name("chartProntoSoccorso")
-            ->type("doughnut")
-            ->size(["width" => 200, "height" => 100])
-            ->labels(['Indicizzati', 'Non Indicizzati'])
-            ->datasets([
-                [
-                    "label" => "Percentuali MMG",
-                    "backgroundColor" => [
-                        "rgb(60, 179, 113)",
-                        "rgb(255, 0, 0)",
-                        
-                    ],
-                    "data" => [$dataView['percentualePS'], $dataView['percentualeComplementarePS']]
-
-                ]
-            ])
-            ->options([
-                'responsive' => true,
-                'plugins' => [
-                    'title' => [
-                        'display' => true,
-                        'text' => ''
-                    ]
-                ]
-            ]);
+        $dataView['chartProntoSoccorso'] = $this->chartFSE( "chartProntoSoccorso",
+            ['Indicizzati', 'Non Indicizzati'], [$dataView['percentualePS'], $dataView['percentualeComplementarePS']]
+        );
 
         /*********************Prestazioni di Laboratorio****************************** */
-
         $denFlussoC = DB::table('flows_c')
             ->select('ia1_3', 'ia1_4', 'ia1_5', 'ia1_6')
             ->where('year', "=", date('Y'))
@@ -2377,38 +2374,11 @@ class HomeController extends Controller
         $dataView['percentualeComplementarePrestLab'] = 100 - $dataView['percentualePrestLab'];
 
 
-        $dataView['chartRefertiLaboratorio'] = Chartjs::build()
-            ->name("chartRefertiLaboratorio")
-            ->type("doughnut")
-            ->size(["width" => 200, "height" => 100])
-            ->labels(['Indicizzati', 'Non Indicizzati'])
-            ->datasets([
-                [
-                    "label" => "Percentuali MMG",
-                    "backgroundColor" => [
-                        "rgb(60, 179, 113)",
-                        "rgb(255, 0, 0)",
-                        
-                    ],
-                    "data" => [$dataView['percentualePrestLab'], $dataView['percentualeComplementarePrestLab']]
-
-                ]
-            ])
-            ->options([
-                'responsive' => true,
-                'plugins' => [
-                    'title' => [
-                        'display' => true,
-                        'text' => ''
-
-                    ]
-                ]
-            ]);
-
-
+        $dataView['chartRefertiLaboratorio'] = $this->chartFSE( "chartRefertiLaboratorio",
+            ['Indicizzati', 'Non Indicizzati'], [$dataView['percentualePrestLab'], $dataView['percentualeComplementarePrestLab']]
+        );
   
         /*********************Ref radiologia*********************************************************** */
-
         if ($dataView['PrestazioniRadDen'] > 0) {
             $dataView['percentualeRefRadiologia'] = round($dataView['prestazioniRadiologia'] / $dataView['PrestazioniRadDen'] * 100, 2);
         } else {
@@ -2416,35 +2386,11 @@ class HomeController extends Controller
         }
         $dataView['percentualeComplementareRefRadiologia'] = 100 - $dataView['percentualeRefRadiologia'];
 
-        $dataView['chartRefertiRadiologia'] = Chartjs::build()
-            ->name("chartRefertiRadiologia")
-            ->type("doughnut")
-            ->size(["width" => 200, "height" => 100])
-            ->labels(['Indicizzati', 'Non indicizzati'])
-            ->datasets([
-                [
-                    "label" => "Percentuali MMG",
-                    "backgroundColor" => [
-                        "rgb(60, 179, 113)",
-                        "rgb(255, 0, 0)",
-                        
-                    ],
-                    "data" => [$dataView['percentualeRefRadiologia'], $dataView['percentualeComplementareRefRadiologia']]
-
-                ]
-            ])
-            ->options([
-                'responsive' => true,
-                'plugins' => [
-                    'title' => [
-                        'display' => true,
-                        'text' => ''
-                    ]
-                ]
-            ]);
+        $dataView['chartRefertiRadiologia'] = $this->chartFSE("chartRefertiRadiologia",
+            ['Indicizzati', 'Non indicizzati'],[$dataView['percentualeRefRadiologia'], $dataView['percentualeComplementareRefRadiologia']]
+        );
 
         /**********************Specialistica Ambulatoriale**********************************************************/
-
         if ($dataView['PrestazioniAmbulatoriale'] > 0) {
             $dataView['percentualeSpecAmbulatoriale'] = round($dataView['specialisticaAmbulatoriale'] / $dataView['PrestazioniAmbulatoriale'] * 100, 2);
         } else {
@@ -2452,39 +2398,11 @@ class HomeController extends Controller
         }
         $dataView['percentualeComplementareSpecAmbulatoriale'] = 100 - $dataView['percentualeSpecAmbulatoriale'];
 
-        $dataView['chartSpecialisticaAmbulatoriale'] = Chartjs::build()
-            ->name("chartSpecialisticaAmbulatoriale")
-            ->type("doughnut")
-            ->size(["width" => 200, "height" => 100])
-            ->labels(['Indicizzati', 'Non Indicizzati'])
-            ->datasets([
-                [
-                    "label" => "Percentuali MMG",
-                    "backgroundColor" => [
-                        "rgb(60, 179, 113)",
-                        "rgb(255, 0, 0)",
-                        
-                    ],
-                    "data" => [$dataView['percentualeSpecAmbulatoriale'], $dataView['percentualeComplementareSpecAmbulatoriale']]
-
-                ]
-            ])
-            ->options([
-                'responsive' => true,
-                'plugins' => [
-                    'title' => [
-                        'display' => true,
-                        'text' => ''
-
-                    ]
-                ]
-            ]);
-
+        $dataView['chartSpecialisticaAmbulatoriale'] = $this->chartFSE( "chartSpecialisticaAmbulatoriale",
+            ['Indicizzati', 'Non Indicizzati'],[$dataView['percentualeSpecAmbulatoriale'], $dataView['percentualeComplementareSpecAmbulatoriale']]
+        );
 
         /****************************Vaccinati****************************************************** */
-
-
-
         if ($dataView['vaccinati'] > 0) {
             $dataView['percentualeVaccinati'] = round($dataView['certificatiIndicizzati'] / $dataView['vaccinati'] * 100, 2);
         } else {
@@ -2492,32 +2410,9 @@ class HomeController extends Controller
         }
         $dataView['percentualeComplementareVaccinati'] = 100 - $dataView['percentualeVaccinati'];
 
-        $dataView['chartCertificatiVaccinali'] = Chartjs::build()
-            ->name("chartCertificatiVaccinali")
-            ->type("doughnut")
-            ->size(["width" => 200, "height" => 100])
-            ->labels(['Indicizzati', 'Non Indicizzati'])
-            ->datasets([
-                [
-                    "label" => "Percentuali MMG",
-                    "backgroundColor" => [
-                        "rgb(60, 179, 113)",
-                        "rgb(255, 0, 0)",
-                    ],
-                    "data" => [$dataView['percentualeVaccinati'], $dataView['percentualeComplementareVaccinati']]
-                ]
-            ])
-            ->options([
-                'responsive' => true,
-                'plugins' => [
-                    'title' => [
-                        'display' => true,
-                        'text' => ''
-
-                    ]
-                ]
-            ]);
-
+        $dataView['chartCertificatiVaccinali'] = $this->chartFSE( "chartCertificatiVaccinali",
+            ['Indicizzati', 'Non Indicizzati'], [$dataView['percentualeVaccinati'], $dataView['percentualeComplementareVaccinati']]
+        );
 
         /**************************Documentazione FSE************************************************************ */
         if ($dataView['prestazioniErogate'] > 0) {
@@ -2527,35 +2422,11 @@ class HomeController extends Controller
         }
         $dataView['percentualeComplementareDocumentazioneFse'] = 100 - $dataView['percentualeDocumentazioneFse'];
 
-        $dataView['chartDocumentiFSE'] = Chartjs::build()
-            ->name("chartDocumentiFSE")
-            ->type("doughnut")
-            ->size(["width" => 200, "height" => 100])
-            ->labels(['Indicizzati', 'Non Indicizzati'])
-            ->datasets([
-                [
-                    "label" => "Percentuali MMG",
-                    "backgroundColor" => [
-                        "rgb(60, 179, 113)",
-                        "rgb(255, 0, 0)",
-                    ],
-                    "data" => [$dataView['percentualeDocumentazioneFse'], $dataView['percentualeComplementareDocumentazioneFse']]
-                ]
-            ])
-            ->options([
-                'responsive' => true,
-                'plugins' => [
-                    'title' => [
-                        'display' => true,
-                        'text' => ''
-
-                    ]
-                ]
-            ]);
+        $dataView['chartDocumentiFSE'] = $this->chartFSE( "chartDocumentiFSE",
+            ['Indicizzati', 'Non Indicizzati'],[$dataView['percentualeDocumentazioneFse'], $dataView['percentualeComplementareDocumentazioneFse']]
+        );
 
         /***************************Documenti in CDA2************************************************************* */
-
-
         if ($dataView['documentiIndicizzatiCDA2'] > 0) {
             $dataView['percentualeDocumentiCDA2'] = round($documentiCDA2 / $dataView['documentiIndicizzatiCDA2'] * 100, 2);
         } else {
@@ -2563,33 +2434,9 @@ class HomeController extends Controller
         }
         $dataView['percentualeComplementareDocumentiCDA2'] = 100 - $dataView['percentualeDocumentiCDA2'];
 
-        $dataView['chartDocumentiCDA2'] = Chartjs::build()
-            ->name("chartDocumentiCDA2")
-            ->type("doughnut")
-            ->size(["width" => 200, "height" => 100])
-            ->labels(['Non CDA2', 'CDA2'])
-            ->datasets([
-                [
-                    "label" => "Percentuali MMG",
-                    "backgroundColor" => [
-                        "rgb(60, 179, 113)",
-                        "rgb(255, 0, 0)",
-                        
-                    ],
-                    "data" => [$dataView['percentualeDocumentiCDA2'], $dataView['percentualeComplementareDocumentiCDA2']]
-
-                ]
-            ])
-            ->options([
-                'responsive' => true,
-                'plugins' => [
-                    'title' => [
-                        'display' => true,
-                        'text' => ''
-
-                    ]
-                ]
-            ]);
+        $dataView['chartDocumentiCDA2'] = $this->chartFSE( "chartDocumentiCDA2",
+            ['Non CDA2', 'CDA2'],[$dataView['percentualeDocumentiCDA2'], $dataView['percentualeComplementareDocumentiCDA2']]
+        );
 
         /***************************Documenti Pades************************************************************ */
         if ($dataView['documentiIndicizzatiPades'] > 0) {
@@ -2599,33 +2446,9 @@ class HomeController extends Controller
         }
         $dataView['percentualeComplementarePades'] = 100 - $dataView['percentualePades'];
 
-        $dataView['chartDocumentiPades'] = Chartjs::build()
-            ->name("chartDocumentiPades")
-            ->type("doughnut")
-            ->size(["width" => 200, "height" => 100])
-            ->labels(['Pades', 'Non pades'])
-            ->datasets([
-                [
-                    "label" => "Percentuali MMG",
-                    "backgroundColor" => [
-                        "rgb(60, 179, 113)",
-                        "rgb(255, 0, 0)",
-                        
-                    ],
-                    "data" => [$dataView['percentualePades'] , $dataView['percentualeComplementarePades']]
-
-                ]
-            ])
-            ->options([
-                'responsive' => true,
-                'plugins' => [
-                    'title' => [
-                        'display' => true,
-                        'text' => ''
-
-                    ]
-                ]
-            ]);
+        $dataView['chartDocumentiPades'] = $this->chartFSE( "chartDocumentiPades",
+            ['Pades', 'Non pades'], [$dataView['percentualePades'] , $dataView['percentualeComplementarePades']]
+        );
 
         return view("fse")->with("dataView", $dataView);
     }

@@ -36,8 +36,8 @@
                                     <div class="form-group">
                                         <select class="form-control" name="structure_id" required>
                                             <option value="">-- Seleziona --</option>
-                                            @foreach ($dataView['structures'] as $rowStruttura)
-                                                <option value="{{ $rowStruttura->id }}" {{ count($dataView['structures']) == 1 ? "selected" : "" }}>
+                                            @foreach ($dataView['strutture'] as $rowStruttura)
+                                                <option value="{{ $rowStruttura->id }}" {{ count($dataView['strutture']) == 1 ? "selected" : "" }}>
                                                     {{ $rowStruttura->name }}
                                                 </option>
                                             @endforeach
@@ -112,12 +112,14 @@
                         <form method="POST" action="{{ route('uploadDatiDonazione') }}">
                             @csrf
                             <input type="hidden" name="obiettivo" value={{$dataView['obiettivo']}}>
-                            @if ($errors->any())
+                            @if (isset($dataView['errors']))
                                 <div class="overflow-auto alert alert-danger" style="max-height: 200px;" role="alert">
                                     <h4 class="alert-heading px-5">Errore</h4>
                                     <p>
-                                    @foreach($errors->all() as $errore)
+                                    @foreach($dataView['errors'] as $errori)
+                                        @foreach($errori as $errore)
                                             {{$errore}}<br />
+                                        @endforeach
                                     @endforeach
                                     </p>
                                 </div>
@@ -145,35 +147,30 @@
 
                             <div class="form-row">
                                 <div class="form-group col-md-6">
-                                    <p class="mb-1">Anno</p>
-                                    <select id="anno" name="anno" class="form-control" required tabindex="3">
-                                        <option>
-                                            Scegli
-                                            un anno</option>
-                                        @for ($anno = date('Y'); $anno >= 2023; $anno--)
-                                            <option value="{{ $anno }}" >
-                                                {{ $anno }}
-                                            </option>
-                                        @endfor
-                                    </select>
-                                </div>
-
-                                <div class="form-group col-md-6">
-                                    <p class="mb-1">Struttura</p>
+                                    <p class="mb-1">Seleziona la struttura</p>
                                     <select id="structure_id" name="structure_id" class="form-control" required
                                         tabindex="4">
-                                        <option value="" disabled {{ $dataView['tableData']->isEmpty() ? 'selected' : '' }}>
-                                            Scegli una struttura
-                                        </option>
-                                        @foreach($dataView['structures'] as $structure)
+                                        <option value="" disabled {{ $dataView['tableData']->isEmpty() ? 'selected' : '' }}>Seleziona</option>
+                                        @foreach($dataView['strutture'] as $structure)
                                             <option value="{{ $structure->id }}" 
                                                 @if($dataView['tableData']->isNotEmpty() && $structure->id == $dataView['tableData']->first()->structure_id)
                                                     selected
                                                 @endif
-                                                {{ count(value: $dataView['structures']) == 1 ? "selected" : "" }}>
+                                                {{ count(value: $dataView['strutture']) == 1 ? "selected" : "" }}>
                                                 {{ $structure->name }}
                                             </option>
                                         @endforeach
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <p class="mb-1">Anno di riferimento</p>
+                                    <select id="anno" name="anno" class="form-control" required tabindex="3">
+                                        <option>Seleziona</option>
+                                        @for ($anno = date('Y'); $anno >= 2023; $anno--)
+                                            <option value="{{ $anno }}" {{ $anno == date('Y') ? "selected" : "" }}>
+                                                {{ $anno }}
+                                            </option>
+                                        @endfor
                                     </select>
                                 </div>
                             </div>

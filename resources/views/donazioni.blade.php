@@ -203,7 +203,7 @@
                                                 <th>Anno</th>
                                                 <th>Totale accertamenti</th>
                                                 <th>Percentuale</th>
-                                                <th>Incremento % rispetto al 2023</th>
+                                                <th>Incr rispetto al 2023</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -212,10 +212,10 @@
                                                     <tr>
                                                         <td>{{ $res['anno'] }}</td> 
                                                         <td>{{ $res['totale_accertamenti'] }}</td> 
-                                                        <td>{{ $res['percentuale'] }}%</td> 
-                                                @endforeach
-                                                    <td>{{ number_format($dataView['incremento'], 2) }}%</td>
+                                                        <td>{{ $res['percentualeAccertamenti'] }} %</td> 
+                                                        <td>{{ $res['incrementoAccertamenti'] }} %</td>
                                                     </tr>
+                                                @endforeach
                                             @endif
                                         </tbody>
                                     </table>
@@ -367,20 +367,19 @@
                                 <thead>
                                     <tr>
                                         <th>Anno</th>
-                                        <th>Totale accertamenti</th>
-                                        <th>Percentuale</th>
+                                        <th>Totale cornee</th>
+                                        <th>Incr. rispetto al 2023</th>
                             
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($dataView['result'] as $res)
-                                            <tr>
-                                                <td>{{ $res['anno'] }}</td> 
-                                                <td>{{ $res['totale_cornee']}}</td> 
+                                        <tr>
+                                            <td>{{ $res['anno'] }}</td> 
+                                            <td>{{ $res['totale_cornee']}}</td> 
+                                            <td>{{ $res['incrementoCornee']}} %</td> 
+                                        </tr>
                                     @endforeach  
-                                                <td>{{ $dataView['percIncrementoSub4']}}%</td> 
-                                            </tr>
-                                    
                                 </tbody>
                             </table>
 

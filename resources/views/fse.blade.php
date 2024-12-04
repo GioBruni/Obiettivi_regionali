@@ -24,29 +24,31 @@
                     <div class="row">
                         <div class="container">
                             <form action="{{ route('fse') }}" method="GET" enctype="multipart/form-data">
+                                <input type="hidden" name="annoCorrente" value="{{ date('Y') }}">
+
                                 <div class="row align-items-end">
-                                    <div class="col-md-6">
-                                        <div class="form-group d-flex">
-                                            <select id="annoSelezionato" class="form-control mr-2" name="annoSelezionato">
-                                                @php
-                                                $annoCorrente = date('Y');
-                                                $annoMinimo = 2023; 
-                                                $annoSelezionato = request('annoSelezionato', $annoCorrente);
-                                                for ($anno = $annoCorrente; $anno >= $annoMinimo; $anno--) {
-                                                    $selected = ($anno == $annoSelezionato) ? 'selected' : '';
-                                                    echo "<option value=\"$anno\" $selected>$anno</option>";
-                                                }
-                                                @endphp
-                                            </select>
-                                            <button type="submit" class="btn btn-primary">Cerca</button>
-                                        </div>
+                                    <div class="col-md-2">
+                                        <label for="annoSelezionato">Anno</label>
+                                        <select id="annoSelezionato" class="form-control" name="annoSelezionato">
+                                            @for ($anno = date('Y'); $anno >= 2023; $anno--)
+                                                <option value="{{ $anno }}" {{($anno == request('annoSelezionato', date('Y'))) ? 'selected' : ''}}>{{ $anno }}</option>
+                                            @endfor
+                                            @php
+                                            for ($anno = date('Y'); $anno >= 2023; $anno--) {
+                                                $selected = ($anno == request('annoSelezionato', date('Y'))) ? 'selected' : '';
+                                                //echo "<option value=\"$anno\" $selected>$anno</option>";
+                                            }
+                                            @endphp
+                                        </select>
                                     </div>
-                                    <input type="hidden" name="annoCorrente" value="{{ $annoCorrente }}">
+                                    <div class="col-md-2">
+                                        <button type="submit" class="btn btn-primary">Cerca</button>
+                                    </div>
                                 </div>
                             </form>
                         </div>
 
-                        <div id="indicatore1" class="row justify-content-center">
+                        <div id="indicatore1" class="row justify-content-center mt-4">
                             <div class="col-md-12">
                                 <div class="card shadow-sm border-0">
                                     <div class="card-header bg-primary text-white">

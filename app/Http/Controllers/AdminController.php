@@ -13,10 +13,27 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Str;
 use Storage;
+use App\ChartTrait;
 
 class AdminController extends Controller
 {
+    use ChartTrait;
 
+    protected function coloreSfondo($value, $base) {
+        $startColor = [139, 0, 0]; // Rosso scuro
+        $endColor = [255, 204, 204]; // Rosso chiaro
+        
+        $ratio = $value / $base;
+        $r = (int)($startColor[0] + ($endColor[0] - $startColor[0]) * $ratio);
+        $g = (int)($startColor[1] + ($endColor[1] - $startColor[1]) * $ratio);
+        $b = (int)($startColor[2] + ($endColor[2] - $startColor[2]) * $ratio);
+        
+        $hex = "#" . str_pad(dechex($r), 2, "0", STR_PAD_LEFT) .
+            str_pad(dechex($g), 2, "0", STR_PAD_LEFT) .
+            str_pad(dechex($b), 2, "0", STR_PAD_LEFT);
+    
+        return $hex;
+    }
 
     /**
      ************************* A D M I N  ************************
@@ -209,7 +226,7 @@ class AdminController extends Controller
         $file->notes = $request->notes;
         $file->save();
 
-        DB::table("result_target3")->insert([
+        DB::table("target3_data")->insert([
             'numerator' => $request->numeratore ?? null,
             'denominator' => $request->denominatore ?? null,
             'uploated_file_id' => $request->fileId,
@@ -229,70 +246,723 @@ class AdminController extends Controller
     }
 
 
-public function caricamentoDonazioni(Request $request){
-
-    $dataView['structures'] = Auth::user()->structures();
-    $dataView['titolo'] = config("constants.OBIETTIVO.$request->obiettivo.text");
-    $dataView['icona'] = config("constants.OBIETTIVO.$request->obiettivo.icon");
-    $dataView['tooltip'] = config("constants.OBIETTIVO.$request->obiettivo.tooltip");
-
-    $dataView['categorie'] = DB::table("target_categories")
-    ->where("target_number", $request->obiettivo)
-    ->orderBy("order")
-    ->get();
-
-    $dataView['file'] = DB::table('uploated_files as up')
-    ->join('target_categories as tc', 'up.target_category_id', '=', 'tc.id')
-    ->where('up.user_id', Auth::user()->id)
-    ->where('up.target_number', $request->obiettivo)
-    ->select('up.target_number', 'up.target_category_id', 'tc.category', 'up.validator_user_id', 'up.approved', 'up.created_at')
-    ->get();
-
-    // Dati per la tabella nella view 
-    $dataView['tableData'] = DB::table('target6_data')
-    ->select('totale_accertamenti', 'numero_opposti','totale_cornee', 'anno', 'structure_id', 's.name')
-    ->join('structures as s', 'target6_data.structure_id', '=', 's.id')
-    ->get();
-
-
-
-    $dataView['obiettivo'] = $request->obiettivo;
-
-    return view("caricamentoDonazioni")->with('dataView', $dataView);
-}
-
-
-public function uploadFileScreening(Request $request)
-{
-    // Validate the file input
-    $request->validate([
-        'file' => 'required|file|mimes:pdf|max:5096',
-    ]);
-
-    // Check if a file is uploaded
-    if ($request->hasFile('file')) {
-        $file = $request->file('file');
-        $path = $file->store('uploads', 'public');
-        $url = Storage::url($path);
-        $categoriaId = $request->input('categoria');
-
-        UploatedFile::create([
-            'filename' => $file->getClientOriginalName(),
-            'path' => $url,
-            'user_id' => Auth::user()->id,
-            'structure_id' => $request->structure_id,
-            'notes' => null,
-            'target_number' => $request->obiettivo,
-            'target_category_id' => $categoriaId,
-            'year' => $request->anno
+    public function uploadFileScreening(Request $request)
+    {
+        // Validate the file input
+        $request->validate([
+            'file' => 'required|file|mimes:pdf|max:5096',
         ]);
 
-        return redirect()->back()->with('success', 'File caricato con successo e in attesa di approvazione.');
+        // Check if a file is uploaded
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $path = $file->store('uploads', 'public');
+            $url = Storage::url($path);
+            $categoriaId = $request->input('categoria');
+
+            UploatedFile::create([
+                'filename' => $file->getClientOriginalName(),
+                'path' => $url,
+                'user_id' => Auth::user()->id,
+                'structure_id' => $request->structure_id,
+                'notes' => null,
+                'target_number' => $request->obiettivo,
+                'target_category_id' => $categoriaId,
+                'year' => $request->anno
+            ]);
+
+            return redirect()->back()->with('success', 'File caricato con successo e in attesa di approvazione.');
+        }
+        return redirect()->back()->with('error', 'Nessun file caricato.');
     }
-    return redirect()->back()->with('error', 'Nessun file caricato.');
-}
 
 
     
+    protected function initView(int $obiettivo)
+    {
+        $dataView['titolo'] = config("constants.OBIETTIVO." . $obiettivo . ".text");
+        $dataView['icona'] = config("constants.OBIETTIVO." . $obiettivo . ".icon");
+        $dataView['tooltip'] = config("constants.OBIETTIVO." . $obiettivo . ".tooltip");
+        $dataView['obiettivo'] = $obiettivo;
+        $dataView['categorie'] = DB::table(table: 'target_categories as tc')
+            ->where("target_number", $obiettivo)->get();
+
+        return $dataView;
+    }
+
+
+    public function index()
+    {
+        $dataView['saluteEFunzionamento'] = config("constants.OBIETTIVO");
+
+        return view('admin.home')->with("dataView", $dataView);
+    }
     
+    public function tempiListeAttesa(Request $request)
+    {
+        $tmpAnno = isset($request->anno) ? $request->anno : date('Y');
+        $tmpMeseInizio = isset($request->mese_inizio) ? $request->mese_inizio : 1;
+        $tmpMeseFine = isset($request->mese_fine) ? $request->mese_fine : date("m");
+
+        $dataView = $this->initView(1);
+        $dataView['anno'] = $tmpAnno;
+        $dataView['meseInizio'] = $tmpMeseInizio;
+        $dataView['meseFine'] = $tmpMeseFine;
+        
+        $dataView['strutture'] = Structure::all();
+        $numeratori = DB::table('cup_model_target1')
+            ->select(
+                'structure_id',
+                DB::raw('SUM(amount) as totale_quantita'),
+                'structures.name'
+            )
+            ->join("structures", "structures.id", "=", "cup_model_target1.structure_id")
+            ->whereYear( 'cup_model_target1.provision_date', $tmpAnno)
+            ->whereMonth('cup_model_target1.provision_date', '>=', $tmpMeseInizio)
+            ->whereMonth('cup_model_target1.provision_date', '<=', $tmpMeseFine)
+            ->groupBy(groups: 'cup_model_target1.structure_id')
+            ->get()->keyBy('structure_id')->toArray();
+
+        $denominatoriC = DB::table('flows_c')
+            ->select(
+                'structure_id',
+                DB::raw('COALESCE(SUM(ob1_1), 0) as tot'),
+                'structures.name',
+            )
+            ->join("structures", "structures.id", "=", "flows_c.structure_id")
+            ->where( 'year', $tmpAnno)
+            ->whereBetween('month', [$tmpMeseInizio, $tmpMeseFine])
+            ->groupBy( 'structure_id')
+            ->get()->keyBy('structure_id')->toArray();
+        $denominatoriM = DB::table('flows_m')
+            ->select(
+                'structure_id',
+                DB::raw('COALESCE(SUM(ob1_1), 0) as tot'),
+                'structures.name',
+            )
+            ->join("structures", "structures.id", "=", "flows_m.structure_id")
+            ->where( 'year', $tmpAnno)
+            ->whereBetween('month', [$tmpMeseInizio, $tmpMeseFine])
+            ->groupBy( 'structure_id')
+            ->get()->keyBy('structure_id')->toArray();
+
+        $allStructureIds = array_unique(array_merge(
+            array_keys($numeratori),
+            array_keys($denominatoriC),
+            array_keys($denominatoriM)
+        ));
+
+        // Crea un array finale con tutte le strutture e i dati corrispondenti
+        $dataView['dati'] = [];
+        foreach ($allStructureIds as $structureId) {
+            $denominatore = (isset($denominatoriC[$structureId]) ? $denominatoriC[$structureId]->tot : 0) + (isset($denominatoriM[$structureId]) ? $denominatoriM[$structureId]->tot : 0);
+            $percentuale = round($numeratori[$structureId]->totale_quantita / $denominatore * 100, 2);
+            $dataView['dati'][$structureId] = [
+                'structure_id' => $structureId,
+                'numeratore' => isset($numeratori[$structureId]) ? $numeratori[$structureId]->totale_quantita : 0,
+                'denominatore' => $denominatore,
+                'percentuale' => $percentuale,
+                'backgroundPerc' => $percentuale >= 100 ? "green" : $this->coloreSfondo($percentuale, 99), 
+                'name' => isset($denominatoriC[$structureId]) ? $denominatoriC[$structureId]->name : (isset($denominatoriM[$structureId]) ? $denominatoriM[$structureId]->name : ''),
+            ];
+        }
+
+        $dataView['tempiListeAttesa'] = $this->showChart("bar", "tempiListeAttesa",
+            array_column($dataView['dati'], "name"),
+            [
+                [
+                    "label" => "Numeratore",
+                    "backgroundColor" => "rgba(38, 185, 154, 0.7)",
+                    "data" => array_column($dataView['dati'], "numeratore")
+                ],
+                [
+                    "label" => "Denominatore",
+                    "backgroundColor" => "rgba(255, 99, 132, 0.7)",
+                    "data" => array_column($dataView['dati'], "denominatore")
+                ]
+            ],
+            [
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Distribuzione Percentuale: TMP e Differenza Media Totale'
+                    ]
+                ]
+            ]);
+
+        $tmpIndicatori2 = DB::table("target1_data")
+            ->select("target1_data.*", "structures.name")
+            ->join("uploated_files", "uploated_files.id", "=", "target1_data.uploated_file_id")
+            ->join("structures", "structures.id", "=", "target1_data.structure_id")
+            ->where("target1_data.year", $tmpAnno)
+            ->where("uploated_files.approved", 1)
+            ->orderBy("structure_id")
+            ->get();
+
+        $dataView['indicatori2'] = [];
+        foreach($tmpIndicatori2 as $indicatore) {
+            $percSpecialista = round(($indicatore->prestazioni_specialista_riferimento - $indicatore->prestazioni_specialista_precedente) / $indicatore->prestazioni_specialista_precedente * 100, 2);
+            $percMMG = round(($indicatore->prestazioni_MMG_riferimento - $indicatore->prestazioni_MMG_precedente) / $indicatore->prestazioni_MMG_precedente * 100, 2);
+            $dataView['indicatori2'][] = [
+                "name" => $indicatore->name, 
+                "numero_agende" => $indicatore->numero_agende, 
+                "backgroundAgende" => $indicatore->numero_agende > 10 ? "green" : $this->coloreSfondo($indicatore->numero_agende, 11), 
+                "prestazioni_specialista_riferimento" => $indicatore->prestazioni_specialista_riferimento, 
+                "prestazioni_specialista_precedente" => $indicatore->prestazioni_specialista_precedente, 
+                "percentualeSpecialista" => $percSpecialista, 
+                "backgroundSpecialista" => $percSpecialista > 10 ? "green" : $this->coloreSfondo($percSpecialista, 11), 
+                "prestazioni_MMG_riferimento" => $indicatore->prestazioni_MMG_riferimento, 
+                "prestazioni_MMG_precedente" => $indicatore->prestazioni_MMG_precedente, 
+                "percentualeMMG" => $percMMG, 
+                "backgroundMMG" => $percMMG < 20 ? "green" : "red", 
+            ];
+        }
+               
+        return view("admin.tempiListeAttesa")->with("dataView", $dataView);
+    }
+
+
+    public function puntiNascita(Request $request)
+    {
+        $dataView = $this->initView(obiettivo: 3);
+        $dataView['categorie'] = DB::table("target_categories")
+            ->where("target_number", 3)
+            ->orderBy("order")
+            ->get();
+
+
+        $livelli = DB::table('uploated_files as uf')
+            ->join(
+                DB::raw('(SELECT structure_id, target_category_id, target_number, MAX(created_at) AS max_created_at
+                          FROM uploated_files
+                          WHERE approved = 1 AND target_number = 3 
+                          GROUP BY structure_id, target_category_id, target_number) as latest_files'),
+                function($join) {
+                    $join->on('uf.structure_id', '=', 'latest_files.structure_id')
+                         ->on('uf.target_category_id', '=', 'latest_files.target_category_id')
+                         ->on('uf.target_number', '=', 'latest_files.target_number')
+                         ->on('uf.created_at', '=', 'latest_files.max_created_at');
+                }
+            )
+            ->join("target3_data", "target3_data.uploated_file_id", "=", "uf.id")
+            ->join("structures", "structures.id", "=", "uf.structure_id")
+            ->join("target_categories", "target_categories.id", "=", "uf.target_category_id")
+            ->where('uf.approved', 1)
+            ->where('uf.target_number', 3)
+            ->select('uf.structure_id', DB::raw("sum(target3_data.numerator) as numerator"), DB::raw("sum(target3_data.denominator) as denominator"), "structures.name")
+            ->groupby("uf.structure_id")
+            ->get();
+
+        $dataView['livelli'] = [];
+        foreach($livelli as $livello) {
+            $perc = round($livello->numerator / $livello->denominator * 100, 2);
+            if ($perc >= 100) {
+                $color = "Green";
+            } elseif ($perc >= 90 && $perc < 100) {
+                $color = "#59721C";
+            } elseif ($perc >= 75 && $perc < 90) {
+                $color = "#ffd700"; // giallo
+            } else {
+                $color = "red";
+            }
+            $dataView['livelli'][] = [
+                "structure_id" => $livello->structure_id,
+                "numerator" => $livello->numerator,
+                "denominator" => $livello->denominator,
+                "name" => $livello->name,
+                "percentage" => $perc,
+                "backgroundLiv" => $color
+            ];
+        }
+
+
+
+        $dataView['obiettivo'] = 3;
+
+        return view("admin.showFormObiettivo")->with("dataView", $dataView);
+    }
+
+
+    public function prontoSoccorso(Request $request)
+    {
+        $dataView = $this->initView(obiettivo: 4);
+
+        $dataView['anno'] = isset($request->year) ? $request->year : date('Y');
+
+        $flowEmur = DB::table('flows_emur as fe')
+            ->join('structures as s', 'fe.structure_id', '=', 's.id')
+            ->select(DB::raw('avg(fe.tmp) as tmp'), DB::raw('avg(fe.boarding) as boarding'), "s.name")            
+            ->where("fe.year", $dataView['anno'])
+            ->groupby("fe.structure_id")
+            ->get();
+
+        $dataView['flowEmur'] = [];
+        foreach($flowEmur as $row) {
+            if($row->tmp >= 85)
+                $tmpColor = "green";
+            elseif($row->tmp >= 75 && $row->tmp < 85)
+                $tmpColor = "#59721C";
+            else
+                $tmpColor = "red";
+            if($row->boarding <= 2)
+                $boardingColor = "green";
+            elseif($row->boarding >= 2 && $row->boarding < 4)
+                $boardingColor = "#59721C";
+            else
+                $boardingColor = "red";
+            $dataView['flowEmur'][] = [
+                "tmp" => round($row->tmp, 2),
+                "boarding" => round($row->boarding, 2),
+                "name" => $row->name,
+                "tmpColor" => $tmpColor,
+                "boardingColor" => $boardingColor,
+            ];
+        }
+
+        $flowMonths = DB::table('flows_emur as fe')
+            ->join('structures as s', 'fe.structure_id', '=', 's.id')
+            ->select('fe.tmp', 'fe.boarding', "fe.month", "s.name", 'fe.structure_id', "fe.year")            
+            ->where("fe.year", $dataView['anno'])
+            //->where("fe.structure_id", 8)
+            ->orderby("fe.month")
+            ->orderby("fe.structure_id")
+            ->get();
+//dd($flowMonths);
+        $months = [];
+        for($i = 1; $i <= 12; $i++)
+            $months[$i-1] = str_pad($i, 2, '0', STR_PAD_LEFT). "/" . $dataView['anno'];
+        $structureTmp = [];
+        $structureBoarding = [];
+        foreach ($flowMonths as $row) {
+            if (!isset($structureTmp[$row->structure_id])) {
+                $structureTmp[$row->structure_id] = [
+                    'label' => $row->name,
+                    'data' => array_fill(0, 12, 0),
+                ];
+            }
+            if (!isset($structureBoarding[$row->structure_id])) {
+                $structureBoarding[$row->structure_id] = [
+                    'label' => $row->name,
+                    'data' => array_fill(0, 12, 0),
+                ];
+            }
+       
+            $structureTmp[$row->structure_id]['data'][$row->month-1] = $row->tmp;
+            $structureBoarding[$row->structure_id]['data'][$row->month-1] = $row->boarding;
+        }
+        $dataView['lineChartTmp'] = $this->showChart("line", "SovraffollamentoPS_Tmp"
+        , $months //$flowMonths->pluck("month")->toArray() // labels
+        , array_values($structureTmp)
+        , [
+            'responsive' => true,
+            'plugins' => [
+
+                'scales' => [
+                    "x" => [
+                        "title" => [
+                            'display' => true,
+                            'text' => 'Mese'
+                        ]
+                    ],
+                    "y" => [
+                        "title" => [
+                            'display' => true,
+                            'text' => 'TMP'
+                        ]
+                    ],
+                ],
+
+            ]
+        ] // options
+        );
+        $dataView['lineChartBoarding'] = $this->showChart("line", "SovraffollamentoPS_Boarding"
+        , $months 
+        , array_values($structureBoarding)
+        , [
+            'responsive' => true,
+            'plugins' => [
+
+                'scales' => [
+                    "x" => [
+                        "title" => [
+                            'display' => true,
+                            'text' => 'Mese'
+                        ]
+                    ],
+                    "y" => [
+                        "title" => [
+                            'display' => true,
+                            'text' => 'Boarding'
+                        ]
+                    ],
+                ],
+
+            ]
+        ] // options
+        );
+        return view("admin/prontoSoccorso", ['dataView' => $dataView]);
+
+    }
+
+
+    public function screening(Request $request)
+    {
+        $dataView = $this->initView(obiettivo: 5);
+
+        $dataView['anno'] = isset($request->year) ? $request->year : date('Y');
+
+        $idR = DB::table(table: "target5_data")
+            ->join("structures as s", "s.id", "=", "target5_data.structure_id")
+            ->select("month", "structure_id", "s.name", "mammografico", "cercocarcinoma as cervicocarcinoma", "colonretto")
+            ->where("year", $dataView['anno'])
+            ->orderby("month")
+            ->get();
+
+        $structureData = [];
+        $months = [];
+        for($i = 1; $i <= 12; $i++)
+            $months[$i-1] = str_pad($i, 2, '0', STR_PAD_LEFT). "/" . $dataView['anno'];
+
+        foreach ($idR as $row) {
+
+            if (!isset($structureData[$row->structure_id])) {
+                $structureData[$row->structure_id] = [
+                    'name' => $row->name,
+                    'mammografico' => array_fill(0, 12, 0),
+                    'cervicocarcinoma' => array_fill(0, 12, 0),
+                    'colonretto' => array_fill(0, 12, 0),
+                ];
+            }    
+            $structureData[$row->structure_id]['mammografico'][$row->month-1] = $row->mammografico;
+            $structureData[$row->structure_id]['cervicocarcinoma'][$row->month-1] = $row->cervicocarcinoma;
+            $structureData[$row->structure_id]['colonretto'][$row->month-1] = $row->colonretto;
+        }         
+        $datasets = [
+            'mammografico' => [],
+            'cervicocarcinoma' => [],
+            'colonretto' => []
+        ];
+        foreach ($structureData as $data) {
+            // Aggiungi i dati per ogni serie (mammografico, cervicocarcinoma, colonretto)
+            $datasets['mammografico'][] = [
+                'label' => $data['name'],
+                'data' => $data['mammografico'],
+            ];
+        
+            $datasets['cervicocarcinoma'][] = [
+                'label' => $data['name'],
+                'data' => $data['cervicocarcinoma'],
+            ];
+        
+            $datasets['colonretto'][] = [
+                'label' => $data['name'],
+                'data' => $data['colonretto'],
+            ];
+        }
+              // dd($datasets);   
+
+        $dataView['lineChartMammografico'] = $this->showChart("line", "IndicatoreMammograficoTarget5"
+        , $months
+        , $datasets['mammografico']
+        , [
+            'responsive' => true,
+            'plugins' => [
+                'title'=> [
+                    'display' => true,
+                    'text' => 'Mammografico'
+                ],
+                'scales' => [
+                    "x" => [
+                        "stacked" => true,
+                        "title" => [
+                            'display' => true,
+                            'text' => 'Mese'
+                        ]
+                    ],
+                    "y" => [
+                        "stacked" => true,
+                        "title" => [
+                            'display' => true,
+                            'text' => 'Indicatore LEA %'
+                        ]
+                    ],
+                ],
+            ],
+        ]);
+        $dataView['lineChartCervicocarcinoma'] = $this->showChart("line", "IndicatoreCervicocarcinomaTarget5"
+        , $months
+        , $datasets['cervicocarcinoma']
+        , [
+            'responsive' => true,
+            'plugins' => [
+                'title'=> [
+                    'display' => true,
+                    'text' => 'Cervicocarcinoma'
+                ],
+                'scales' => [
+                    "x" => [
+                        "stacked" => true,
+                        "title" => [
+                            'display' => true,
+                            'text' => 'Mese'
+                        ]
+                    ],
+                    "y" => [
+                        "stacked" => true,
+                        "title" => [
+                            'display' => true,
+                            'text' => 'Indicatore LEA %'
+                        ]
+                    ],
+                ],
+            ],
+        ]);
+        $dataView['lineChartColonretto'] = $this->showChart("line", "IndicatoreColonrettoTarget5"
+        , $months
+        , $datasets['colonretto']
+        , [
+            'responsive' => true,
+            'plugins' => [
+                'title'=> [
+                    'display' => true,
+                    'text' => 'Colonretto'
+                ],
+                'scales' => [
+                    "x" => [
+                        "stacked" => true,
+                        "title" => [
+                            'display' => true,
+                            'text' => 'Mese'
+                        ]
+                    ],
+                    "y" => [
+                        "stacked" => true,
+                        "title" => [
+                            'display' => true,
+                            'text' => 'Indicatore LEA %'
+                        ]
+                    ],
+                ],
+            ],
+        ]);
+        $dataView['indicatoriRisultato'] = $structureData;
+
+
+        $tableData = DB::table('insert_mmg as mmg')
+            ->join('structures as s', 'mmg.structure_id', '=', second: 's.id')
+            ->select('mmg.mmg_totale', 'mmg.mmg_coinvolti', 'mmg.year', 'mmg.structure_id', 's.name as nome_struttura')
+            ->where("year", $dataView['anno'])
+            ->get();
+        $dataView['mmg'] = [];
+        foreach($tableData as $row) {
+            $perc = ($row->mmg_totale != 0) ? round($row->mmg_coinvolti / $row->mmg_totale * 100, 2) : 0;
+            $dataView['mmg'][$row->structure_id] = [
+                "mmg_totale" => $row->mmg_totale,
+                "mmg_coinvolti" => $row->mmg_coinvolti,
+                "nome_struttura" => $row->nome_struttura,
+                "percentuale" => $perc,
+                'backgroundScreening' => ($perc >= 50) ? "green" : $this->coloreSfondo($perc, 6)
+            ];            
+        }
+
+        $dataView['messaggioTmp'] = [
+            'text' => "Test",
+            'class' => 'text-success'
+        ];
+        $dataView['codiciEsenzioneChart'] = $this->showChart("line", "Screening_Ind_Risultato"
+        , [1,2,3,4,5,6,7]
+        , [1,2,3,4,5,6,7]
+        , [
+            'responsive' => true,
+            'plugins' => [
+
+                'scales' => [
+                    "x" => [
+                        "title" => [
+                            'display' => true,
+                            'text' => 'Mese'
+                        ]
+                    ],
+                    "y" => [
+                        "title" => [
+                            'display' => true,
+                            'text' => 'Boarding'
+                        ]
+                    ],
+                ],
+
+            ]
+        ] // options
+        );
+        $dataView['percentualeAderenti'] = 0;
+        $dataView['lineChart'] = $this->showChart("line", "Screening_Ind_Risultato"
+        , [1,2,3,4,5,6,7]
+        , [1,2,3,4,5,6,7]
+        , [
+            'responsive' => true,
+            'plugins' => [
+
+                'scales' => [
+                    "x" => [
+                        "title" => [
+                            'display' => true,
+                            'text' => 'Mese'
+                        ]
+                    ],
+                    "y" => [
+                        "title" => [
+                            'display' => true,
+                            'text' => 'Boarding'
+                        ]
+                    ],
+                ],
+
+            ]
+        ] // options
+        );
+        $dataView['mmgChart'] = $this->showChart("doughnut", "OverallAvgTmpComplementaryBarChart"
+        , [1,2,3,4,5,6,7]
+        , [1,2,3,4,5,6,7]
+        , [
+            'responsive' => true,
+            'plugins' => [
+
+                'scales' => [
+                    "x" => [
+                        "title" => [
+                            'display' => true,
+                            'text' => 'Mese'
+                        ]
+                    ],
+                    "y" => [
+                        "title" => [
+                            'display' => true,
+                            'text' => 'Boarding'
+                        ]
+                    ],
+                ],
+
+            ]
+        ] // options
+        );
+
+        /*
+        $noData = false;
+        if ($record && $record->mmg_totale != 0) {
+            $dataView['percentualeAderenti'] = round(($record->mmg_coinvolti / $record->mmg_totale) * 100, 2);
+        } else {
+            $dataView['percentualeAderenti'] = 0;
+            $noData = true;
+        }
+
+        $dataView['mmgChart'] = $this->showChart("doughnut", "OverallAvgTmpComplementaryBarChart"
+            , ['MMG Aderenti', 'MMG non aderenti'] // labels
+            , [
+                [
+                    "label" => "Percentuali MMG",
+                    "backgroundColor" => [
+                        "rgba(38, 185, 154, 0.7)",
+                        "rgba(255, 99, 132, 0.7)"
+                    ],
+                    "data" => [$dataView['percentualeAderenti'], $percentualeNonAderenti]
+                ]
+            ] //datasets
+            , [
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => $noData
+                            ? 'Non ci sono dati disponibili'
+                            : 'Distribuzione Percentuale: MMG aderenti e Non aderenti'
+                    ]
+                ]
+            ] // options
+        );
+*/
+        //*************Secondo grafico **********//
+
+        $datiFlussoM = DB::table('flows_m')
+            ->select('ob5_num as numeratore_m', 'ob5_den as denominatore_m')
+            ->where('structure_id', 8) //Auth::user()->firstStructureId()->id)
+            ->get();
+
+
+        $datiFlussoC = DB::table('flows_c')
+            ->select('ob5_num as numeratore_c', 'ob5_den as denominatore_c')
+            ->where('structure_id', 8) //Auth::user()->firstStructureId()->id)
+            ->get();
+
+        $dataView['numeratoreTotale'] = $datiFlussoM->sum('numeratore_m') + $datiFlussoC->sum('numeratore_c');
+        $dataView['denominatoreTotale'] = $datiFlussoM->sum('denominatore_m') + $datiFlussoC->sum('denominatore_c');
+
+        if ($dataView['denominatoreTotale'] > 0) {
+            $dataView['percentuale'] = round($dataView['numeratoreTotale'] / $dataView['denominatoreTotale'] * 100, 2);
+        } else {
+            $dataView['percentuale'] = 0;
+        }
+        $dataView['percentualeComplementare'] = 100 - $dataView['percentuale'];
+/*
+        $dataView['codiciEsenzioneChart'] = Chartjs::build()
+            ->name("chartCodiciDD")
+            ->type("doughnut")
+            ->size(["width" => 300, "height" => 150])
+            ->labels(['Prestazioni Inappropriate', 'Prestazione appropriate'])
+            ->datasets([
+                [
+                    "label" => "Percentuali MMG",
+                    "backgroundColor" => [
+                        "rgba(38, 185, 154, 0.7)",
+                        "rgba(255, 99, 132, 0.7)"
+                    ],
+                    "data" => [$dataView['percentuale'], $dataView['percentualeComplementare']]
+                ]
+            ])
+            ->options([
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => '% Prestazioni inappropriate'
+                    ]
+                ]
+            ]);
+*/
+
+        /***********************Messaggio punteggio MMG****************************/
+        
+        if ($dataView['percentualeAderenti'] > 60) {
+            $dataView['messaggioTmp'] = [
+                'text' => "Raggiungimento dell'obiettivo con punteggio: 2",
+                'class' => 'text-success'
+            ];
+        } elseif ($dataView['percentualeAderenti'] >= 20) {
+            $dataView['messaggioTmp'] = [
+                'text' => "Raggiungimento dell'obiettivo parziale con punteggio: 1",
+                'class' => 'text-warning'
+            ];
+        } else {
+            $dataView['messaggioTmp'] = [
+                'text' => "Obiettivo non raggiunto con punteggio: 0",
+                'class' => 'text-danger'
+            ];
+        }
+
+        /********************Messagggio punteggio D02 E D03************************/
+        
+        if ($dataView['percentuale'] >= 0 && $dataView['percentuale'] <= 10) {
+            $dataView['messaggioTmpCodiciDD'] = [
+                'textCodiciDD' => "Pieno raggiungimento dell'obiettivo con punteggio: 1",
+                'classCodiciDD' => 'text-success'
+            ];
+        } elseif ($dataView['percentuale'] > 10) {
+            $dataView['messaggioTmpCodiciDD'] = [
+                'textCodiciDD' => "Obiettivo non raggiunto con punteggio: 0",
+                'classCodiciDD' => 'text-danger'
+            ];
+        }
+
+        return view("admin.screening")->with("dataView", $dataView);
+    }
 }
