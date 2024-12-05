@@ -26,39 +26,108 @@
                             <b>{{ __('Indicatori di risultato') }}</b>
                         </div>
 
-                        <div class="row justify-content-center mt-4">
-                            <div class="col-md-4 text-center">
-                                <div style="width: 100%; margin: auto;">
-                                    <x-chartjs-component :chart="$dataView['lineChartMammografico']" />
-                                </div>
-                                <div style="width: 100%; margin: auto;">
-                                    <table class="table">
-                                        <tr>
-                                            <th>&nbsp;</th>
-                                            @for ($i = 1; $i <= 12; $i++)
-                                                <th>{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}</th>
-                                            @endfor
-                                        </tr>
-                                    @foreach ($dataView['indicatoriRisultato'] as $struttura => $aree)
-                                        <tr>
-                                        @foreach ($aree as $area => $mese)
-                                            <td>{{ dd($area) }} </td>                                            
+                        <div class="card-body">
+                            <div class="row justify-content-center mt-4">
+                                <div class="col-md-12">
+                                    <div style="width: 100%; margin: auto;">
+                                        <x-chartjs-component :chart="$dataView['lineChartMammografico']" />
+                                    </div>
+                                    <div style="width: 100%; margin: auto;">
+                                        <table class="table">
+                                            <tr>
+                                                <th>&nbsp;</th>
+                                                @for ($i = 1; $i <= 12; $i++)
+                                                    <th>{{ array_search($i, config("constants.MESI")) }}</th>
+                                                @endfor
+                                            </tr>
+                                        @foreach ($dataView['indicatoriRisultato'] as $idStruttura => $aree)
+                                            <tr>
+                                                <td>{{ $aree['name'] }} </td>                                            
+                                                @foreach ($aree['mammografico'] as $percentuali)
+                                                    <td class="text-white text-center" style="background-color:{{$dataView['colori'][$idStruttura]['mammografico'][$loop->index]}};">{{ $percentuali }} </td>                                            
+                                                @endforeach
+                                            </tr>
                                         @endforeach
-                                        </tr>
-                                    @endforeach
-                                    </table>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-md-4 text-center">
-                                <div style="width: 100%; margin: auto;">
-                                    <x-chartjs-component :chart="$dataView['lineChartCervicocarcinoma']" />
+                            <div class="row">
+                                <div class="legend p-3 border rounded">
+                                    Se il valore dell'indicatore &egrave; minore del 35% l'obiettivo non &egrave; raggiunto;<br>
+                                    Se il valore dell'indicatore &egrave; compreso tra il 35% e il 59% l'obiettivo &egrave; parzialmente raggiunto;<br>
+                                    Se il valore dell'indicatore &egrave; maggiore del 60% l'obiettivo &egrave; raggiunto.
                                 </div>
                             </div>
-                            <div class="col-md-4 text-center">
-                                <div style="width: 100%; margin: auto;">
-                                    <x-chartjs-component :chart="$dataView['lineChartColonretto']" />
+                        </div>
+                            <div class="card-body">
+                            <div class="row justify-content-center mt-4">
+                                <div class="col-md-12">
+                                    <div style="width: 100%; margin: auto;">
+                                        <x-chartjs-component :chart="$dataView['lineChartCervicocarcinoma']" />
+                                    </div>
+                                    <div style="width: 100%; margin: auto;">
+                                        <table class="table">
+                                            <tr>
+                                                <th>&nbsp;</th>
+                                                @for ($i = 1; $i <= 12; $i++)
+                                                    <th>{{ array_search($i, config("constants.MESI")) }}</th>
+                                                @endfor
+                                            </tr>
+                                        @foreach ($dataView['indicatoriRisultato'] as $idStruttura => $aree)
+                                            <tr>
+                                                <td>{{ $aree['name'] }} </td>                                            
+                                                @foreach ($aree['cervicocarcinoma'] as $percentuali)
+                                                    <td class="text-white text-center" style="background-color:{{$dataView['colori'][$idStruttura]['cervicocarcinoma'][$loop->index]}};">{{ $percentuali }} </td>                                            
+                                                @endforeach
+                                            </tr>
+                                        @endforeach
+                                        </table>
+                                    </div>
                                 </div>
-                            </div>                        
+                            </div>
+                            <div class="row">
+                                <div class="legend p-3 border rounded">
+                                    Se il valore dell'indicatore &egrave; minore del 25% l'obiettivo non &egrave; raggiunto;<br>
+                                    Se il valore dell'indicatore &egrave; compreso tra il 25% e il 49% l'obiettivo &egrave; parzialmente raggiunto;<br>
+                                    Se il valore dell'indicatore &egrave; maggiore del 50% l'obiettivo &egrave; raggiunto.
+                                </div>
+                            </div>     
+                        </div>
+                        <div class="card-body">
+                        
+                            <div class="row justify-content-center mt-4">
+                                <div class="col-md-12 ">
+                                    <div style="width: 100%; margin: auto;">
+                                        <x-chartjs-component :chart="$dataView['lineChartColonretto']" />
+                                    </div>
+                                    <div style="width: 100%; margin: auto;">
+                                        <table class="table">
+                                            <tr>
+                                                <th>&nbsp;</th>
+                                                @for ($i = 1; $i <= 12; $i++)
+                                                    <th>{{ array_search($i, config("constants.MESI")) }}</th>
+                                                @endfor
+                                            </tr>
+                                        @foreach ($dataView['indicatoriRisultato'] as $idStruttura => $aree)
+                                            <tr>
+                                                <td>{{ $aree['name'] }} </td>                                            
+                                                @foreach ($aree['colonretto'] as $percentuali)
+                                                    <td class="text-white text-center" style="background-color:{{$dataView['colori'][$idStruttura]['colonretto'][$loop->index]}};">{{ $percentuali }} </td>                                            
+                                                @endforeach
+                                            </tr>
+                                        @endforeach
+                                        </table>
+                                    </div>                           
+                                </div>                        
+                            </div>
+                            <div class="row">
+                                <div class="legend p-3 border rounded">
+                                    Se il valore dell'indicatore &egrave; minore del 25% l'obiettivo non &egrave; raggiunto;<br>
+                                    Se il valore dell'indicatore &egrave; compreso tra il 25% e il 49% l'obiettivo &egrave; parzialmente raggiunto;<br>
+                                    Se il valore dell'indicatore &egrave; maggiore del 50% l'obiettivo &egrave; raggiunto.
+                                </div>
+                            </div> 
                         </div>
                     </div>
 
@@ -72,48 +141,37 @@
                         <div class="row justify-content-center mt-4">
                             <div class="col-md-6 text-center">
                                 <div style="width: 100%; max-width: 400px; margin: auto;">
-
-                            </div>
+                                    <x-chartjs-component :chart="$dataView['mmgCoinvolti']" />
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 <table class="table table-striped">
                                     <thead>
                                         <tr>
+                                            <th>Struttura</th>
                                             <th>Totale MMG</th>
                                             <th>MMG Coinvolti</th>
                                             <th>Percentuale (%)</th>
-                                            <th>Struttura</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @if(isset($dataView['indicatoriRisultato']))
-                                            @foreach($dataView['indicatoriRisultato'] as $struttura => $row)
-                                                <tr>
-                                                    <td>{{ $row['colonretto'] }}</td>
-                                                    <td>{{ $row['mammografico'] }}</td>
-                                                    <td>{{ $row['cervicocarcinoma'] }}</td>
-                                                    <td>{{ $row['nome_struttura'] }}</td>
-                                                </tr>
-                                            @endforeach
-                                        @endif
+                                    @foreach ($dataView['mmg'] as $idStruttura => $row)
+                                        <tr>
+                                            <td>{{ $row['nome_struttura'] }} </td>                                            
+                                            <td>{{ $row['mmg_totale'] }} </td>                                            
+                                            <td>{{ $row['mmg_coinvolti'] }} </td>                                            
+                                            <td class="text-white text-center" style="background-color:{{$row['backgroundMMG']}};">{{ $row['percentuale'] }} </td>                                            
+                                        </tr>
+                                    @endforeach
                                     </tbody>
                                 </table>
-                                <div class="legend p-3 border rounded mt-3 {{ $dataView['messaggioTmp']['class'] }}">
-                                    <strong>{{ $dataView['messaggioTmp']['text'] }}</strong>
-                                </div>
                             </div>
                         </div>
-                        <br>
                         <div class="legend p-3 border rounded">
-                            <strong>Scala valori di riferimento (Punteggio massimo 2)</strong><br>
-                            <span>Se il valore dell'indicatore &egrave; maggiore del 60% l'obiettivo è pienamente
-                                raggiunto (2
-                                punti).</span><br />
-                            <span>Se il valore dell'indicatore &egrave; compreso tra il 20% e il 60% l'obiettivo è
-                                parzialmente raggiunto (1
-                                punti).</span><br />
-                            <span>Se il valore dell'indicatore &egrave; minore del 20% l'obiettivo è non raggiunto (0
-                                punti).</span><br />
+                            <strong>Scala valori di riferimento</strong><br>
+                            <span>Se il valore dell'indicatore &egrave; maggiore del 60% l'obiettivo &egrave; pienamente raggiunto.<br />
+                            Se il valore dell'indicatore &egrave; compreso tra il 20% e il 60% l'obiettivo &egrave; parzialmente raggiunto.<br />
+                            Se il valore dell'indicatore &egrave; minore del 20% l'obiettivo &egrave; non raggiunto.<br /></span>
                         </div>
                     </div>
 
@@ -127,6 +185,7 @@
                         <div class="row justify-content-center mt-4">
                             <div class="col-md-6 text-center">
                                 <div style="width: 100%; max-width: 400px; margin: auto;">
+                                    <x-chartjs-component :chart="$dataView['prestazioniInappropriateChart']" />
                                 </div>
                             </div>
 
@@ -134,30 +193,29 @@
                                 <table class="table table-striped">
                                     <thead>
                                         <tr>
-                                            <th>% prestazioni inappropriate</th>
-                                            <th>Prestazioni inappropriate</th>
-                                            <th>Totale Prestazioni</th>
+                                            <th>Struttura</th>
+                                            <th>Prest. inappropriate</th>
+                                            <th>Prest. totali</th>
+                                            <th>Percentuale (%)</th>
                                         </tr>
                                     </thead>
                                     <tbody>
+                                    @foreach ($dataView['prestazioniInappropriate'] as $idStruttura => $row)
                                         <tr>
-                                            <td>{{$dataView['percentuale']}}</td>
-                                            <td>{{$dataView['numeratoreTotale']}}</td>
-                                            <td>{{$dataView['denominatoreTotale']}}</td>
+                                            <td>{{ $row['nome_struttura'] }} </td>                                            
+                                            <td>{{ $row['numeratore_totale'] }} </td>                                            
+                                            <td>{{ $row['denominatore_totale'] }} </td>                                            
+                                            <td class="text-white text-center" style="background-color:{{$row['backgroundInappropriate']}};">{{ $row['percentuale'] }} </td>                                            
                                         </tr>
+                                    @endforeach
                                     </tbody>
                                 </table>
-
-                                <div class="legend p-3 border rounded mt-3 {{$dataView['messaggioTmpCodiciDD']['classCodiciDD'] }}">
-                                    <strong>{{$dataView['messaggioTmpCodiciDD']['textCodiciDD'] }}</strong>
-                                </div>
                             </div>
                         </div>
                         <br>
                         <div class="legend p-3 border rounded">
                             <strong>Scala valori di riferimento (Punteggio massimo 1)</strong><br>
-                            <span>Se il valore dell'indicatore è compresa tra 0% e 10% l'obiettivo è pienamente
-                                raggiunto (1
+                            <span>Se il valore dell'indicatore è compresa tra 0% e 10% l'obiettivo è pienamente raggiunto (1
                                 punti)</span><br />
                             <span>Se il valore dell'indicatore è maggiore dell'11% l'obiettivo è non raggiunto (0
                                 punti).</span><br />
@@ -172,64 +230,34 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
-                                        @if(isset($dataView['file']))
-                                            @php
-                                                $categoria_trovata = false;
-                                            @endphp
-
-                                            @foreach($dataView['file'] as $categoria_risultato)
-                                                @if($categoria_risultato->category === 'Formazione del personale dedicato allo screening')
-                                                    @php
-                                                        $categoria_trovata = true;
-                                                    @endphp
-                                                    @if($categoria_risultato->validator_user_id === null)
-                                                        <div id="message5"
-                                                            class="message bg-light p-3 rounded border border-primary text-center w-100"
-                                                            style="color: orange;">
-                                                            <strong>File caricato il:
-                                                                {{ Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $categoria_risultato->created_at)->format('d/m/Y H:i') }}
-                                                                in attesa di approvazione.</strong>
-                                                        </div>
-                                                    @else
-                                                        @if($categoria_risultato->approved === 1)
-                                                            <div id="message5"
-                                                                class="message bg-light p-3 rounded border border-primary text-center w-100"
-                                                                style="color:green;">
-                                                                <strong>Il file caricato il:
-                                                                    {{ Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $categoria_risultato->created_at)->format('d/m/Y H:i') }}
-                                                                    è stato approvato -> Obiettivo raggiunto!</strong>
-                                                            </div>
-                                                        @else
-                                                            <div id="message5"
-                                                                class="message bg-light p-3 rounded border border-primary text-center w-100"
-                                                                style="color:red;">
-                                                                <strong>Il file caricato il:
-                                                                    {{ Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $categoria_risultato->created_at)->format('d/m/Y H:i') }}
-                                                                    non è stato approvato -> Obiettivo non raggiunto!</strong>
-                                                            </div>
+                                        <div class="col-md-6">
+                                            <table class="table table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Struttura</th>
+                                                        <th>Risultato</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                @foreach($dataView['files'] as $struttura => $categorie)
+                                                    @foreach($categorie as $categoria => $caricato)
+                                                        @if($categoria == 9)
+                                                        <tr>
+                                                            <td>{{ $struttura }} </td>                                            
+                                                            <td class="text-white text-center" style="background-color:{{$caricato == 0 ? "red" : "green"}};">{{ $caricato == 0 ? "No" : "Si" }} </td>
+                                                        </tr>
                                                         @endif
-                                                    @endif
-                                                @endif
-                                             @endforeach
+                                                    @endforeach
+                                                @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
 
-                                            @if(!$categoria_trovata)
-                                                <div id="message5"
-                                                    class="message bg-light p-3 rounded border border-primary text-center w-100"
-                                                    style="color:red;">
-                                                    <strong>Il file non è ancora stato caricato -> Obiettivo non
-                                                        raggiunto!</strong>
-                                                </div>
-                                            @endif
-                                        @endif
                                     </div>
                                     <div class="legend p-3 border rounded">
-                                        <strong>Scala valori di riferimento (Punteggio massimo 1)</strong><br>
-                                        <span>Se il valore dell'indicatore &egrave; superato, l'obiettivo è pienamente
-                                            raggiunto (1
-                                            punti).</span><br />
-                                        <span>Se il valore dell'indicatore non &egrave; superato, l'obiettivo è non
-                                            raggiunto (0
-                                            punti).</span><br />
+                                        <strong>Scala valori di riferimento</strong><br>
+                                        <span>Se il valore dell'indicatore &egrave; superato, l'obiettivo è pienamente raggiunto;<br />
+                                        Se il valore dell'indicatore non &egrave; superato, l'obiettivo è non raggiunto.</span><br />
                                     </div>
                                 </div>
                             </div>
@@ -245,63 +273,34 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
-                                        @if(isset($dataView['file']))
-                                            @php
-                                                $categoria_trovata = false;
-                                            @endphp
-                                            @foreach($dataView['file'] as $categoria_risultato)
-                                                @if($categoria_risultato->category === 'Adeguamento delle dotazioni organiche')
-                                                    @php
-                                                        $categoria_trovata = true;
-                                                    @endphp
-                                                    @if($categoria_risultato->validator_user_id === null)
-                                                        <div id="message5"
-                                                            class="message bg-light p-3 rounded border border-primary text-center w-100"
-                                                            style="color: orange;">
-                                                            <strong>File caricato il:
-                                                                {{ Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $categoria_risultato->created_at)->format('d/m/Y H:i') }}
-                                                                in attesa di approvazione.</strong>
-                                                        </div>
-                                                    @else
-                                                        @if($categoria_risultato->approved === 1)
-                                                            <div id="message5"
-                                                                class="message bg-light p-3 rounded border border-primary text-center w-100"
-                                                                style="color:green;">
-                                                                <strong>Il file caricato il:
-                                                                    {{ Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $categoria_risultato->created_at)->format('d/m/Y H:i') }}
-                                                                    è stato approvato -> Obiettivo raggiunto!</strong>
-                                                            </div>
-                                                        @else
-                                                            <div id="message5"
-                                                                class="message bg-light p-3 rounded border border-primary text-center w-100"
-                                                                style="color:red;">
-                                                                <strong>Il file caricato il:
-                                                                    {{ Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $categoria_risultato->created_at)->format('d/m/Y H:i') }}
-                                                                    non è stato approvato -> Obiettivo non raggiunto!</strong>
-                                                            </div>
+                                        <div class="col-md-6">
+                                            <table class="table table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Struttura</th>
+                                                        <th>Risultato</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                @foreach($dataView['files'] as $struttura => $categorie)
+                                                    @foreach($categorie as $categoria => $caricato)
+                                                        @if($categoria == 10)
+                                                        <tr>
+                                                            <td>{{ $struttura }} </td>                                            
+                                                            <td class="text-white text-center" style="background-color:{{$caricato == 0 ? "red" : "green"}};">{{ $caricato == 0 ? "No" : "Si" }} </td>
+                                                        </tr>
                                                         @endif
-                                                    @endif
-                                                @endif
-                                            @endforeach
+                                                    @endforeach
+                                                @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
 
-                                            @if(!$categoria_trovata)
-                                                <div id="message5"
-                                                    class="message bg-light p-3 rounded border border-primary text-center w-100"
-                                                    style="color:red;">
-                                                    <strong>Il file non è ancora stato caricato -> Obiettivo non
-                                                        raggiunto!</strong>
-                                                </div>
-                                            @endif
-                                        @endif
                                     </div>
                                     <div class="legend p-3 border rounded">
-                                        <strong>Scala valori di riferimento (Punteggio massimo 1)</strong><br>
-                                        <span>Se il valore dell'indicatore &egrave; superato, l'obiettivo è pienamente
-                                            raggiunto (1
-                                            punti).</span><br />
-                                        <span>Se il valore dell'indicatore non &egrave; superato, l'obiettivo è non
-                                            raggiunto (0
-                                            punti).</span><br />
+                                        <strong>Scala valori di riferimento</strong><br>
+                                        <span>Se il valore dell'indicatore &egrave; superato, l'obiettivo è pienamente raggiunto;<br />
+                                        Se il valore dell'indicatore non &egrave; superato, l'obiettivo è non raggiunto.</span><br />
                                     </div>
                                 </div>
                             </div>
@@ -316,66 +315,34 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
-                                        @if(isset($dataView['file']))
-                                            @php
-                                                $categoria_trovata = false;
-                                            @endphp
-                                            @foreach($dataView['file'] as $categoria_risultato)
-
-                                                @if($categoria_risultato->category === 'Organizzazione di programmi di comunicazione rivolti alla popolazione target')
-                                                    @php
-                                                        $categoria_trovata = true;
-
-                                                    @endphp
-
-                                                    @if($categoria_risultato->validator_user_id === null)
-                                                        <div id="message5"
-                                                            class="message bg-light p-3 rounded border border-primary text-center w-100"
-                                                            style="color: orange;">
-                                                            <strong>File caricato il:
-                                                                {{ Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $categoria_risultato->created_at)->format('d/m/Y H:i') }}
-                                                                in attesa di approvazione.</strong>
-                                                        </div>
-                                                    @else
-                                                        @if($categoria_risultato->approved === 1)
-                                                            <div id="message5"
-                                                                class="message bg-light p-3 rounded border border-primary text-center w-100"
-                                                                style="color:green;">
-                                                                <strong>Il file caricato il:
-                                                                    {{ Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $categoria_risultato->created_at)->format('d/m/Y H:i') }}
-                                                                    è stato approvato -> Obiettivo raggiunto!</strong>
-                                                            </div>
-                                                        @else
-                                                            <div id="message5"
-                                                                class="message bg-light p-3 rounded border border-primary text-center w-100"
-                                                                style="color:red;">
-                                                                <strong>Il file caricato il:
-                                                                    {{ Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $categoria_risultato->created_at)->format('d/m/Y H:i') }}
-                                                                    non è stato approvato -> Obiettivo non raggiunto!</strong>
-                                                            </div>
+                                        <div class="col-md-6">
+                                            <table class="table table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Struttura</th>
+                                                        <th>Risultato</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                @foreach($dataView['files'] as $struttura => $categorie)
+                                                    @foreach($categorie as $categoria => $caricato)
+                                                        @if($categoria == 11)
+                                                        <tr>
+                                                            <td>{{ $struttura }} </td>                                            
+                                                            <td class="text-white text-center" style="background-color:{{$caricato == 0 ? "red" : "green"}};">{{ $caricato == 0 ? "No" : "Si" }} </td>
+                                                        </tr>
                                                         @endif
-                                                    @endif
-                                                @endif
-                                            @endforeach
+                                                    @endforeach
+                                                @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
 
-                                            @if(!$categoria_trovata)
-                                                <div id="message5"
-                                                    class="message bg-light p-3 rounded border border-primary text-center w-100"
-                                                    style="color:red;">
-                                                    <strong>Il file non è ancora stato caricato -> Obiettivo non
-                                                        raggiunto!</strong>
-                                                </div>
-                                            @endif
-                                        @endif
                                     </div>
                                     <div class="legend p-3 border rounded">
-                                        <strong>Scala valori di riferimento (Punteggio massimo 1)</strong><br>
-                                        <span>Se il valore dell'indicatore &egrave; superato, l'obiettivo è pienamente
-                                            raggiunto (1
-                                            punti).</span><br />
-                                        <span>Se il valore dell'indicatore non &egrave; superato, l'obiettivo è non
-                                            raggiunto (0
-                                            punti).</span><br />
+                                        <strong>Scala valori di riferimento</strong><br>
+                                        <span>Se il valore dell'indicatore &egrave; superato, l'obiettivo è pienamente raggiunto;<br />
+                                        Se il valore dell'indicatore non &egrave; superato, l'obiettivo è non raggiunto.</span><br />
                                     </div>
                                 </div>
                             </div>

@@ -369,7 +369,7 @@ class AdminController extends Controller
 
         $dataView['tempiListeAttesa'] = $this->showChart("bar", "tempiListeAttesa",
             array_column($dataView['dati'], "name"),
-            [
+             [
                 [
                     "label" => "Numeratore",
                     "backgroundColor" => "rgba(38, 185, 154, 0.7)",
@@ -633,11 +633,20 @@ class AdminController extends Controller
                     'cervicocarcinoma' => array_fill(0, 12, 0),
                     'colonretto' => array_fill(0, 12, 0),
                 ];
+                $dataView["colori"][$row->structure_id] = [
+                    'mammografico' => array_fill(0, 12, "red"),
+                    'cervicocarcinoma' => array_fill(0, 12, "red"),
+                    'colonretto' => array_fill(0, 12, "red"),
+                ];
             }    
             $structureData[$row->structure_id]['mammografico'][$row->month-1] = $row->mammografico;
+            $dataView["colori"][$row->structure_id]['mammografico'][$row->month-1] = ($row->mammografico >= 60) ? "green" : (($row->mammografico > 35) ? $this->coloreSfondo( $row->mammografico, 100) : "red");
             $structureData[$row->structure_id]['cervicocarcinoma'][$row->month-1] = $row->cervicocarcinoma;
+            $dataView["colori"][$row->structure_id]['cervicocarcinoma'][$row->month-1] = ($row->cervicocarcinoma >= 50) ? "green" : (($row->cervicocarcinoma > 25) ? $this->coloreSfondo( $row->cervicocarcinoma, 100) : "red");
             $structureData[$row->structure_id]['colonretto'][$row->month-1] = $row->colonretto;
-        }         
+            $dataView["colori"][$row->structure_id]['colonretto'][$row->month-1] = ($row->colonretto >= 50) ? "green" : (($row->colonretto > 25) ? $this->coloreSfondo( $row->colonretto, 100) : "red");
+        }    
+
         $datasets = [
             'mammografico' => [],
             'cervicocarcinoma' => [],
@@ -660,7 +669,6 @@ class AdminController extends Controller
                 'data' => $data['colonretto'],
             ];
         }
-              // dd($datasets);   
 
         $dataView['lineChartMammografico'] = $this->showChart("line", "IndicatoreMammograficoTarget5"
         , $months
@@ -748,7 +756,7 @@ class AdminController extends Controller
         ]);
         $dataView['indicatoriRisultato'] = $structureData;
 
-
+        /***************************MMG Coinvolti ****************************/
         $tableData = DB::table('insert_mmg as mmg')
             ->join('structures as s', 'mmg.structure_id', '=', second: 's.id')
             ->select('mmg.mmg_totale', 'mmg.mmg_coinvolti', 'mmg.year', 'mmg.structure_id', 's.name as nome_struttura')
@@ -762,207 +770,149 @@ class AdminController extends Controller
                 "mmg_coinvolti" => $row->mmg_coinvolti,
                 "nome_struttura" => $row->nome_struttura,
                 "percentuale" => $perc,
-                'backgroundScreening' => ($perc >= 50) ? "green" : $this->coloreSfondo($perc, 6)
+                'backgroundMMG' => ($perc >= 60) ? "green" : (($perc > 20) ?  $this->coloreSfondo($perc, 100) : "red")
             ];            
         }
-
-        $dataView['messaggioTmp'] = [
-            'text' => "Test",
-            'class' => 'text-success'
-        ];
-        $dataView['codiciEsenzioneChart'] = $this->showChart("line", "Screening_Ind_Risultato"
-        , [1,2,3,4,5,6,7]
-        , [1,2,3,4,5,6,7]
+        $dataView['mmgCoinvolti'] = $this->showChart("bar", "MMGCoinvolti"
+        , array_column($dataView['mmg'], "nome_struttura")
+        , [
+            [
+                "label" => "Numeratore",
+                "data" => array_column($dataView['mmg'], "percentuale")
+            ]
+        ]
         , [
             'responsive' => true,
             'plugins' => [
-
-                'scales' => [
-                    "x" => [
-                        "title" => [
-                            'display' => true,
-                            'text' => 'Mese'
-                        ]
-                    ],
-                    "y" => [
-                        "title" => [
-                            'display' => true,
-                            'text' => 'Boarding'
-                        ]
-                    ],
-                ],
-
-            ]
-        ] // options
-        );
-        $dataView['percentualeAderenti'] = 0;
-        $dataView['lineChart'] = $this->showChart("line", "Screening_Ind_Risultato"
-        , [1,2,3,4,5,6,7]
-        , [1,2,3,4,5,6,7]
-        , [
-            'responsive' => true,
-            'plugins' => [
-
-                'scales' => [
-                    "x" => [
-                        "title" => [
-                            'display' => true,
-                            'text' => 'Mese'
-                        ]
-                    ],
-                    "y" => [
-                        "title" => [
-                            'display' => true,
-                            'text' => 'Boarding'
-                        ]
-                    ],
-                ],
-
-            ]
-        ] // options
-        );
-        $dataView['mmgChart'] = $this->showChart("doughnut", "OverallAvgTmpComplementaryBarChart"
-        , [1,2,3,4,5,6,7]
-        , [1,2,3,4,5,6,7]
-        , [
-            'responsive' => true,
-            'plugins' => [
-
-                'scales' => [
-                    "x" => [
-                        "title" => [
-                            'display' => true,
-                            'text' => 'Mese'
-                        ]
-                    ],
-                    "y" => [
-                        "title" => [
-                            'display' => true,
-                            'text' => 'Boarding'
-                        ]
-                    ],
-                ],
-
-            ]
-        ] // options
-        );
-
-        /*
-        $noData = false;
-        if ($record && $record->mmg_totale != 0) {
-            $dataView['percentualeAderenti'] = round(($record->mmg_coinvolti / $record->mmg_totale) * 100, 2);
-        } else {
-            $dataView['percentualeAderenti'] = 0;
-            $noData = true;
-        }
-
-        $dataView['mmgChart'] = $this->showChart("doughnut", "OverallAvgTmpComplementaryBarChart"
-            , ['MMG Aderenti', 'MMG non aderenti'] // labels
-            , [
-                [
-                    "label" => "Percentuali MMG",
-                    "backgroundColor" => [
-                        "rgba(38, 185, 154, 0.7)",
-                        "rgba(255, 99, 132, 0.7)"
-                    ],
-                    "data" => [$dataView['percentualeAderenti'], $percentualeNonAderenti]
+                'title' => [
+                    'display' => true,
+                    'text' => 'Percentuale MMG coinvolti'
                 ]
-            ] //datasets
-            , [
-                'responsive' => true,
-                'plugins' => [
-                    'title' => [
-                        'display' => true,
-                        'text' => $noData
-                            ? 'Non ci sono dati disponibili'
-                            : 'Distribuzione Percentuale: MMG aderenti e Non aderenti'
-                    ]
-                ]
-            ] // options
-        );
-*/
-        //*************Secondo grafico **********//
+            ]
+        ]);
 
+
+        /***************************Prestazioni inappropriate ****************************/
         $datiFlussoM = DB::table('flows_m')
-            ->select('ob5_num as numeratore_m', 'ob5_den as denominatore_m')
-            ->where('structure_id', 8) //Auth::user()->firstStructureId()->id)
+            ->join('structures as s', 'flows_m.structure_id', '=', second: 's.id')
+            ->select(DB::raw('sum(ob5_num) as numeratore_m'), DB::raw('sum(ob5_den) as denominatore_m'), 's.name', 'flows_m.structure_id')
+            ->where("year", $dataView['anno'])
+            ->groupBy("flows_m.structure_id")
             ->get();
+        $dataView['prestazioniInappropriate'] = [];
+        foreach($datiFlussoM as $m) {
+            if(!isset($dataView['prestazioniInappropriate'][$m->structure_id])) {
+                $perc = ($m->denominatore_m != 0) ? round($m->numeratore_m / $m->denominatore_m * 100, 2) : 0;
+                $dataView['prestazioniInappropriate'][$m->structure_id] = [
+                    'nome_struttura' => $m->name,
+                    'numeratore_totale' => $m->numeratore_m,
+                    'denominatore_totale' => $m->denominatore_m,
+                    'percentuale' => $perc,
+                    'backgroundInappropriate' => ($perc <= 10) ? "green" : $this->coloreSfondo($perc, 100),
 
+                ];
+            } else {
+                $totNumeratore = $dataView['prestazioniInappropriate'][$m->structure_id]['numeratore_totale'] + $m->numeratore_m;
+                $totDenominatore = $dataView['prestazioniInappropriate'][$m->structure_id]['denominatore_totale'] + $m->denominatore_m;
+                $perc = ($totDenominatore != 0) ? round($totNumeratore / $totDenominatore * 100, 2) : 0;
 
+                $dataView['prestazioniInappropriate'][$m->structure_id] = [
+                    'nome_struttura' => $m->name,
+                    'numeratore_totale' => $totNumeratore,
+                    'denominatore_totale' => $totDenominatore,
+                    'percentuale' => $perc,
+                    'backgroundInappropriate' => ($perc <= 10) ? "green" : $this->coloreSfondo($perc, 100),    
+
+                ];
+            }
+        }
         $datiFlussoC = DB::table('flows_c')
-            ->select('ob5_num as numeratore_c', 'ob5_den as denominatore_c')
-            ->where('structure_id', 8) //Auth::user()->firstStructureId()->id)
+            ->join('structures as s', 'flows_c.structure_id', '=', second: 's.id')
+            ->select(DB::raw('sum(ob5_num) as numeratore_c'), DB::raw('sum(ob5_den) as denominatore_c'), 's.name', 'flows_c.structure_id')
+            ->where("year", $dataView['anno'])
+            ->groupBy("flows_c.structure_id")
             ->get();
+        foreach($datiFlussoC as $c) {
+            if(!isset($dataView['prestazioniInappropriate'][$c->structure_id])) {
+                $perc = ($c->denominatore_c != 0) ? round($c->numeratore_c / $c->denominatore_c * 100, 2) : 0;
+                $dataView['prestazioniInappropriate'][$c->structure_id] = [
+                    'nome_struttura' => $c->name,
+                    'numeratore_totale' => $c->numeratore_c,
+                    'denominatore_totale' => $c->denominatore_c,
+                    'percentuale' => $perc,
+                    'backgroundInappropriate' => ($perc <= 10) ? "green" : $this->coloreSfondo($perc, 100),    
 
-        $dataView['numeratoreTotale'] = $datiFlussoM->sum('numeratore_m') + $datiFlussoC->sum('numeratore_c');
-        $dataView['denominatoreTotale'] = $datiFlussoM->sum('denominatore_m') + $datiFlussoC->sum('denominatore_c');
+                ];
+            } else {
+                $totNumeratore = $dataView['prestazioniInappropriate'][$c->structure_id]['numeratore_totale'] + $c->numeratore_c;
+                $totDenominatore = $dataView['prestazioniInappropriate'][$c->structure_id]['denominatore_totale'] + $c->denominatore_c;
+                $perc = ($totDenominatore != 0) ? round($totNumeratore / $totDenominatore * 100, 2) : 0;
 
-        if ($dataView['denominatoreTotale'] > 0) {
-            $dataView['percentuale'] = round($dataView['numeratoreTotale'] / $dataView['denominatoreTotale'] * 100, 2);
-        } else {
-            $dataView['percentuale'] = 0;
+                $dataView['prestazioniInappropriate'][$c->structure_id] = [
+                    'nome_struttura' => $c->name,
+                    'numeratore_totale' => $totNumeratore,
+                    'denominatore_totale' => $totDenominatore,
+                    'percentuale' => $perc,
+                    'backgroundInappropriate' => ($perc <= 10) ? "green" : $this->coloreSfondo($perc, 100),    
+
+                ];
+            }
         }
-        $dataView['percentualeComplementare'] = 100 - $dataView['percentuale'];
-/*
-        $dataView['codiciEsenzioneChart'] = Chartjs::build()
-            ->name("chartCodiciDD")
-            ->type("doughnut")
-            ->size(["width" => 300, "height" => 150])
-            ->labels(['Prestazioni Inappropriate', 'Prestazione appropriate'])
-            ->datasets([
-                [
-                    "label" => "Percentuali MMG",
-                    "backgroundColor" => [
-                        "rgba(38, 185, 154, 0.7)",
-                        "rgba(255, 99, 132, 0.7)"
-                    ],
-                    "data" => [$dataView['percentuale'], $dataView['percentualeComplementare']]
+        $dataView['prestazioniInappropriateChart'] = $this->showChart("bar", "prestazioniInappropriateChart"
+        , array_column($dataView['prestazioniInappropriate'], "nome_struttura")
+        , [
+            [
+                "label" => "Inappropriatezza",
+                "data" => array_column($dataView['prestazioniInappropriate'], "percentuale")
+            ]
+        ]
+        , [
+            'responsive' => true,
+            'plugins' => [
+                'title' => [
+                    'display' => true,
+                    'text' => 'Percentuale MMG coinvolti'
                 ]
-            ])
-            ->options([
-                'responsive' => true,
-                'plugins' => [
-                    'title' => [
-                        'display' => true,
-                        'text' => '% Prestazioni inappropriate'
-                    ]
-                ]
-            ]);
-*/
+            ]
+        ]);
 
-        /***********************Messaggio punteggio MMG****************************/
+
+        /***************************Formazione del personale ****************************/
+        $categorieCaricate = DB::table('uploated_files as uf')
+        ->join(
+            DB::raw('(SELECT structure_id, target_category_id, target_number, MAX(created_at) AS max_created_at
+                      FROM uploated_files
+                      WHERE approved = 1 AND target_number = 5 AND year=' . $dataView['anno'] . '
+                      GROUP BY structure_id, target_category_id, target_number) as latest_files'),
+            function($join) {
+                $join->on('uf.structure_id', '=', 'latest_files.structure_id')
+                     ->on('uf.target_category_id', '=', 'latest_files.target_category_id')
+                     ->on('uf.target_number', '=', 'latest_files.target_number')
+                     ->on('uf.created_at', '=', 'latest_files.max_created_at');
+            }
+        )
+        ->join('structures as s', 'uf.structure_id', '=', 's.id')
+        ->join("target_categories", "target_categories.id", "=", "uf.target_category_id")
+        ->select(
+            
+            'uf.structure_id',
+            'uf.target_category_id',
+            's.name as structure_name'
+        )
+        ->groupBy('uf.structure_id', 'uf.target_category_id') 
+        //->orderBy('uf.created_at', 'desc') // Ordina per la data più recente
+        ->get();
         
-        if ($dataView['percentualeAderenti'] > 60) {
-            $dataView['messaggioTmp'] = [
-                'text' => "Raggiungimento dell'obiettivo con punteggio: 2",
-                'class' => 'text-success'
-            ];
-        } elseif ($dataView['percentualeAderenti'] >= 20) {
-            $dataView['messaggioTmp'] = [
-                'text' => "Raggiungimento dell'obiettivo parziale con punteggio: 1",
-                'class' => 'text-warning'
-            ];
-        } else {
-            $dataView['messaggioTmp'] = [
-                'text' => "Obiettivo non raggiunto con punteggio: 0",
-                'class' => 'text-danger'
-            ];
-        }
-
-        /********************Messagggio punteggio D02 E D03************************/
+        $dataView['files'] = [];
+        $sottoCategorie = DB::table("target_categories")->where("target_number", 5)->pluck("id");
+        foreach(DB::table("structures")->select("id", "name")->get() as $struttura)
+            foreach($sottoCategorie as $subCategoria)
+            $dataView['files'][$struttura->name][$subCategoria] = 0;
         
-        if ($dataView['percentuale'] >= 0 && $dataView['percentuale'] <= 10) {
-            $dataView['messaggioTmpCodiciDD'] = [
-                'textCodiciDD' => "Pieno raggiungimento dell'obiettivo con punteggio: 1",
-                'classCodiciDD' => 'text-success'
-            ];
-        } elseif ($dataView['percentuale'] > 10) {
-            $dataView['messaggioTmpCodiciDD'] = [
-                'textCodiciDD' => "Obiettivo non raggiunto con punteggio: 0",
-                'classCodiciDD' => 'text-danger'
-            ];
+        foreach($categorieCaricate as $row) {
+            $dataView['files'][$row->structure_name][$row->target_category_id] = 1;
         }
-
+        
         return view("admin.screening")->with("dataView", $dataView);
     }
 }
