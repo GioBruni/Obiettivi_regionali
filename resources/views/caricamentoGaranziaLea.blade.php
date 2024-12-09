@@ -81,13 +81,13 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="ob10_1_numeratore" class="form-label">Numeratore 1 :</label>
-                            <input id="ob10_1_numeratore" type="text" class="form-control" name="ob10_1_numeratore"
+                            <input id="ob10_1_numeratore" type="number" class="form-control" name="ob10_1_numeratore"
                                 required autocomplete="ob10_1_numeratore">
                         </div>
 
                         <div class="col-md-6">
                             <label for="ob10__denominatore" class="form-label">Denominatore 1:</label>
-                            <input id="ob10_1_denominatore" type="text" class="form-control"
+                            <input id="ob10_1_denominatore" type="number" class="form-control"
                                 name="ob10_1_denominatore" required autocomplete="ob10_1_denominatore">
                         </div>
                     </div>
@@ -95,13 +95,13 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="ob10_2_numeratore" class="form-label">Numeratore 2 :</label>
-                            <input id="ob10_2_numeratore" type="text" class="form-control" name="ob10_2_numeratore"
+                            <input id="ob10_2_numeratore" type="number" class="form-control" name="ob10_2_numeratore"
                                 required autocomplete="ob10_2_numeratore">
                         </div>
 
                         <div class="col-md-6">
                             <label for="ob10_2_denominatore" class="form-label">Denominatore 2:</label>
-                            <input id="ob10_2_denominatore" type="text" class="form-control"
+                            <input id="ob10_2_denominatore" type="number" class="form-control"
                                 name="ob10_2_denominatore" required autocomplete="ob10_2_denominatore">
                         </div>
                     </div>

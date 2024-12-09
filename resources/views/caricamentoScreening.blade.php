@@ -117,7 +117,7 @@
                             <div class="form-row">
                                 <div class="form-group col-md-6">
                                     <p class="mb-1">Totale MMG</p>
-                                    <input id="tot_mmg" type="text" class="form-control" name="tot_mmg" required
+                                    <input id="tot_mmg" type="number" class="form-control" name="tot_mmg" required
                                         autocomplete="tot_mmg" autofocus tabindex="1"
                                         value="{{ $dataView['tableData']->isNotEmpty() ? $dataView['tableData']->first()->mmg_totale : old('tot_mmg') }}"
                                         @if($dataView['tableData']->isNotEmpty()) disabled @endif>
@@ -125,7 +125,7 @@
 
                                 <div class="form-group col-md-6">
                                     <p class="mb-1">MMG Coinvolti</p>
-                                    <input id="mmg_coinvolti" type="text" class="form-control" name="mmg_coinvolti"
+                                    <input id="mmg_coinvolti" type="number" class="form-control" name="mmg_coinvolti"
                                         required autocomplete="mmg_coinvolti" tabindex="2"
                                         value="{{ $dataView['tableData']->isNotEmpty() ? $dataView['tableData']->first()->mmg_coinvolti : '' }}"
                                         @if($dataView['tableData']->isNotEmpty()) disabled @endif>

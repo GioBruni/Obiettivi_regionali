@@ -47,8 +47,8 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label for="numeratore_fse" class="form-label">Servizio:</label>
-                                <input id="numeratore_fse" type="text" class="form-control" name="numeratore_fse" required autocomplete="numeratore_fse">
+                                <label for="numeratore_fse" class="form-label">Numero Conferimenti:</label>
+                                <input id="numeratore_fse" type="number" class="form-control" name="numeratore_fse" required autocomplete="numeratore_fse">
                             </div>
                         </div>
 
@@ -84,11 +84,7 @@
                         </div>
                     </form>
 
-                    <a href="{{ $dataView['tableData']->count() === 0 ? '#' : route('downloadPdf', ['obiettivo' => $dataView['obiettivo']]) }}"
-                        class="btn btn-primary @if($dataView['tableData']->count() === 0) disabled @endif"
-                        @if($dataView['tableData']->count() === 0) tabindex="-1" aria-disabled="true" onclick="event.preventDefault();" @endif>
-                        Scarica Certificazione PDF
-                    </a>
+                  
                 </div>
 
                 <!-- Section: Indicatore 3 -->
@@ -102,11 +98,11 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="documenti_cda2" class="form-label">Documenti CDA2:</label>
-                                <input id="documenti_cda2" type="text" class="form-control" name="documenti_cda2" required autocomplete="documenti_cda2">
+                                <input id="documenti_cda2" type="number" class="form-control" name="documenti_cda2" required autocomplete="documenti_cda2">
                             </div>
                             <div class="col-md-6">
                                 <label for="documenti_indicizzatiCDA2" class="form-label">Documenti Indicizzati CDA2:</label>
-                                <input id="documenti_indicizzatiCDA2" type="text" class="form-control" name="documenti_indicizzatiCDA2" required autocomplete="documenti_indicizzatiCDA2">
+                                <input id="documenti_indicizzatiCDA2" type="number" class="form-control" name="documenti_indicizzatiCDA2" required autocomplete="documenti_indicizzatiCDA2">
                             </div>
                         </div>
 
@@ -142,11 +138,7 @@
                         </div>
                     </form>
 
-                    <a href="{{ $dataView['tableData']->count() === 0 ? '#' : route('downloadPdf', ['obiettivo' => $dataView['obiettivo']]) }}"
-                        class="btn btn-primary @if($dataView['tableData']->count() === 0) disabled @endif"
-                        @if($dataView['tableData']->count() === 0) tabindex="-1" aria-disabled="true" onclick="event.preventDefault();" @endif>
-                        Scarica Certificazione PDF
-                    </a>
+                 
                 </div>
                 
                 <!-- Section: Indicatore 4 -->
@@ -160,11 +152,11 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="documenti_pades" class="form-label">Documenti in Pades:</label>
-                                <input id="documenti_pades" type="text" class="form-control" name="documenti_pades" required autocomplete="documenti_pades">
+                                <input id="documenti_pades" type="number" class="form-control" name="documenti_pades" required autocomplete="documenti_pades">
                             </div>
                             <div class="col-md-6">
                                 <label for="documenti_indicizzati_pades" class="form-label">Documenti indicizzati Pades:</label>
-                                <input id="documenti_indicizzati_pades" type="text" class="form-control" name="documenti_indicizzati_pades" required autocomplete="documenti_indicizzati_pades">
+                                <input id="documenti_indicizzati_pades" type="number" class="form-control" name="documenti_indicizzati_pades" required autocomplete="documenti_indicizzati_pades">
                             </div>
                         </div>
 
@@ -199,11 +191,7 @@
                             </button>
                         </div>
                     </form>
-                    <a href="{{ $dataView['tableData']->count() === 0 ? '#' : route('downloadPdf', ['obiettivo' => $dataView['obiettivo']]) }}"
-                        class="btn btn-primary @if($dataView['tableData']->count() === 0) disabled @endif"
-                        @if($dataView['tableData']->count() === 0) tabindex="-1" aria-disabled="true" onclick="event.preventDefault();" @endif>
-                        Scarica Certificazione PDF
-                    </a>
+                  
                 </div>
             </div>
         </div>
