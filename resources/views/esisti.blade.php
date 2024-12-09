@@ -28,24 +28,18 @@
                             <div class="col-md-4 mb-3">
                                 <label for="annoSelezionato" class="form-label">Anno:</label>
                                 <div class="d-flex">
-                                    <select id="annoSelezionato" class="form-control me-2" name="annoSelezionato">
-                                        @php
-                                            $annoCorrente = date('Y');
-                                            $annoMinimo = 2023;
-                                            $annoSelezionato = request('annoSelezionato', $annoCorrente);
-                                            for ($anno = $annoCorrente; $anno >= $annoMinimo; $anno--) {
-                                                $selected = ($anno == $annoSelezionato) ? 'selected' : '';
-                                                echo "<option value=\"$anno\" $selected>$anno</option>";
-                                            }
-                                        @endphp
-                                    </select>
+                                <select id="year" class="form-control" name="year" id="year">
+                                            @foreach ( $dataView['anni'] as $year )
+                                                <option value="{{ $year }}" {{ ($year == $dataView['annoSelezionato'] ) ? " selected" : "" }}>{{ $year }}</option>
+                                            @endforeach
+                                        </select>
                                     <button type="submit" class="btn btn-primary">Cerca</button>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <!-- Campo nascosto per l'anno corrente -->
-                    <input type="hidden" name="annoCorrente" value="{{ $annoCorrente }}">
+                   
                 </form>
             </div>
 
