@@ -23,7 +23,7 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="container">
-                            <form action="{{ route('fse') }}" method="GET" enctype="multipart/form-data">
+                            <form action="{{ route('garanziaLea') }}" method="GET" enctype="multipart/form-data">
                                 <div class="row align-items-end">
                                     <div class="col-md-6">
                                         <div class="form-group d-flex">
@@ -64,8 +64,7 @@
                                                     <x-chartjs-component
                                                         :chart="$dataView['chartDimissioniOspedaliere']" />
                                                 </div>
-                                                <div
-                                                    class="col-md-8 d-flex flex-column align-items-center justify-content-center">
+                                                <div class="col-md-8 d-flex flex-column align-items-center justify-content-center">
                                                     <div id="data-table1" class="w-100 mb-3">
                                                         <table class="table table-striped">
                                                             <thead>
@@ -83,7 +82,6 @@
                                                                     <td>{{$dataView['percentualeDimissioniOspedaliere']}}</td>
                                                                     <td>{{$dataView['percentualeDimissioniOspedaliereComplementare']}}</td>
                                                                 </tr>
-
                                                             </tbody>
                                                         </table>
                                                     </div>

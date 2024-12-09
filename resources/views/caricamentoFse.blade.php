@@ -148,7 +148,7 @@
                         Scarica Certificazione PDF
                     </a>
                 </div>
-
+                
                 <!-- Section: Indicatore 4 -->
                 <div class="card-header bg-primary text-white mt-4">
                     Indicatore 4: Documenti firmati in PaDES
