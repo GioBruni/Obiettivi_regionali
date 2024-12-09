@@ -2829,7 +2829,7 @@ class HomeController extends Controller
         $dataView['obiettivo'] = $request->obiettivo;
 
 
-        return view("caricamentogaranziaLea")->with("dataView", $dataView);
+        return view("caricamentoGaranziaLea")->with("dataView", $dataView);
     }
 
     public function esiti(Request $request)
