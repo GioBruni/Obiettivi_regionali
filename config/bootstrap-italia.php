@@ -33,27 +33,27 @@ return [
     |--------------------------------------------------------------------------
     */
 
-
+/*
     'logo' => [
         'type' => 'icon',
         'icon' => 'pa',
     ],
-
-    /*
+*/
+    
     'logo' => [
         'type' => 'url',
-        'url' => 'img/logo.png',
+        'url' => 'logo-regione-sicilia.png',
     ],
-    */
+    
 
     'brand-text' => 'Regione Sicilia',
 
     'brand-text-small' => 'Reg Sicilia',
 
-    'tagline' => 'Insert your tagline',
+    'tagline' => 'Assessorato alla salute',
 
     'owner' => [
-        'description' => 'Ente appartenenza / owner',
+        'description' => '',
         'link' => '#',
     ],
 
@@ -317,9 +317,9 @@ return [
         ]
     ],
 
-    'address' => '<strong>Regione Sicilia</strong><br> Via blablabla 0 - 00000 Lorem Ipsum Codice fiscale / P. IVA: 000000000',
+    'address' => '<strong>Regione Sicilia</strong><br>', // Via blablabla 0 - 00000 Lorem Ipsum Codice fiscale / P. IVA: 000000000',
 
-    'contacts-links' => [
+    'contacts-links' => [/*
         [
             'text' => 'Posta Elettronica Certificata',
             'url' => '/',
@@ -328,7 +328,7 @@ return [
         [
             'text' => 'URP - Ufficio Relazioni con il Pubblico',
             'url' => '/',
-        ],
+        ],*/
     ],
 
     /*
