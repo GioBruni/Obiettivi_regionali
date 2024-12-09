@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('flows_EMUR', function (Blueprint $table) {
+        Schema::create('flows_emur', function (Blueprint $table) {
             $table->id();
             $table->string("file_name");
             $table->unsignedBigInteger("structure_id");
@@ -33,7 +33,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('flows_EMUR', function (Blueprint $table) {
+        Schema::table('flows_emur', function (Blueprint $table) {
             //
         });
     }

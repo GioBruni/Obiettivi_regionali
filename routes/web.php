@@ -14,7 +14,9 @@ Auth::routes(['register' => false, 'verify' => true, 'reset' => true]);
 
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 
-Route::group(['middleware' => ['role:user manager']], routes: function (): void {
+Route::group(['middleware' => ['role:user_manager']], routes: function (): void {
+    Route::get('/admin/home', [AdminController::class, 'index'])->name('admin.home');
+
     //Route::get('/register', [App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register');
     Route::get('/register', function() {
         return view('auth.register');
@@ -27,12 +29,20 @@ Route::group(['middleware' => ['role:user manager']], routes: function (): void 
     Route::post('/structureDelete', [AdminController::class, 'structureDelete'])->name( 'structure.delete');
     Route::post('/structureInsert', [AdminController::class, 'structureInsert'])->name( 'structure.insert');
     Route::post('/enableUser', [AdminController::class, 'enableUser'])->name('enableUser');
+
+    Route::get('/admin/tempiListeAttesa', [AdminController::class, 'tempiListeAttesa'])->name('admin.tempiListeAttesa');
+    Route::get('/admin/puntiNascita', [AdminController::class, 'puntiNascita'])->name('puntiNascita');
+    Route::get('/admin/prontoSoccorso', [AdminController::class, 'prontoSoccorso'])->name('admin.prontoSoccorso');
+    Route::get('/admin/screening', [AdminController::class, 'screening'])->name('admin.screening');
+    Route::get('/admin/donazioni', [AdminController::class, 'donazioni'])->name('admin.donazioni');
+    Route::get('/admin/fse', [AdminController::class, 'fse'])->name('admin.fse');
+    Route::get('/admin/certificabilita', [AdminController::class, 'certificabilita'])->name('admin.certificabilita');
+    Route::get('/admin/farmaci', [AdminController::class, 'farmaci'])->name( 'admin.farmaci');
+
 });
 
 //Route::get('/get-category-description/{id}', [HomeController::class, 'getDescription']);
 //Route::get('/showObiettivo/{obiettivo}', [HomeController::class, 'showObiettivo'])->name('showObiettivo');
-
-
 
 
 
@@ -63,8 +73,9 @@ Route::group(['middleware' => ['role:uploader']], routes: function (): void {
     Route::post('/saveTempiListeAttesa', [HomeController::class, 'saveTempiListeAttesa'])->name('saveTempiListeAttesa');
 
     Route::get('/prontoSoccorso', [HomeController::class, 'prontoSoccorso'])->name('prontoSoccorso');
-    Route::get('/caricamentoScreening/{obiettivo}', [HomeController::class, 'caricamentoScreening'])->name('caricamentoScreening');
-    Route::get('/caricamentoDonazioni/{obiettivo}', [AdminController::class, 'caricamentoDonazioni'])->name('caricamentoDonazioni');
+    Route::get('/caricamentoScreening', [HomeController::class, 'caricamentoScreening'])->name('caricamentoScreening');
+    Route::post('/importTarget5LEA', [HomeController::class, 'importTarget5LEA'])->name('importTarget5LEA');
+    Route::get('/caricamentoDonazioni', [HomeController::class, 'caricamentoDonazioni'])->name('caricamentoDonazioni');
     Route::get('/caricamentoFse/{obiettivo}', [HomeController::class, 'caricamentoFse'])->name('caricamentoFse');
     Route::get('/caricamentoGaranziaLea/{obiettivo}', [HomeController::class, 'caricamentoGaranziaLea'])->name('caricamentoGaranziaLea');
     Route::get('/donazioni', [HomeController::class, 'donazioni'])->name('donazioni');

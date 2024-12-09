@@ -139,7 +139,7 @@
                                     <div class="menu-wrapper">
                                         <ul class="navbar-nav">
                                             @auth
-                                                @if (auth()->user()->hasRole('user manager'))
+                                                @if (auth()->user()->hasRole('user_manager'))
 
                                                     <li class="nav-item dropdown megamenu">
                                                         <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" aria-expanded="false">
@@ -166,6 +166,9 @@
                                                             </div>
                                                         </div>
                                                     </li>
+                                                    <li class="nav-item">
+                                                        <a class="nav-link" href="{{ route("admin.home") }}"><span><i class="bi bi-window-desktop"></i>&nbsp;&nbsp;Scrivania</span></a>
+                                                    </li>
                                                 @endif
                                                 @if (auth()->user()->hasRole('controller'))
                                                     <li class="nav-item">
@@ -177,26 +180,26 @@
                                                         </a>
                                                         <div class="dropdown-menu">
                                                             <div class="row">
-                                                                <div class="col-12 col-lg-4">
+                                                                <div class="col-12 col-lg-6">
                                                                     <div class="link-list-wrapper">
                                                                         <ul class="link-list">
                                                                             <li>
-                                                                                <a class="list-item" href="{{ route("controller.obiettivo", ['obiettivo' => 1]) }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 1 - {{ config("constants.OBIETTIVO.1.text") }}</span></a>
+                                                                                <a class="list-item" href="{{ route("controller.obiettivo", ['obiettivo' => 1]) }}"><span><i class="{{ config("constants.OBIETTIVO.1.icon") }}"></i>&nbsp;&nbsp;Ob. 1 - {{ config("constants.OBIETTIVO.1.text") }}</span></a>
                                                                             </li>
                                                                             <li>
-                                                                                <a class="list-item" href="{{ route("controller.obiettivo", ['obiettivo' => 3]) }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 3 - {{ config("constants.OBIETTIVO.3.text") }}</span></a>
+                                                                                <a class="list-item" href="{{ route("controller.obiettivo", ['obiettivo' => 3]) }}"><span><i class="{{ config("constants.OBIETTIVO.3.icon") }}"></i>&nbsp;&nbsp;Ob. 3 - {{ config("constants.OBIETTIVO.3.text") }}</span></a>
                                                                             </li>
                                                                             <li>
-                                                                                <a class="list-item" href="{{ route("controller.obiettivo", ['obiettivo' => 6]) }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 6 - {{ config("constants.OBIETTIVO.6.text") }}</span></a>
+                                                                                <a class="list-item" href="{{ route("controller.obiettivo", ['obiettivo' => 6]) }}"><span><i class="{{ config("constants.OBIETTIVO.6.icon") }}"></i>&nbsp;&nbsp;Ob. 6 - {{ config("constants.OBIETTIVO.6.text") }}</span></a>
                                                                             </li>
                                                                             <li>
-                                                                                <a class="list-item" href="{{ route("controller.obiettivo", ['obiettivo' => 5]) }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 5 - {{ config("constants.OBIETTIVO.5.text") }}</span></a>
+                                                                                <a class="list-item" href="{{ route("controller.obiettivo", ['obiettivo' => 5]) }}"><span><i class="{{ config("constants.OBIETTIVO.5.icon") }}"></i>&nbsp;&nbsp;Ob. 5 - {{ config("constants.OBIETTIVO.5.text") }}</span></a>
                                                                             </li>                                                    
                                                                             <li>
-                                                                                <a class="list-item" href="{{ route("controller.obiettivo", ['obiettivo' => 8]) }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 8 - {{ config("constants.OBIETTIVO.8.text") }}</span></a>
+                                                                                <a class="list-item" href="{{ route("controller.obiettivo", ['obiettivo' => 8]) }}"><span><i class="{{ config("constants.OBIETTIVO.8.icon") }}"></i>&nbsp;&nbsp;Ob. 8 - {{ config("constants.OBIETTIVO.8.text") }}</span></a>
                                                                             </li>                                                                          
                                                                             <li>
-                                                                                <a class="list-item" href="{{ route("controller.obiettivo", ['obiettivo' => 9]) }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 9 - {{ config("constants.OBIETTIVO.9.text") }}</span></a>
+                                                                                <a class="list-item" href="{{ route("controller.obiettivo", ['obiettivo' => 9]) }}"><span><i class="{{ config("constants.OBIETTIVO.9.icon") }}"></i>&nbsp;&nbsp;Ob. 9 - {{ config("constants.OBIETTIVO.9.text") }}</span></a>
                                                                             </li>                                                                          
                                                                             <!--li><span class="divider"></span></li-->
                                                                         </ul>
@@ -216,35 +219,35 @@
                                                         </a>
                                                         <div class="dropdown-menu">
                                                             <div class="row">
-                                                                <div class="col-12 col-lg-4">
+                                                                <div class="col-12 col-lg-6">
                                                                     <div class="link-list-wrapper">
                                                                         <ul class="link-list">
 
                                                                             <li>
-                                                                                <a class="list-item" href="{{ route("uploadTempiListeAttesa") }}"><span><i class="bi bi-people"></i>&nbsp;&nbsp;Ob. 1 - {{ config("constants.OBIETTIVO.1.text") }}</span></a>
+                                                                                <a class="list-item" href="{{ route("uploadTempiListeAttesa") }}"><span><i class="{{ config("constants.OBIETTIVO.1.icon") }}"></i>&nbsp;&nbsp;Ob. 1 - {{ config("constants.OBIETTIVO.1.text") }}</span></a>
                                                                             </li>
                                                                             <li>
-                                                                                <a class="list-item" href="{{ route("caricamentoPuntoNascite") }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 3 - {{ config("constants.OBIETTIVO.3.text") }}</span></a>
+                                                                                <a class="list-item" href="{{ route("caricamentoPuntoNascite") }}"><span><i class="{{ config("constants.OBIETTIVO.3.icon") }}"></i>&nbsp;&nbsp;Ob. 3 - {{ config("constants.OBIETTIVO.3.text") }}</span></a>
                                                                             </li>                                                                            
                                                                             <li>
-                                                                                <a class="list-item" href="{{ route("caricamentoScreening",['obiettivo' => 5])}}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 5 - {{config("constants.OBIETTIVO.5.text")}}</span></a>
+                                                                                <a class="list-item" href="{{ route("caricamentoScreening",['obiettivo' => 5])}}"><span><i class="{{ config("constants.OBIETTIVO.5.icon") }}"></i>&nbsp;&nbsp;Ob. 5 - {{config("constants.OBIETTIVO.5.text")}}</span></a>
                                                                             </li>
                                                                             <li>
-                                                                                <a class="list-item" href="{{ route("caricamentoDonazioni",['obiettivo' => 6])}}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 6 - {{config("constants.OBIETTIVO.6.text")}}</span></a>
-                                                                            </li>
-
-                                                                            <li>
-                                                                                <a class="list-item" href="{{ route("caricamentoFse",['obiettivo' => 7])}}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 7 - {{config("constants.OBIETTIVO.7.text")}}</span></a>
+                                                                                <a class="list-item" href="{{ route("caricamentoDonazioni",['obiettivo' => 6])}}"><span><i class="{{ config("constants.OBIETTIVO.6.icon") }}"></i>&nbsp;&nbsp;Ob. 6 - {{config("constants.OBIETTIVO.6.text")}}</span></a>
                                                                             </li>
 
                                                                             <li>
-                                                                                <a class="list-item" href="{{ route("caricamentoPercorsoCertificabilita") }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 8 - {{ config("constants.OBIETTIVO.8.text") }}</span></a>
+                                                                                <a class="list-item" href="{{ route("caricamentoFse",['obiettivo' => 7])}}"><span><i class="{{ config("constants.OBIETTIVO.7.icon") }}"></i>&nbsp;&nbsp;Ob. 7 - {{config("constants.OBIETTIVO.7.text")}}</span></a>
+                                                                            </li>
+
+                                                                            <li>
+                                                                                <a class="list-item" href="{{ route("caricamentoPercorsoCertificabilita") }}"><span><i class="{{ config("constants.OBIETTIVO.8.icon") }}"></i>&nbsp;&nbsp;Ob. 8 - {{ config("constants.OBIETTIVO.8.text") }}</span></a>
                                                                             </li>
                                                                             <li>
-                                                                                <a class="list-item" href="{{ route("caricamentoFarmaci", ['obiettivo' => 9]) }}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 9 - {{ config("constants.OBIETTIVO.9.text") }}</span></a>
+                                                                                <a class="list-item" href="{{ route("caricamentoFarmaci", ['obiettivo' => 9]) }}"><span><i class="{{ config("constants.OBIETTIVO.9.icon") }}"></i>&nbsp;&nbsp;Ob. 9 - {{ config("constants.OBIETTIVO.9.text") }}</span></a>
                                                                             </li>      
                                                                             <li>
-                                                                                <a class="list-item" href="{{ route("caricamentoGaranziaLea",['obiettivo' => 10])}}"><span><i class="bi bi-check"></i>&nbsp;&nbsp;Ob. 10 - {{config("constants.OBIETTIVO.10.text")}}</span></a>
+                                                                                <a class="list-item" href="{{ route("caricamentoGaranziaLea",['obiettivo' => 10])}}"><span><i class="{{ config("constants.OBIETTIVO.10.icon") }}"></i>&nbsp;&nbsp;Ob. 10 - {{config("constants.OBIETTIVO.10.text")}}</span></a>
                                                                             </li>                                                                    
                                                                         </ul>
                                                                     </div>

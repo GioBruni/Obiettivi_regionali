@@ -22,20 +22,93 @@
                         {{ session('status') }}
                     </div>
                 @endif
+
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-primary text-white">
+                        Indicatori di risultato
+                    </div>
+                    <div class="card-body">
+                        <div class="box mt-4">
+                            <div class="card-header bg-primary text-white mb-3">
+                                Modello CSV da scaricare
+                            </div>
+                            <div class="card-body">
+                                <ul>
+                                    <li><a href="/download/ob5_upload_indicatori_LEA.csv" target="_blank">ob5_upload_indicatori_LEA.csv</a></li>                                    
+                                </ul>
+                            </div>
+                        </div>
+                        @if (isset($dataView['errorsCSV']))
+                            <div class="alert alert-danger mt-1" role="alert">
+                                <h4 class="alert-heading px-5">Nessun dato importato</h4>
+                                <ul>
+                                    @foreach ($dataView['errorsCSV'] as $riga => $errors)
+                                        @foreach($errors as $error)
+                                            <li>Riga {{ $riga }}: {{ $error }}</li>
+                                        @endforeach
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @elseif (isset($dataView['successCSV']))
+                            <div class="alert alert-success mt-1" role="alert">
+                                <h4 class="alert-heading px-5">Dati importati correttamente</h4>
+                                <small>{{ $dataView['successCSV'] }}</small>
+                            </div>
+                        @endif
+                        <form action="{{ route('importTarget5LEA') }}" method="POST" enctype="multipart/form-data" >
+                            @csrf
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="categoria">Seleziona la struttura</label>
+                                    <div class="form-group">
+                                        <select class="form-control" name="structure_id" required>
+                                            <option value="">-- Seleziona --</option>
+                                            @foreach ($dataView['strutture'] as $rowStruttura)
+                                                <option value="{{ $rowStruttura->id }}" {{ count($dataView['strutture']) == 1 ? "selected" : "" }}>
+                                                    {{ $rowStruttura->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="fileCSV">Seleziona il file CSV da caricare</label>
+                                <div class="form-group">
+                                    <input type="file" class="form-control" id="fileCSV" name="fileCSV" accept=".csv"
+                                        required>
+                                    <div id="file-error" class="alert alert-danger mt-2" style="display:none;">Il file
+                                        supera i 5MB
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <button type="submit" class="btn btn-primary btn-sm" id="submitBtn">
+                                    <i class="bi bi-floppy"></i>&nbsp;&nbsp;{{ __('Carica CSV') }}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <br>
+
                 <div class="card-header bg-primary text-white mt-4">
-                    Inserisci i dati
+                    Coinvolgimento e collaborazione MMG per il counseling e la prenotazione diretta dei pazienti in età target non-responder (%MMG aderenti)
                 </div>
                 <div class="card-body">
                     <div class="card-body">
                         <form method="POST" action="{{ route('mmgRegister') }}">
                             @csrf
                             <input type="hidden" name="obiettivo" value={{$dataView['obiettivo']}}>
-                            @if ($errors->any())
+                            @if (isset($dataView['errorsMMG']))
                                 <div class="overflow-auto alert alert-danger" style="max-height: 200px;" role="alert">
-                                    <h4 class="alert-heading px-5">Errore</h4>
+                                    <h4 class="alert-heading px-5">Dati non salvati</h4>
                                     <p>
-                                    @foreach($errors->all() as $errore)
-                                            {{$errore}}<br />
+                                    @foreach($dataView['errorsMMG'] as $key => $errori)
+                                        @foreach($errori as $errore)
+                                            {{ $errore }}<br />
+                                        @endforeach
                                     @endforeach
                                     </p>
                                 </div>
@@ -46,7 +119,7 @@
                                     <p class="mb-1">Totale MMG</p>
                                     <input id="tot_mmg" type="text" class="form-control" name="tot_mmg" required
                                         autocomplete="tot_mmg" autofocus tabindex="1"
-                                        value="{{ $dataView['tableData']->isNotEmpty() ? $dataView['tableData']->first()->mmg_totale : '' }}"
+                                        value="{{ $dataView['tableData']->isNotEmpty() ? $dataView['tableData']->first()->mmg_totale : old('tot_mmg') }}"
                                         @if($dataView['tableData']->isNotEmpty()) disabled @endif>
                                 </div>
 
@@ -84,8 +157,8 @@
                                         <option value="" disabled {{ $dataView['tableData']->isEmpty() ? 'selected' : '' }}>
                                             Scegli
                                             una struttura</option>
-                                        @foreach($dataView['structures'] as $structure)
-                                            <option value="{{ $structure->id }} " {{ count($dataView['structures']) == 1 ? "selected" : "" }}>
+                                        @foreach($dataView['strutture'] as $structure)
+                                            <option value="{{ $structure->id }} " {{ count($dataView['strutture']) == 1 ? "selected" : "" }}>
                                                 {{ $structure->name }}
                                             </option>
                                         @endforeach
@@ -120,18 +193,16 @@
                         <form action="{{ route('uploadFileScreening') }}" method="POST" enctype="multipart/form-data"
                             id="caricaPDFForm">
                             @csrf
-
                             <input type="hidden" name="obiettivo" value={{$dataView['obiettivo']}}>
                             <input type="hidden" name="category" value="category">
-                        
                             <div class="row">
                                 <div class="col-md-6">
                                     <label for="categoria">Seleziona la struttura</label>
                                     <div class="form-group">
                                         <select class="form-control" name="structure_id" required>
                                             <option value="">-- Seleziona --</option>
-                                            @foreach ($dataView['structures'] as $rowStruttura)
-                                                <option value="{{ $rowStruttura->id }}" {{ count($dataView['structures']) == 1 ? "selected" : "" }}>
+                                            @foreach ($dataView['strutture'] as $rowStruttura)
+                                                <option value="{{ $rowStruttura->id }}" {{ count($dataView['strutture']) == 1 ? "selected" : "" }}>
                                                     {{ $rowStruttura->name }}
                                                 </option>
                                             @endforeach
@@ -151,8 +222,6 @@
                                     </div>
                                 </div>
                             </div>
-
-
                             <div class="row align-top">
                                 <div class="col-md-6">
                                     <label for="categoria">Seleziona la categoria</label>
@@ -176,21 +245,16 @@
                                     </div>
                                 </div>
                             </div>
-
                             <div class="mb-3">
                                 <label for="file">Seleziona il file PDF firmato digitalmente</label>
                                 <div class="form-group">
                                     <input type="file" class="form-control" id="file" name="file" accept=".pdf"
                                         required>
-                                    <div id="file-error" class="alert alert-danger mt-2" style="display:none;">Il file
-                                        supera i 5MB
+                                    <div id="file-error" class="alert alert-danger mt-2" style="display:none;">
+                                        Il file supera i 5MB
                                     </div>
-                                    @error('file')
-                                        <div class="alert alert-danger mt-2">{{ $message }}</div>
-                                    @enderror
                                 </div>
                             </div>
-
                             <div class="mb-3">
                                 <button type="submit" class="btn btn-primary btn-sm" id="submitBtn">
                                     <i class="bi bi-floppy"></i>&nbsp;&nbsp;{{ __('Carica PDF') }}

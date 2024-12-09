@@ -29,7 +29,7 @@
                                 <tr>
                                     <th>Anno</th>
                                     <th>Mese</th>
-                                    <th>Tmp</th>
+                                    <th>Tmp (%)</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -43,7 +43,7 @@
                             </tbody>
                         </table>
                         <div class="legend p-3 border rounded mt-3 {{ $dataView['messaggioTmp']['class'] }}">
-                            <strong>{{ $dataView['messaggioTmp']['text'] }}: {{$overallAverageTmp}}</strong>
+                            <strong>{{ $dataView['messaggioTmp']['text'] }}: {{$overallAverageTmp}} %</strong>
                         </div>
                     </div>
                 </div>

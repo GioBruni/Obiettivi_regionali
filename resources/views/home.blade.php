@@ -143,19 +143,7 @@
                                     </tbody>
                                 </table>
                             @endforeach
-                        </div>
-<!--
-                        <div class="row">
-                            <div class="col">
-                                <h4 class="mb-4 " id="titleEx6">Chart</h4>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div style="width:75%;">
-                                <x -ch artjs-component :cha rt="$ dataVie w['chart']" />
-                            </div>
-                        </div>
--->                        
+                        </div>                 
                     @endif
                 </div>
             </div>

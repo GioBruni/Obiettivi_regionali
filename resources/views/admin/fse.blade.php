@@ -13,17 +13,16 @@
         <div class="col-12 col-md-12">
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-primary text-white text-center">
-                    <!-- Titolo della sotto sezione con icona -->
                     <h4>
-                        <i class="fas fa-file-medical"></i> <!-- Icona corrispondente all'obiettivo -->
-                        {{ __('Obiettivo 7: Fascicolo Sanitario Elettronico') }} <!-- Testo del titolo -->
+                        <i class="{{ $dataView['icona'] }}"></i>
+                        {{ $dataView['titolo'] }}
                     </h4>
-                    <small>{{ __('') }}</small> <!-- Descrizione -->
+                    <small>{{ $dataView['tooltip'] }}</small>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="container">
-                            <form action="{{ route('fse') }}" method="GET" enctype="multipart/form-data">
+                            <form action="{{ route('admin.fse') }}" method="GET" enctype="multipart/form-data">
                                 <input type="hidden" name="annoCorrente" value="{{ date('Y') }}">
 
                                 <div class="row align-items-end">
@@ -36,7 +35,6 @@
                                             @php
                                             for ($anno = date('Y'); $anno >= 2023; $anno--) {
                                                 $selected = ($anno == request('annoSelezionato', date('Y'))) ? 'selected' : '';
-                                                //echo "<option value=\"$anno\" $selected>$anno</option>";
                                             }
                                             @endphp
                                         </select>
@@ -66,24 +64,27 @@
                                                     <x-chartjs-component
                                                         :chart="$dataView['chartDimissioniOspedaliere']" />
                                                 </div>
-                                                <div class="col-md-8 d-flex flex-column align-items-center justify-content-center">
+                                                <div
+                                                    class="col-md-8 d-flex flex-column align-items-center justify-content-center">
                                                     <div id="data-table1" class="w-100 mb-3">
                                                         <table class="table table-striped">
                                                             <thead>
                                                                 <tr>
+                                                                    <th>Struttura</th>
                                                                     <th>LDO indicizzate</th>
                                                                     <th>Dimissioni</th>
                                                                     <th>% LDO Indicizzate</th>
-                                                                    <th>% LDO Non Indicizzate</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
+                                                                @foreach($dataView['strutture'] as $idStruttura => $row)
                                                                 <tr>
-                                                                    <td>{{$dataView['dimissioniOspedaliere']}}</td>
-                                                                    <td>{{$dataView['ob7']}}</td>
-                                                                    <td>{{$dataView['percentualeDimissioniOspedaliere']}}</td>
-                                                                    <td>{{$dataView['percentualeDimissioniOspedaliereComplementare']}}</td>
+                                                                    <td>{{$row['nome_struttura']}}</td>
+                                                                    <td>{{$row['dimissioniOspedaliere']}}</td>
+                                                                    <td>{{$row['ob7']}}</td>
+                                                                    <td>{{$row['percentualeDimissioniOspedaliere']}}</td>
                                                                 </tr>
+                                                                @endforeach
                                                             </tbody>
                                                         </table>
                                                     </div>
@@ -95,7 +96,7 @@
 
                                         <div id="radiologia">
                                             <h5 class="text-center text-secondary mb-3">
-                                                {{ __('Verbali di prontosoccorso') }}
+                                                {{ __('Verbali di pronto soccorso') }}
                                             </h5>
                                             <div class="row">
                                                 <div class="col-md-4">
@@ -107,20 +108,21 @@
                                                         <table class="table table-striped">
                                                             <thead>
                                                                 <tr>
+                                                                    <th>Struttura</th>
                                                                     <th>Verbali indicizzati</th>
                                                                     <th>Dimissioni</th>
                                                                     <th>% Verbali Indicizzati</th>
-                                                                    <th>% Verbali Non Indicizzati</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
-
+                                                            @foreach($dataView['strutture'] as $idStruttura => $row)
                                                                 <tr>
-                                                                     <td>{{$dataView['dimissioniPS'] }}</td>
-                                                                    <td>{{$dataView['ob7PS']}}</td>
-                                                                    <td>{{$dataView['percentualePS']}}</td>
-                                                                    <td>{{$dataView['percentualeComplementarePS']}}</td>
+                                                                    <td>{{$row['nome_struttura']}}</td>
+                                                                    <td>{{$row['dimissioniPS'] }}</td>
+                                                                    <td>{{$row['ob7PS']}}</td>
+                                                                    <td>{{$row['percentualePS']}}</td>
                                                                 </tr>
+                                                            @endforeach
                                                             </tbody>
                                                         </table>
                                                     </div>
@@ -146,21 +148,21 @@
                                                         <table class="table table-striped">
                                                             <thead>
                                                                 <tr>
+                                                                    <th>Struttura</th>
                                                                     <th>Referti indicizzati</th>
                                                                     <th>Prestazioni di laboratorio</th>
                                                                     <th>% Referti Indicizzati</th>
-                                                                    <th>% Referti Non Indicizzati</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
-
+                                                            @foreach($dataView['strutture'] as $idStruttura => $row)
                                                                 <tr>
-                                                                    <td>{{$dataView['prestazioniLab']}}</td>
-                                                                    <td>{{$dataView['PrestazioniLabDen']}}</td>
-                                                                    <td>{{$dataView['percentualePrestLab']}}</td>
-                                                                    <td>{{$dataView['percentualeComplementarePrestLab']}}</td>
+                                                                    <td>{{$row['nome_struttura']}}</td>
+                                                                    <td>{{$row['prestazioniLab']}}</td>
+                                                                    <td>{{$row['ia13']}}</td>
+                                                                    <td>{{$row['percentualePrestLab']}}</td>
                                                                 </tr>
-
+                                                            @endforeach
                                                             </tbody>
                                                         </table>
                                                     </div>
@@ -184,20 +186,21 @@
                                                         <table class="table table-striped">
                                                             <thead>
                                                                 <tr>
+                                                                    <th>Struttura</th>
                                                                     <th>Referti indicizzati</th>
                                                                     <th>Prestazioni di radiologia</th>
                                                                     <th>% Referti Indicizzati</th>
-                                                                    <th>% Referti Non Indicizzati</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
-
+                                                            @foreach($dataView['strutture'] as $idStruttura => $row)
                                                                 <tr>
-                                                                    <td>{{$dataView['prestazioniRadiologia']}}</td>
-                                                                    <td>{{$dataView['PrestazioniRadDen']}}</td>
-                                                                    <td>{{$dataView['percentualeRefRadiologia']}}</td>
-                                                                    <td>{{$dataView['percentualeComplementareRefRadiologia']}}</td>
+                                                                    <td>{{$row['nome_struttura']}}</td>
+                                                                    <td>{{$row['prestazioniRadiologia']}}</td>
+                                                                    <td>{{$row['ia14']}}</td>
+                                                                    <td>{{$row['percentualeRefRadiologia']}}</td>
                                                                 </tr>
+                                                            @endforeach
                                                             </tbody>
                                                         </table>
                                                     </div>
@@ -223,20 +226,21 @@
                                                         <table class="table table-striped">
                                                             <thead>
                                                                 <tr>
+                                                                    <th>Struttura</th>
                                                                     <th>Referti indicizzati</th>
                                                                     <th>Prestazioni di specialistica ambulatoriale</th>
                                                                     <th>% Referti Indicizzati</th>
-                                                                    <th>% Referti Non Indicizzati</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
-
+                                                            @foreach($dataView['strutture'] as $idStruttura => $row)
                                                                 <tr>
-                                                                    <td>{{$dataView['specialisticaAmbulatoriale']}}</td>
-                                                                    <td>{{$dataView['PrestazioniAmbulatoriale']}}</td>
-                                                                    <td>{{$dataView['percentualeSpecAmbulatoriale']}}</td>
-                                                                    <td>{{$dataView['percentualeComplementareSpecAmbulatoriale']}}</td>
+                                                                    <td>{{$row['nome_struttura']}}</td>
+                                                                    <td>{{$row['specialisticaAmbulatoriale']}}</td>
+                                                                    <td>{{$row['ia15']}}</td>
+                                                                    <td>{{$row['percentualeAmbulatoriale']}}</td>
                                                                 </tr>
+                                                            @endforeach
                                                             </tbody>
                                                         </table>
                                                     </div>
@@ -261,22 +265,22 @@
                                                         <table class="table table-striped">
                                                             <thead>
                                                                 <tr>
+                                                                    <th>Struttura</th>
                                                                     <th>Certificati indicizzati</th>
                                                                     <th>Vaccinati</th>
                                                                     <th>% Certificati Indicizzati</th>
-                                                                    <th>% Certificati Non Indicizzati</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
-
+                                                            @foreach($dataView['strutture'] as $idStruttura => $row)
                                                                 <tr>
-                                                                    <td>{{$dataView['certificatiIndicizzati']}}</td>
-                                                                    <td>{{$dataView['vaccinati']}}</td>
-                                                                    <td>{{$dataView['percentualeVaccinati']}}</td>
-                                                                    
-                                                                    <td>{{  $dataView['percentualeComplementareVaccinati']  }}</td>
-                                                                    
+                                                                    <td>{{$row['nome_struttura']}}</td>
+
+                                                                    <td>{{$row['certificatiIndicizzati']}}</td>
+                                                                    <td>{{$row['vaccinati']}}</td>
+                                                                    <td>{{$row['percentualeVaccinati']}}</td>
                                                                 </tr>
+                                                            @endforeach
                                                             </tbody>
                                                         </table>
                                                     </div>
@@ -300,19 +304,21 @@
                                                         <table class="table table-striped">
                                                             <thead>
                                                                 <tr>
+                                                                    <th>Struttura</th>
                                                                     <th>Documenti indicizzati</th>
                                                                     <th>Prestazioni erogate</th>
                                                                     <th>% Documenti Indicizzati</th>
-                                                                    <th>% Documenti Non Indicizzati</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
+                                                            @foreach($dataView['strutture'] as $idStruttura => $row)
                                                                 <tr>
-                                                                    <td>{{$dataView['documentiIndicizzati']}}</td>
-                                                                    <td>{{$dataView['prestazioniErogate']}}</td>
-                                                                    <td>{{ $dataView['percentualeDocumentazioneFse']}}</td>
-                                                                    <td>{{$dataView['percentualeComplementareDocumentazioneFse']}}</td>
+                                                                    <td>{{$row['nome_struttura']}}</td>
+                                                                    <td>{{$row['documentiIndicizzati']}}</td>
+                                                                    <td>{{$row['ia16']}}</td>
+                                                                    <td>{{ $row['percentualePrestErogate']}}</td>
                                                                 </tr>
+                                                            @endforeach
                                                             </tbody>
                                                         </table>
                                                         <div class="legend p-3 border rounded mt-3 ">
@@ -348,19 +354,21 @@
                                                         <table class="table table-striped">
                                                             <thead>
                                                                 <tr>
+                                                                    <th>Struttura</th>
                                                                     <th>Verbali indicizzati</th>
                                                                     <th>Dimissioni</th>
                                                                     <th>% Verbali Indicizzati</th>
-                                                                    <th>% Verbali Non Indicizzati</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
+                                                            @foreach($dataView['strutture'] as $idStruttura => $row)
                                                                 <tr>
-                                                                    <td>{{$dataView['documentiIndicizzati']}}</td>
-                                                                    <td>{{$dataView['documentiIndicizzatiCDA2'] }}</td>
-                                                                    <td>{{$dataView['percentualeDocumentiCDA2']}}</td>
-                                                                    <td>{{$dataView['percentualeComplementareDocumentiCDA2']}}</td>
+                                                                    <td>{{$row['nome_struttura']}}</td>
+                                                                    <td>{{$row['documentiIndicizzati']}}</td>
+                                                                    <td>{{$row['documentiIndicizzatiCDA2'] }}</td>
+                                                                    <td>{{$row['percentualeDocumentiCDA2']}}</td>
                                                                 </tr>
+                                                            @endforeach
                                                             </tbody>
                                                         </table>
                                                         <div class="legend p-3 border rounded mt-3 ">
@@ -396,19 +404,21 @@
                                                         <table class="table table-striped">
                                                             <thead>
                                                                 <tr>
+                                                                    <th>Struttura</th>
                                                                     <th>Verbali indicizzati</th>
                                                                     <th>Dimissioni</th>
                                                                     <th>% Verbali Indicizzati</th>
-                                                                    <th>% Verbali Non Indicizzati</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
+                                                            @foreach($dataView['strutture'] as $idStruttura => $row)
                                                                 <tr>
-                                                                    <td>{{$dataView['documentiPades']}}</td>
-                                                                    <td>{{$dataView['documentiIndicizzatiPades']}}</td>
-                                                                    <td>{{$dataView['percentualePades']}}</td>
-                                                                    <td>{{$dataView['percentualeComplementarePades']}}</td>
+                                                                    <td>{{$row['nome_struttura']}}</td>
+                                                                    <td>{{$row['documentiPades']}}</td>
+                                                                    <td>{{$row['documentiIndicizzatiPades']}}</td>
+                                                                    <td>{{$row['percentualeDocumentiPades']}}</td>
                                                                 </tr>
+                                                            @endforeach
                                                             </tbody>
                                                         </table>
                                                         <div class="legend p-3 border rounded mt-3 ">
