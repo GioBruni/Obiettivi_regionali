@@ -11,6 +11,7 @@
 </style>
 </head>
 <body>
+<img alt="logo" class="icon" src="{{ asset(config('bootstrap-italia.logo.url')) }}">
     <h1>Obiettivo 1</h1>
 
     <p>Anno selezionato: {{ $anno }}</p>
