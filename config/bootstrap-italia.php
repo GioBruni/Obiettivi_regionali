@@ -42,7 +42,7 @@ return [
     
     'logo' => [
         'type' => 'url',
-        'url' => 'logo-regione-sicilia.png',
+        'url' => '/logo-regione-sicilia.png',
     ],
     
 
