@@ -961,6 +961,16 @@ class AdminController extends Controller
         $dataView['tableData'] = DB::table('target6_data')
         ->select('totale_accertamenti', 'numero_opposti','totale_cornee', 'anno', 'structure_id', 's.name')
         ->join('structures as s', 'target6_data.structure_id', '=', 's.id')
+        ->join(
+            DB::raw('(SELECT structure_id, anno, MAX(created_at) AS max_created_at
+                      FROM target6_data
+                      GROUP BY structure_id, anno) as latest_data'),
+            function($join) {
+                $join->on('target6_data.structure_id', '=', 'latest_data.structure_id')
+                     ->on('target6_data.anno', '=', 'latest_data.anno')
+                     ->on('target6_data.created_at', '=', 'latest_data.max_created_at');
+            }
+        )
         ->orderBy("name")
         ->orderBy("anno")
         ->get();
