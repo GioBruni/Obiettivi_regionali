@@ -107,8 +107,6 @@
                                                 <th>Struttura</th>
                                                 <th>Anno</th>
                                                 <th>Totale accertamenti</th>
-                                                <th>Dati SDO</th>
-                                                <th>Percentuale</th>
                                                 <th>Incr rispetto al 2023</th>
                                             </tr>
                                         </thead>
@@ -119,8 +117,6 @@
                                                         <td>{{ $res['nome_struttura'] }}</td> 
                                                         <td>{{ $res['anno'] }}</td> 
                                                         <td>{{ $res['totale_accertamenti'] }}</td> 
-                                                        <td>{{ $res['denominatore'] }}</td> 
-                                                        <td>{{ $res['percentualeAccertamenti'] }} %</td> 
                                                         <td>{{ $res['incrementoAccertamenti'] }} %</td>
                                                     </tr>
                                                 @endforeach

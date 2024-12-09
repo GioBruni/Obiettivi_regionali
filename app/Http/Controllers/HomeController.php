@@ -1069,7 +1069,7 @@ class HomeController extends Controller
                     "data" => $idR->pluck("cercocarcinoma")->toArray(),
                 ],
                 [
-                    "label" => "test",
+                    "label" => "Colonretto",
                     "data" => $idR->pluck("colonretto")->toArray(),
                 ]
             ] //datasets
