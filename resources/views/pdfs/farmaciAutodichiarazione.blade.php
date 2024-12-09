@@ -11,6 +11,19 @@
 </style>
 </head>
 <body>
+    
+@if (config('bootstrap-italia.logo'))
+    @if (config('bootstrap-italia.logo.type') === 'icon')
+        <svg class="icon">
+            <use
+                xlink:href="{{ asset('vendor/bootstrap-italia/dist/svg/sprite.svg#it-') }}{{ config('bootstrap-italia.logo.icon') }}">
+            </use>
+        </svg>
+    @else
+        <img alt="logo" class="icon" src="{{ config('bootstrap-italia.logo.url') }}">
+    @endif
+@endif
+
     <h1>Obiettivo 9</h1>
 
     <p>Anno selezionato: {{ $anno }}</p>

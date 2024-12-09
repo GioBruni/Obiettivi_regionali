@@ -691,11 +691,22 @@ class HomeController extends Controller
 
         // Numeratori sub.2
         $dataView['target6_data'] = DB::table('target6_data')
-            ->select('totale_accertamenti', 'anno', 'numero_opposti', 'totale_cornee')
-            ->orderBy('anno')
-            ->get();
-
+        ->select('target6_data.totale_accertamenti', 'target6_data.anno', 'target6_data.numero_opposti', 'target6_data.totale_cornee', 'target6_data.structure_id', 'target6_data.created_at')
+        ->join('structures as s', 'target6_data.structure_id', '=', 's.id')
+        ->where('target6_data.structure_id', '=', Auth::user()->firstStructureId()->id)
+        ->whereIn('target6_data.id', function ($query) {
+            $query->select(DB::raw('MAX(id)'))
+                ->from('target6_data')
+                ->where('structure_id', '=', Auth::user()->firstStructureId()->id)
+                ->groupBy('anno')
+                ->orderBy('target6_data.created_at', 'desc');
+        })
+        ->orderBy('target6_data.anno')
+        ->get();
+    
+        
         //Denominatore preso dal flusso
+        /*
         $denominatore = DB::table('flows_sdo')
             ->where('structure_id', Auth::user()->firstStructureId()->id)
             ->select(
@@ -706,23 +717,32 @@ class HomeController extends Controller
             ->groupBy('year')
             ->orderByDesc('year')
             ->get();
+*/
 
         $labelsTmp = [];
         $dataView['result'] = [];
 
         // Calcolo la percentuale per ogni anno
         foreach ($dataView['target6_data'] as $target) {
-            $denominatoreTmp = $denominatore->firstWhere('year', operator: $target->anno);
+        //    $denominatoreTmp = $denominatore->firstWhere('year',  $target->anno);
             if ($target->anno == 2023) {
                 $accertamenti2023 = $target->totale_accertamenti;
                 $cornee2023 = $target->totale_cornee;
             }
-            $percentualeAccertamenti = ($denominatoreTmp->ob6 != 0) ? round(($target->totale_accertamenti / $denominatoreTmp->ob6) * 100, 2) : 0;
-            $percentualeCornee = ($denominatoreTmp->ob6 != 0) ? round(($target->totale_cornee / $denominatoreTmp->ob6) * 100, 2) : 0;
+
+        /*
+                $percentualeAccertamenti = ($denominatoreTmp && $denominatoreTmp->ob6 != 0) 
+                    ? round(($target->totale_accertamenti / $denominatoreTmp->ob6) * 100, 2) 
+                    : 0;
+
+                $percentualeCornee = ($denominatoreTmp && $denominatoreTmp->ob6 != 0) 
+                    ? round(($target->totale_cornee / $denominatoreTmp->ob6) * 100, 2) 
+                    : 0;
+*/
             $dataView['result'][] = [
                 'anno' => $target->anno,
-                'percentualeAccertamenti' => $percentualeAccertamenti,
-                'percentualeCornee' => $percentualeCornee,
+                //'percentualeAccertamenti' => $percentualeAccertamenti,
+              //  'percentualeCornee' => $percentualeCornee,
                 'totale_accertamenti' => $target->totale_accertamenti,
                 'numero_opposti' => $target->numero_opposti,
                 'totale_cornee' => $target->totale_cornee,
@@ -731,6 +751,9 @@ class HomeController extends Controller
             ];
             $labelsTmp[] = $target->anno;
         }
+
+     
+
         $incrementoSub2AnnoCorrente = 0;
         $incrementoSub4AnnoCorrente = 0;
         foreach ($dataView['result'] as $row) {
@@ -743,16 +766,17 @@ class HomeController extends Controller
         $punteggioTotale = $this->calcoloPunteggioSub2($incrementoSub2AnnoCorrente);
         $dataView = array_merge($punteggioTotale, $dataView);
 
+
         //grafico Sub.2
         $dataView['chartDonazioni'] = $this->showChart(
-            "doughnut",
+            "bar",
             "OverallAvgTmpComplementaryBarChart",
             $labelsTmp,
             [
                 [
                     "label" => "Percentuale TMP per Anno",
                     "backgroundColor" => "rgba(38, 185, 154, 0.7)",
-                    "data" => array_column($dataView['result'], 'percentualeAccertamenti') //percentuali per ogni anno
+                    "data" => array_column($dataView['result'], 'totale_accertamenti') //percentuali per ogni anno
                 ]
             ],
             [
@@ -760,7 +784,7 @@ class HomeController extends Controller
                 'plugins' => [
                     'title' => [
                         'display' => true,
-                        'text' => 'Distribuzione Percentuale per Anno'
+                        'text' => 'Totale accertamenti per anno'
                     ],
                     'legend' => [
                         'display' => true
@@ -1256,6 +1280,8 @@ class HomeController extends Controller
         $mmg_coinvolti = $request->mmg_coinvolti;
         $structure_id = $request->structure_id;
 
+       
+
         $messages = [
             'tot_mmg.required' => 'Il totale MMG è obbligatorio.',
             'tot_mmg.numeric' => 'Il totale MMG deve essere un numero.',
@@ -1275,6 +1301,7 @@ class HomeController extends Controller
         if ($validator->fails()) {
             $dataView['errorsMMG'] = $validator->errors()->getMessages();
         } else {
+    
             InsertMmg::create([
                 'mmg_totale' => $tot_mmg,
                 'mmg_coinvolti' => $mmg_coinvolti,
@@ -1414,10 +1441,8 @@ class HomeController extends Controller
 
 
         if ($existingRecord) {
-            \Log::info("prova: " . $existingRecord->id);
             $existingRecord->update(array_merge($fieldsToUpdate, ['updated_at' => now()]));
         } else {
-            \Log::info("Creating a new record");
             Target7_data::create(array_merge($fieldsToUpdate, [
                 'anno' => $anno,
                 'structure_id' => $structureId,
@@ -1426,7 +1451,6 @@ class HomeController extends Controller
             ]));
         }
 
-        // Redirect back with a success message
         return redirect()->back()->with('success', 'Data caricati con successo!');
     }
 
@@ -1665,21 +1689,21 @@ class HomeController extends Controller
                 $pdf = PDF::loadView('pdfs.screeningPdf', $dataView);
 
                 return $pdf->download('certificazione_completa.pdf');
+
             case 6:
 
                 $dataView['target6_data'] = DB::table('target6_data')
-                    ->whereIn(DB::raw('(anno, id)'), function ($query) {
-                        $query->select(DB::raw('anno, MAX(id)'))
-                            ->from('target6_data')
-                            ->groupBy('anno');
-                    })
-                    ->select('totale_accertamenti', 'anno', 'numero_opposti', 'totale_cornee')
-                    ->orderBy('anno', 'asc')
-                    ->get();
-
+                ->select('totale_accertamenti', 'anno', 'numero_opposti', 'totale_cornee','structure_id')
+                ->join('structures as s', 'target6_data.structure_id', '=', 's.id')
+                ->where('structure_id', '=', Auth::user()->firstStructureId()->id)
+                ->orderBy('anno')
+                ->get();
+    
                 $pdf = PDF::loadView('pdfs.donazioniPdf', $dataView);
 
                 return $pdf->download('certificazione_completa.pdf');
+
+            case 7:
 
         }
     }
@@ -2582,6 +2606,8 @@ class HomeController extends Controller
 
     public function fse(Request $request)
     {
+
+     
         $dataSelezionata = $request->annoSelezionato ?? date('Y');
 
         /*****************************Dimissioni Ospedaliere**********************************/
@@ -2613,9 +2639,14 @@ class HomeController extends Controller
             ->orderByDesc('month')
             ->first();
 
-        $dataView['ob7'] = $denominatore->ob7_1;
-
-        if ($dataView['ob7'] != 0) {
+            if ($denominatore) {
+                $dataView['ob7'] = $denominatore->ob7_1;
+            } else {
+                $dataView['ob7'] = 0; 
+            }
+            
+    
+        if($dataView['ob7'] != 0) {
             $dataView['percentualeDimissioniOspedaliere'] = round(($dataView['dimissioniOspedaliere'] / $dataView['ob7']) * 100, 2);
         } else
             $dataView['percentualeDimissioniOspedaliere'] = 0;
@@ -2734,7 +2765,7 @@ class HomeController extends Controller
             ['Indicizzati', 'Non Indicizzati'],
             [$dataView['percentualeDocumentazioneFse'], $dataView['percentualeComplementareDocumentazioneFse']]
         );
-
+   
         /***************************Documenti in CDA2************************************************************* */
         if ($dataView['documentiIndicizzatiCDA2'] > 0) {
             $dataView['percentualeDocumentiCDA2'] = round($documentiCDA2 / $dataView['documentiIndicizzatiCDA2'] * 100, 2);
@@ -2762,10 +2793,10 @@ class HomeController extends Controller
             ['Pades', 'Non pades'],
             [$dataView['percentualePades'], $dataView['percentualeComplementarePades']]
         );
+      
 
         return view("fse")->with("dataView", $dataView);
     }
-
 
 
     public function caricamentoFse(Request $request)

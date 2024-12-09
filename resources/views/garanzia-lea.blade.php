@@ -81,8 +81,8 @@
                                                         <tbody>
                                                                 <tr>
                                                                     <td>{{ $dataView['nome'] }}</td>
-                                                                    <td>{{ $dataView['ultimoData']->ob10_1_numeratore ?? 'null' }}</td>
-                                                                    <td>{{$dataView['ultimoData']->ob10_1_denominatore ?? 'null'}}</td>
+                                                                    <td>{{ $dataView['ultimoData']->ob10_1_numeratore ?? '0' }}</td>
+                                                                    <td>{{$dataView['ultimoData']->ob10_1_denominatore ?? '0'}}</td>
                                                                     <td>{{$dataView['percentualeCicloBase'] }}%</td>
                                                                 </tr>
                                                         </tbody>
@@ -136,8 +136,8 @@
                                                       
                                                             <tr>
                                                                 <td>{{$dataView['nome']}}</td>
-                                                                <td>{{$dataView['ultimoData']->ob10_2_numeratore ?? 'null'}}</td>
-                                                                <td>{{$dataView['ultimoData']->ob10_2_denominatore ?? 'null'}}</td>
+                                                                <td>{{$dataView['ultimoData']->ob10_2_numeratore ?? '0'}}</td>
+                                                                <td>{{$dataView['ultimoData']->ob10_2_denominatore ?? '0'}}</td>
                                                                 <td>{{$dataView['percentualePrimaDose']}}%</td>
                                                             </tr>
                                                  
@@ -229,7 +229,7 @@
                         <hr class="my-4">
                         <br>
                         <h5 class="text-center text-secondary mb-3">
-                                        {{ __('Alimenti') }}
+                                        {{ __('Copertura delle principali attività di controllo per la contaminazione degli alimenti, con particolare riferimento alla ricerca di sostanze illecite, di residui di contaminanti, di farmaci, di fitofarmaci e di additivi negli alimenti di origine animale e vegetale') }}
                                     </h5>
 
                                     <div class="row justify-content-center mt-4">
@@ -257,9 +257,9 @@
                                                         <tr>
                                                             <td>{{$dataView['nome']}}</td>
                                                             <td>{{$dataView['percentualePNR'] }}%</td>
-                                                            <td>{{$dataView['pecentualeCoperturaFitofarmaci'] ?? 'null'}}%</td>
-                                                            <td>{{$dataView['percentualeCoperturaAdditivi'] ?? 'null'}}%</td>
-                                                            <td>{{ $dataView['percentualeTotaleAlimenti'] ?? 'null'}}%</td>
+                                                            <td>{{$dataView['pecentualeCoperturaFitofarmaci'] ?? '0'}}%</td>
+                                                            <td>{{$dataView['percentualeCoperturaAdditivi'] ?? '0'}}%</td>
+                                                            <td>{{ $dataView['percentualeTotaleAlimenti'] ?? '0'}}%</td>
                                                         </tr>
                                                 </tbody>
                                             </table>
@@ -440,8 +440,8 @@
                                                         
                                                         <tr>
                                                             <th>{{$dataView['nome']}}</th>
-                                                            <th>{{$dataView['ultimoData']->ob10_ao_4_num?? 'null'}}</th>
-                                                            <th>{{$dataView['ultimoData']->ob10_ao_4_den?? 'null'}}</th>
+                                                            <th>{{$dataView['ultimoData']->ob10_ao_4_num?? '0'}}</th>
+                                                            <th>{{$dataView['ultimoData']->ob10_ao_4_den?? '0'}}</th>
                                                             <th>{{$dataView['percentualeOb10_ao_4']}} %</th>
                                                         </tr>
                                                        
@@ -519,8 +519,8 @@
                                                     <tbody>
                                                         <tr>
                                                             <th>{{$dataView['nome']}}</th>
-                                                            <th>{{$dataView['ultimoDataSDO']->ob10_ao_1_num?? 'null'}}</th>
-                                                            <th>{{$dataView['ultimoDataSDO']->ob10_ao_1_num?? 'null'}}</th>
+                                                            <th>{{$dataView['ultimoDataSDO']->ob10_ao_1_num?? '0'}}</th>
+                                                            <th>{{$dataView['ultimoDataSDO']->ob10_ao_1_num?? '0'}}</th>
                                                             <th>{{$dataView['percentualeOb10_ao_1']}} %</th>
                                                         </tr>
                                                         

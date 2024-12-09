@@ -128,19 +128,19 @@
                             <div class="form-row">
                                 <div class="form-group col-md-6">
                                     <p class="mb-1">Totale accertamenti</p>
-                                    <input id="totale_accertamenti" type="text" class="form-control" name="totale_accertamenti" required
+                                    <input id="totale_accertamenti" type="number" class="form-control" name="totale_accertamenti" required
                                         autocomplete="totale_accertamenti" autofocus tabindex="1">
                                 </div>
 
                                 <div class="form-group col-md-6">
                                     <p class="mb-1">Numero opposti</p>
-                                    <input id="numero_opposti" type="text" class="form-control" name="numero_opposti"
+                                    <input id="numero_opposti" type="number" class="form-control" name="numero_opposti"
                                         required autocomplete="numero_opposti" tabindex="2">
                                 </div>
 
                                 <div class="form-group col-md-6">
                                     <p class="mb-1">Totale cornee</p>
-                                    <input id="totale_cornee" type="text" class="form-control" name="totale_cornee"
+                                    <input id="totale_cornee" type="number" class="form-control" name="totale_cornee"
                                         required autocomplete="totale_cornee" tabindex="2">
                                 </div>
                             </div>

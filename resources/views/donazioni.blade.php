@@ -202,7 +202,6 @@
                                             <tr>
                                                 <th>Anno</th>
                                                 <th>Totale accertamenti</th>
-                                                <th>Percentuale</th>
                                                 <th>Incr rispetto al 2023</th>
                                             </tr>
                                         </thead>
@@ -212,7 +211,6 @@
                                                     <tr>
                                                         <td>{{ $res['anno'] }}</td> 
                                                         <td>{{ $res['totale_accertamenti'] }}</td> 
-                                                        <td>{{ $res['percentualeAccertamenti'] }} %</td> 
                                                         <td>{{ $res['incrementoAccertamenti'] }} %</td>
                                                     </tr>
                                                 @endforeach
