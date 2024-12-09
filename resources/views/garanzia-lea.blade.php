@@ -21,22 +21,29 @@
                     <form method="POST" action="{{ route('aggiornaGraficiGaranzia') }}">
                         @csrf
                         <div class="card-body">
-                            <div class="row">
-
-                                <div class="col-md-5 mb-3">
-                                    <label for="data_inizio">Data Inizio:</label>
-                                    <input type="date" name="data_inizio" id="data_inizio" class="form-control"
-                                        value={{$dataView['dataInizioDefault']}}>
+                        <div class="container">
+                            <form action="{{ route('fse') }}" method="GET" enctype="multipart/form-data">
+                                <div class="row align-items-end">
+                                    <div class="col-md-6">
+                                        <div class="form-group d-flex">
+                                            <select id="annoSelezionato" class="form-control mr-2" name="annoSelezionato">
+                                                @php
+                                                $annoCorrente = date('Y');
+                                                $annoMinimo = 2023; 
+                                                $annoSelezionato = request('annoSelezionato', $annoCorrente);
+                                                for ($anno = $annoCorrente; $anno >= $annoMinimo; $anno--) {
+                                                    $selected = ($anno == $annoSelezionato) ? 'selected' : '';
+                                                    echo "<option value=\"$anno\" $selected>$anno</option>";
+                                                }
+                                                @endphp
+                                            </select>
+                                            <button type="submit" class="btn btn-primary">Cerca</button>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" name="annoCorrente" value="{{ $annoCorrente }}">
                                 </div>
-                                <div class="col-md-5 mb-3">
-                                    <label for="data_fine">Data Fine:</label>
-                                    <input type="date" name="data_fine" id="data_fine" class="form-control"
-                                        value={{$dataView['dataFineDefault']}}>
-                                </div>
-                                <div class="col-md-2 mb-3 d-flex align-items-end">
-                                    <button id="searchButton" class="btn btn-primary w-100">Cerca</button>
-                                </div>
-                            </div>
+                            </form>
+                        </div>
                         </div>
                         <div id="assistenzaPrevenzioneBox" class="row justify-content-center">
                             <div class="col-md-12">
@@ -60,6 +67,7 @@
                                                         <x-chartjs-component :chart="$dataView['areaPrevenzione']" />
                                                     </div>
                                                 </div>
+                                                <br>
                                                 <div class="col-md-6">
                                                     <table class="table table-striped">
                                                         <thead>
@@ -67,25 +75,25 @@
                                                                 <th>Distretto</th>
                                                                 <th>Numeratore</th>
                                                                 <th>Denominatore</th>
+                                                                <th>Percentuale</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
-                                                            @foreach ($dataView['primoGrafico'] as $dati)
                                                                 <tr>
-                                                                    <td>{{ $dati->nome_struttura ?? 'null' }}</td>
-                                                                    <td>{{ $dati->ob10_1 ?? 'null' }}</td>
-                                                                    <td>{{250}}</td>
-
+                                                                    <td>{{ $dataView['ultimoData']->name }}</td>
+                                                                    <td>{{ $dataView['ultimoData']->ob10_1_numeratore ?? 'null' }}</td>
+                                                                    <td>{{$dataView['ultimoData']->ob10_1_denominatore ?? 'null'}}</td>
+                                                                    <td>{{$dataView['percentualeCicloBase'] }}%</td>
                                                                 </tr>
-                                                            @endforeach
                                                         </tbody>
                                                     </table>
-                                                    <div
-                                                        class="legend p-3 border rounded mt-3 {{ $dataView['messaggioTmp']['class'] }}">
-                                                        <strong>{{ $dataView['messaggioTmp']['text'] }}</strong>
+                                                    
+                                                    <div>
+                                                        messaggio 
                                                     </div>
                                                 </div>
                                             </div>
+                                            
                                             <br>
                                             <div class="legend p-3 border rounded">
                                                 <strong>Valore Soglia (Punteggio massimo 3)</strong><br>
@@ -121,21 +129,22 @@
                                                             <th>Distretto</th>
                                                             <th>Numeratore</th>
                                                             <th>Denominatore</th>
+                                                            <th>Percentuale</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        @foreach ($dataView['prevenzioneDue'] as $dati)
+                                                      
                                                             <tr>
-                                                                <td>{{ $dati->nome_struttura ?? 'null' }}</td>
-                                                                <td>{{ $dati->ob10_2 ?? 'null' }}</td>
-                                                                <td>{{ 100 }}</td>
+                                                                <td>{{$dataView['ultimoData']->name}}</td>
+                                                                <td>{{$dataView['ultimoData']->ob10_2_numeratore}}</td>
+                                                                <td>{{$dataView['ultimoData']->ob10_2_denominatore}}</td>
+                                                                <td>{{$dataView['percentualePrimaDose']}}%</td>
                                                             </tr>
-                                                        @endforeach
+                                                 
                                                     </tbody>
                                                 </table>
-                                                <div
-                                                    class="legend p-3 border rounded mt-3 {{ $dataView['messaggioTmpPrevenzioneDue']['classPrevenzioneDue'] }}">
-                                                    <strong>{{ $dataView['messaggioTmpPrevenzioneDue']['textPrevenzioneDue'] }}</strong>
+                                                <div>
+                                                    messaggio 
                                                 </div>
                                             </div>
                                         </div>
@@ -165,31 +174,100 @@
                                                 <x-chartjs-component :chart="$dataView['Veterinaria']" />
                                             </div>
                                         </div>
-                                        <div class="col-md-6">
+                                        
+                                    </div>
+                                     <br>
+                                    <div class="col-md-12">
+                                        <div style="overflow-x:auto;">
                                             <table class="table table-striped">
                                                 <thead>
                                                     <tr>
                                                         <th>Distretto</th>
-                                                        <th>Numeratore</th>
-                                                        <th>Denominatore</th>
+                                                        <th>Aziende bovine</th>
+                                                        <th>Aziende ovicaprine</th>
+                                                        <th>Capi ovicaprini</th>
+                                                        <th>Aziende suine controllate</th>
+                                                        <th>Aziende equine controllate</th>
+                                                        <th>allevamenti apistici </th>
+                                                        <th>esecuzione del PNAA7</th>
+                                                        <th>farmacosorveglienza veterinaria</th>
+                                                        <th>Percentuale Totale</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    @foreach ($dataView['prevenzioneTre'] as $dati)
                                                         <tr>
-                                                            <td>{{ $dati->nome_struttura}}</td>
-                                                            <td>{{ $dati->ob10_3 }}</td>
-                                                            <td>{{ 150 }}</td>
+                                                            <td>{{$dataView['ultimoData']->name}}</td>
+                                                            <td>{{$dataView['percentualeAziendeBovine']}}%</td>
+                                                            <td>{{$dataView['percentualeAziendeOvicaprine'] }}%</td>
+                                                            <td>{{$dataView['percentualeCapiOvicaprini']}}%</td>
+                                                            <td>{{$dataView['percentualeAziendeSuineControllate']}}%</td>
+                                                            <td>{{$dataView['percentualeAziendeEquine']}}%</td>
+                                                            <td>{{$dataView['percentualeAllevamentiApistici']}}%</td>
+                                                            <td>{{$dataView['percentualePNAA7']}}%</td>
+                                                            <td>{{$dataView['percentualeFarmacoSorveglianza']}}%</td>
+                                                            <td>{{$dataView['percentualeTotaleVeterinaria']}}%</td>
                                                         </tr>
-                                                    @endforeach
                                                 </tbody>
                                             </table>
-                                            <div
-                                                class="legend p-3 border rounded mt-3 {{ $dataView['messaggioTmpPrevenzioneTre']['classPrevenzioneTre'] }}">
-                                                <strong>{{ $dataView['messaggioTmpPrevenzioneTre']['textPrevenzioneTre'] }}</strong>
+                                            <div>
+                                             
+                                               punteggio 
                                             </div>
                                         </div>
+                                        </div>
+                                    <br>
+                                    <div class="legend p-3 border rounded">
+                                        <strong>Valore Soglia (Punteggio massimo 3)</strong><br>
+                                        <!-- <span>Numeratore: numero di soggetti entro i 24 mesi di età vaccinati con la 1° dose. </span></br>
+                                <span>Denominatore: numero di soggetti della rispettiva coorte di nascita</span></br>
+                                <span>Fattore di scala: (x 100)</span></br></br> -->
+                                        <strong>La soglia deve tendere ad un valore superiore al 80%</strong><br>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr class="my-4">
+                        <br>
+                        <h5 class="text-center text-secondary mb-3">
+                                        {{ __('Alimenti') }}
+                                    </h5>
+
+                                    <div class="row justify-content-center mt-4">
+                                        <div class="col-md-6 text-center">
+                                            <div style="width: 100%; max-width: 300px; margin: auto;">
+                                                <x-chartjs-component :chart=" $dataView['Alimenti']" />
+                                            </div>
+                                        </div>
+                                        
+                                    </div>
+                                     <br>
+                                    <div class="col-md-12">
+                                    <div style="overflow-x:auto;">
+                                            <table class="table table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Distretto</th>
+                                                        <th>Copertura PNR1</th>
+                                                        <th>CoperturaFitofarmaci</th>
+                                                        <th>CoperturaAdditivi</th>
+                                                        <th>Percentuale Totale</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                        <tr>
+                                                            <td>{{$dataView['ultimoData']->name}}</td>
+                                                            <td>{{$dataView['percentualePNR'] }}%</td>
+                                                            <td>{{$dataView['pecentualeCoperturaFitofarmaci'] }}%</td>
+                                                            <td>{{$dataView['percentualeCoperturaAdditivi'] }}%</td>
+                                                            <td>{{ $dataView['percentualeTotaleAlimenti'] }}%</td>
+                                                        </tr>
+                                                </tbody>
+                                            </table>
+                                            <div>
+                                               punteggio 
+                                            </div>
+                                            </div>
+                                        </div>
                                     <br>
                                     <div class="legend p-3 border rounded">
                                         <strong>Valore Soglia (Punteggio massimo 3)</strong><br>
@@ -249,7 +327,7 @@
                                 </h5>
                                 <div class="row">
                                     <div class="col-md-8">
-                                        <x-chartjs-component :chart="$dataView['asmaGastroenterite']" />
+                                        <x-chartjs-component :chart="$dataView['ospedalizzazionePediatrica']" />
                                     </div>
                                     <div class="col-md-4 d-flex flex-column align-items-center justify-content-center">
                                         <div id="message7"
@@ -356,17 +434,17 @@
                                                                 <th>Distretto</th>
                                                                 <th>Numeratore</th>
                                                                 <th>Denominatore</th>
+                                                                <th>Percentuale</th>
                                                             </tr>
                                                         </thead>
-                                                        <tbody>
-                                                            @foreach ($dataView['primoGrafico'] as $dati)
-                                                                <tr>
-                                                                    <td>{{ $dati->nome_struttura ?? 'null' }}</td>
-                                                                    <td>{{ $dati->numeratore ?? 'null' }}</td>
-                                                                    <td>{{ $dati->ob10_1 ?? 'null' }}</td>
-                                                                </tr>
-                                                            @endforeach
-                                                        </tbody>
+                                                        
+                                                        <tr>
+                                                            <th>{{93}}</th>
+                                                            <th>{{$dataView['ultimoData']->ob10_ao_4_num}}</th>
+                                                            <th>{{$dataView['ultimoData']->ob10_ao_4_den}}</th>
+                                                            <th>{{$dataView['percentualeOb10_ao_4']}} %</th>
+                                                        </tr>
+                                                       
                                                     </table>
                                                 </div>
                                                 <div id="message9"
@@ -435,16 +513,17 @@
                                                             <th>Distretto</th>
                                                             <th>Numeratore</th>
                                                             <th>Denominatore</th>
+                                                            <th>Percentuale</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        @foreach ($dataView['primoGrafico'] as $dati)
-                                                            <tr>
-                                                                <td>{{ $dati->nome_struttura ?? 'null' }}</td>
-                                                                <td>{{ $dati->ob10_1 ?? 'null' }}</td>
-                                                                <td>{{467}}</td>
-                                                            </tr>
-                                                        @endforeach
+                                                        <tr>
+                                                            <th>Distretto</th>
+                                                            <th>Numeratore</th>
+                                                            <th>Denominatore</th>
+                                                            <th>{{$dataView['percentualeOb10_ao_1']}} %</th>
+                                                        </tr>
+                                                        
                                                     </tbody>
                                                 </table>
                                                 <div id="message10"

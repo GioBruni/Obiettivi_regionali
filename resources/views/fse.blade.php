@@ -66,8 +66,7 @@
                                                     <x-chartjs-component
                                                         :chart="$dataView['chartDimissioniOspedaliere']" />
                                                 </div>
-                                                <div
-                                                    class="col-md-8 d-flex flex-column align-items-center justify-content-center">
+                                                <div class="col-md-8 d-flex flex-column align-items-center justify-content-center">
                                                     <div id="data-table1" class="w-100 mb-3">
                                                         <table class="table table-striped">
                                                             <thead>
@@ -85,7 +84,6 @@
                                                                     <td>{{$dataView['percentualeDimissioniOspedaliere']}}</td>
                                                                     <td>{{$dataView['percentualeDimissioniOspedaliereComplementare']}}</td>
                                                                 </tr>
-
                                                             </tbody>
                                                         </table>
                                                     </div>

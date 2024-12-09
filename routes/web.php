@@ -84,6 +84,12 @@ Route::group(['middleware' => ['role:uploader']], routes: function (): void {
     Route::post('/uploadFileScreening', [HomeController::class, 'uploadFileScreening'])->name('uploadFileScreening');
     Route::post('/uploadDatiDonazione', [HomeController::class, 'uploadDatiDonazione'])->name('uploadDatiDonazione');
     Route::post('/uploadDatiFse', [HomeController::class, 'uploadDatiFse'])->name('uploadDatiFse');
+
+    Route::post('/uploadDatiVeterinaria', [HomeController::class, 'uploadDatiVeterinaria'])->name('uploadDatiVeterinaria');
+    Route::post('/uploadDatilea', [HomeController::class, 'uploadDatiLea'])->name('uploadDatiLea');
+
+    Route::post('/uploadDatiCombinati', [HomeController::class, 'uploadDatiCombinati'])->name('uploadDatiCombinati');
+
     Route::get('/downloadPdf/{obiettivo}', [HomeController::class, 'downloadPdf'])->name('downloadPdf');
     Route::post('/mmgRegister', [HomeController::class, 'mmgRegister'])->name('mmgRegister');
     Route::get('/garanziaLea', [HomeController::class, 'garanziaLea'])->name('garanziaLea');
