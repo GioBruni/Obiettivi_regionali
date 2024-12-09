@@ -143,7 +143,15 @@
                                     </tbody>
                                 </table>
                             @endforeach
-                        </div>                 
+                        </div>           
+                    @elseif (Auth::user()->hasRole('user_manager'))
+                    <p>
+                        Nella sezione Amministrazione, puoi gestire facilmente gli utenti del sistema, creare nuovi profili e configurare i permessi di accesso. Seleziona il menù "Amministrazione" per accedere a tutte le funzionalità di gestione degli utenti.
+</p><p>
+                        Inoltre, nella sezione Scrivania, avrai accesso agli strumenti per monitorare e gestire gli obiettivi regionali. Questa area ti consente di visualizzare, aggiornare e coordinare gli obiettivi specifici per ogni regione, mantenendo il controllo e la visibilità delle performance in tempo reale.
+</p><p>
+                        Accedi ora alle sezioni appropriate per una gestione completa e precisa delle risorse e degli obiettivi.
+                        </p>
                     @endif
                 </div>
             </div>
