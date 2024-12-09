@@ -29,16 +29,10 @@
                                 <div class="row align-items-end">
                                     <div class="col-md-2">
                                         <label for="annoSelezionato">Anno</label>
-                                        <select id="annoSelezionato" class="form-control" name="annoSelezionato">
-                                            @for ($anno = date('Y'); $anno >= 2023; $anno--)
-                                                <option value="{{ $anno }}" {{($anno == request('annoSelezionato', date('Y'))) ? 'selected' : ''}}>{{ $anno }}</option>
-                                            @endfor
-                                            @php
-                                            for ($anno = date('Y'); $anno >= 2023; $anno--) {
-                                                $selected = ($anno == request('annoSelezionato', date('Y'))) ? 'selected' : '';
-                                                //echo "<option value=\"$anno\" $selected>$anno</option>";
-                                            }
-                                            @endphp
+                                        <select id="year" class="form-control" name="year" id="year">
+                                            @foreach ( $dataView['anni'] as $year )
+                                                <option value="{{ $year }}" {{ ($year == $dataView['annoSelezionato'] ) ? " selected" : "" }}>{{ $year }}</option>
+                                            @endforeach
                                         </select>
                                     </div>
                                     <div class="col-md-2">

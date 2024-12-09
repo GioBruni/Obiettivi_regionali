@@ -704,7 +704,7 @@ class HomeController extends Controller
         ->orderBy('target6_data.anno')
         ->get();
     
-        
+
         //Denominatore preso dal flusso
         /*
         $denominatore = DB::table('flows_sdo')
@@ -2608,11 +2608,19 @@ class HomeController extends Controller
     {
 
      
-        $dataSelezionata = $request->annoSelezionato ?? date('Y');
+   //     $dataSelezionata = $request->annoSelezionato ?? date('Y');
+
+        $anno = $request->has("year") ? $request->year : date('Y');
+        $dataView['strutture'] = Auth::user()->structures();
+        $dataView['annoSelezionato'] = $anno;
+
+        $dataView['anni'] = DB::table('flows_sdo')
+            ->distinct()
+            ->pluck("year");
 
         /*****************************Dimissioni Ospedaliere**********************************/
         $prevenzioneTre = DB::table('target7_data')
-            ->where('anno', "=", $dataSelezionata)
+            ->where('anno', "=", $anno)
             ->where('structure_id', '=', Auth::user()->firstStructureId()->id)
             ->first();
 
@@ -2634,7 +2642,7 @@ class HomeController extends Controller
         // Estrai i dati del denominatore
         $denominatore = DB::table('flows_sdo')
             ->where('structure_id', '=', Auth::user()->firstStructureId()->id)
-            ->where('year', $dataSelezionata) // Filtro per l'anno corrente
+            ->where('year', $anno) // Filtro per l'anno corrente
             ->select('ob7_1')
             ->orderByDesc('month')
             ->first();
@@ -2869,7 +2877,14 @@ class HomeController extends Controller
     public function esiti(Request $request)
     {
 
-        $dataView['dataSelezionata'] = $request->annoSelezionato ?? date('Y');
+      //  $dataView['dataSelezionata'] = $request->annoSelezionato ?? date('Y');
+
+        $anno = $request->has("year") ? $request->year : date('Y');
+        $dataView['strutture'] = Auth::user()->structures();
+        $dataView['annoSelezionato'] = $anno;
+        $dataView['anni'] = DB::table('flows_sdo')
+            ->distinct()
+            ->pluck("year");
 
         $flowsSdo = DB::table('flows_sdo')
             ->select(
@@ -2889,7 +2904,7 @@ class HomeController extends Controller
             )
             ->join('structures as s', 'flows_sdo.structure_id', '=', 's.id')
             ->where('flows_sdo.structure_id', '=', Auth::user()->firstStructureId()->id)
-            ->where('flows_sdo.year', '=', $dataView['dataSelezionata'])
+            ->where('flows_sdo.year', '=', $anno)
             ->orderBy('flows_sdo.month', 'DESC')
             ->get();
 
