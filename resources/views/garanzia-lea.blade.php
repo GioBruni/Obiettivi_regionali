@@ -439,7 +439,7 @@
                                                         </thead>
                                                         
                                                         <tr>
-                                                            <th>{{93}}</th>
+                                                            <th>{{$dataView['ultimoData']->name}}</th>
                                                             <th>{{$dataView['ultimoData']->ob10_ao_4_num}}</th>
                                                             <th>{{$dataView['ultimoData']->ob10_ao_4_den}}</th>
                                                             <th>{{$dataView['percentualeOb10_ao_4']}} %</th>
@@ -518,9 +518,9 @@
                                                     </thead>
                                                     <tbody>
                                                         <tr>
-                                                            <th>Distretto</th>
-                                                            <th>Numeratore</th>
-                                                            <th>Denominatore</th>
+                                                            <th>{{$dataView['ultimoData']->name}}</th>
+                                                            <th>{{$dataView['ultimoDataSDO']->ob10_ao_1_num}}</th>
+                                                            <th>{{$dataView['ultimoDataSDO']->ob10_ao_1_num}}</th>
                                                             <th>{{$dataView['percentualeOb10_ao_1']}} %</th>
                                                         </tr>
                                                         
