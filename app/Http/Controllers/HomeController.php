@@ -2418,7 +2418,10 @@ class HomeController extends Controller
 
         /************************************AREA OSPEDALIERA 1********************************************* */
 
-        $dataView['percentualeOb10_ao_1'] = round(($dataView['ultimoDataSDO']->ob10_ao_1_num / $dataView['ultimoDataSDO']->ob10_ao_1_den) * 100, 2);
+        $num = $dataView['ultimoDataSDO']->ob10_ao_1_num ?? 0;
+        $den = $dataView['ultimoDataSDO']->ob10_ao_1_den ?? 0;
+
+        $dataView['percentualeOb10_ao_1'] = ($den > 0) ? round(($num / $den) * 100, 2) : 0;
         $dataView['percentualeOb10_ao_1Compl'] = 100 - $dataView['percentualeOb10_ao_1'];
 
         $dataView['mammellaTumore'] = Chartjs::build()
