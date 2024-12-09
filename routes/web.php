@@ -34,6 +34,10 @@ Route::group(['middleware' => ['role:user_manager']], routes: function (): void 
     Route::get('/admin/puntiNascita', [AdminController::class, 'puntiNascita'])->name('puntiNascita');
     Route::get('/admin/prontoSoccorso', [AdminController::class, 'prontoSoccorso'])->name('admin.prontoSoccorso');
     Route::get('/admin/screening', [AdminController::class, 'screening'])->name('admin.screening');
+    Route::get('/admin/donazioni', [AdminController::class, 'donazioni'])->name('admin.donazioni');
+    Route::get('/admin/fse', [AdminController::class, 'fse'])->name('admin.fse');
+    Route::get('/admin/certificabilita', [AdminController::class, 'certificabilita'])->name('admin.certificabilita');
+    Route::get('/admin/farmaci', [AdminController::class, 'farmaci'])->name( 'admin.farmaci');
 
 });
 

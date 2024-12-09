@@ -78,7 +78,7 @@ return [
             'text' => 'Percorso attuativo di certificabilità',
             'tooltip' => 'Percorso attuativo di certificabilità (P.A.C.)',
             'route' => "/showObiettivo/8",
-            'routeAdmin' => "/admin/showObiettivo/8",
+            'routeAdmin' => "/admin/certificabilita",
             'enable' => true,
         ],
         '9' => [
@@ -86,7 +86,7 @@ return [
             'text' => 'Farmaci',
             'tooltip' => 'Approvvigionamento farmaci e gestione I ciclo di terapia',
             'route' => "/farmaciIndex",
-            'routeAdmin' => "/admin/farmaciIndex",
+            'routeAdmin' => "/admin/farmaci",
             'enable' => true,
         ],
         '10' => [
@@ -114,4 +114,15 @@ return [
         'Novembre' => 11,
         'Dicembre' => 12,
     ],
+
+    'TARGET_CATEGORY' => [
+        'OB6_ISTITUZIONE_COORDINAMENTO' => 15,
+        'OB6_ASSEGNAZIONE_INCARICO' => 16,
+        'OB6_INDIVIDUAZIONE_INFERMIERE' => 17,
+        'OB6_ORGANIZZAZIONE_CORSI' => 18,
+
+        'OB8_INTERNAL_AUDIT' => 5,
+        'OB8_RAGG_OBIETTIVI' => 6,
+        'OB8_BILANCI' => 7,
+    ]
 ];

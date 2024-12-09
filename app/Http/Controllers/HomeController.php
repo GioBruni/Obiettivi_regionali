@@ -2331,7 +2331,7 @@ class HomeController extends Controller
         );
 
         /*****************************Dimissioni Pronto Soccorso****************************************************/
-        $dataView['ob7PS'] = DB::table('')
+        $dataView['ob7PS'] = DB::table('flows_emur')
             ->where('structure_id', '=', Auth::user()->firstStructureId()->id)
             ->where('year', "=", date('Y'))
             ->sum('ia1_2');

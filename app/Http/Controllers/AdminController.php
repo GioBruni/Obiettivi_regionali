@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Gare;
 use App\Models\LocationsUsers;
+use App\Models\PCT;
 use App\Models\Structure;
 use App\Models\UploatedFile;
 use App\Models\User;
@@ -900,7 +902,7 @@ class AdminController extends Controller
             's.name as structure_name'
         )
         ->groupBy('uf.structure_id', 'uf.target_category_id') 
-        //->orderBy('uf.created_at', 'desc') // Ordina per la data più recente
+        ->orderBy('uf.created_at', 'desc') // Ordina per la data più recente
         ->get();
         
         $dataView['files'] = [];
@@ -914,5 +916,497 @@ class AdminController extends Controller
         }
         
         return view("admin.screening")->with("dataView", $dataView);
+    }
+
+    public function donazioni(Request $request) {
+        $dataView = $this->initView(6);
+
+        $dataView['annoSelezionato'] = $request->annoSelezionato ?? date('Y');
+
+        $categorieCaricate =  DB::table('uploated_files as uf')
+        ->join(
+            DB::raw('(SELECT structure_id, target_category_id, target_number, MAX(created_at) AS max_created_at
+                      FROM uploated_files
+                      WHERE approved = 1 AND target_number = 6 AND year=' . $dataView['annoSelezionato'] . '
+                      GROUP BY structure_id, target_category_id, target_number) as latest_files'),
+            function($join) {
+                $join->on('uf.structure_id', '=', 'latest_files.structure_id')
+                     ->on('uf.target_category_id', '=', 'latest_files.target_category_id')
+                     ->on('uf.target_number', '=', 'latest_files.target_number')
+                     ->on('uf.created_at', '=', 'latest_files.max_created_at');
+            }
+        )
+        ->join('structures as s', 'uf.structure_id', '=', 's.id')
+        ->join("target_categories", "target_categories.id", "=", "uf.target_category_id")
+        ->select(            
+            'uf.structure_id',
+            'uf.target_category_id',
+            's.name as structure_name'
+        )
+        ->groupBy('uf.structure_id', 'uf.target_category_id') 
+        ->orderBy('uf.created_at', 'desc')
+        ->get();
+
+        $dataView['files'] = [];
+        $sottoCategorie = DB::table("target_categories")->where("target_number", 6)->pluck("id");
+        foreach(DB::table("structures")->select("id", "name")->get() as $struttura)
+            foreach($sottoCategorie as $subCategoria)
+                $dataView['files'][$struttura->name][$subCategoria] = 0;
+        
+        foreach($categorieCaricate as $row) {
+            $dataView['files'][$row->structure_name][$row->target_category_id] = 1;
+        }
+
+
+        $dataView['tableData'] = DB::table('target6_data')
+        ->select('totale_accertamenti', 'numero_opposti','totale_cornee', 'anno', 'structure_id', 's.name')
+        ->join('structures as s', 'target6_data.structure_id', '=', 's.id')
+        ->orderBy("name")
+        ->orderBy("anno")
+        ->get();
+
+        //Denominatore preso dal flusso
+        $denominatore = DB::table('flows_sdo as f')
+        ->join(
+            DB::raw('(SELECT structure_id, year, MAX(created_at) AS latest_created_at FROM flows_sdo GROUP BY structure_id, year) as latest'),
+            function ($join) {
+                $join->on('f.structure_id', '=', 'latest.structure_id')
+                     ->on('f.year', '=', 'latest.year')
+                     ->on('f.created_at', '=', 'latest.latest_created_at');
+            })
+        ->select('f.structure_id', 'f.year', 'f.ob6', 'f.created_at')
+        ->get();
+
+        $dataView['result'] = [];
+        $incrementi = [];
+        $percentualiAnnoSelezionato = [];
+        $percentualiCorneeAnnoSelezionato = [];
+        // Calcolo la percentuale per ogni anno
+        foreach ($dataView['tableData'] as $target) {
+            
+            $denominatoreTmp = $denominatore->firstWhere('year',  $target->anno);
+            if($target->anno == 2023) {
+                $accertamenti2023 = $target->totale_accertamenti;
+                $cornee2023 = $target->totale_cornee;
+            }
+            $percentualeAccertamenti = ($denominatoreTmp->ob6 != 0) ? round(($target->totale_accertamenti / $denominatoreTmp->ob6) * 100, 2) : 0;
+            $percentualeCornee = ($denominatoreTmp->ob6 != 0) ? round(($target->totale_cornee / $denominatoreTmp->ob6) * 100, 2) : 0;
+            $percentualeOpposizioni = ($target->totale_accertamenti != 0) ? round(($target->numero_opposti / $target->totale_accertamenti) * 100, 2) : 0;
+            $incrAccertamenti = ($target->anno > 2023 && $accertamenti2023 != 0) ? round((($target->totale_accertamenti - $accertamenti2023) / $accertamenti2023) * 100, 2): 0;
+            $incrementoCornee = ($target->anno > 2023 && $cornee2023 != 0) ? round((($target->totale_cornee - $cornee2023) / $cornee2023) * 100, 2): 0;
+            $dataView['result'][] = [
+                'nome_struttura' => $target->name,
+                'anno' => $target->anno,
+                'percentualeAccertamenti' => $percentualeAccertamenti,
+                'percentualeCornee' => $percentualeCornee,
+                'percentualeOpposizioni' => $percentualeOpposizioni,
+                'totale_accertamenti' => $target->totale_accertamenti,
+                'numero_opposti' => $target->numero_opposti,
+                'totale_cornee' => $target->totale_cornee,
+                'denominatore' => $denominatoreTmp->ob6,
+                'incrementoAccertamenti' => $incrAccertamenti,
+                'incrementoCornee' => $incrementoCornee,
+            ];
+            $incrementi[$target->name] = [
+                $target->anno => $incrAccertamenti
+            ];
+            if($target->anno == $dataView['annoSelezionato']) {
+                $percentualiAnnoSelezionato[] = [
+                    'nome_struttura' => $target->name,
+                    'percentuale' => $percentualeOpposizioni
+                ];
+                $percentualiCorneeAnnoSelezionato[] = [
+                    'nome_struttura' => $target->name,
+                    'percentuale' => $incrementoCornee
+                ];
+
+            }
+        }
+        $dataset = [];
+        foreach ($incrementi as $nome_struttura => $data) {
+            $dataset[] = [
+                'label' => $nome_struttura,
+                'data' => [
+                    isset($data['2023']) ? $data['2023'] : 0,  
+                    isset($data['2024']) ? $data['2024'] : 0,
+                ],
+            ];
+        }
+        //grafico Sub.2
+        $dataView['chartDonazioni'] = $this->showChart("line", "chartDonazioni",
+        [2023, 2024],
+            $dataset
+        ,[]);
+
+        /***************************Chart sub. 3************************************ */
+
+
+        //grafico sub.3
+        $dataView['chartSubObiettivo3'] = $this->showChart("bar", "chartSubObiettivo3",
+        array_column( $percentualiAnnoSelezionato, 'nome_struttura'),
+        [
+                [
+                    "label" => "Percentuale",
+                    "data" => array_column( $percentualiAnnoSelezionato, 'percentuale')
+                ]
+            ],
+            [
+                
+            ]
+            );
+
+
+        /******************************Sub.ob 4************************************ */
+
+        //grafico sub.4
+        $dataView['chartSubObiettivo4'] = $this->showChart("bar", "chartSubObiettivo4",
+        array_column( $percentualiCorneeAnnoSelezionato, 'nome_struttura'),
+        [
+            [
+                "label" => "Percentuale di incremento",
+                "data" => array_column( $percentualiCorneeAnnoSelezionato, 'percentuale')
+            ]
+        ],
+            [ ]);
+
+
+        return view("admin.donazioni")->with('dataView', $dataView);
+
+    }
+
+    protected function chartFSE($name, $labels, $data, $title) {
+        return $this->showChart("bar", $name,
+            $labels,
+            [
+                [
+                    "label" => $title,
+                    "data" => $data
+
+                ]
+            ],
+            [
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => ''
+                    ]
+                ]
+            ]
+        );
+    }
+
+    public function fse(Request $request)
+    {
+        $dataSelezionata = $request->annoSelezionato ?? date('Y');
+
+        $dataView = $this->initView(7);
+
+        /*****************************Dimissioni Ospedaliere**********************************/
+        $prevenzioneTre = DB::table('target7_data')
+            ->where('anno', "=",  $dataSelezionata)
+            ->join('structures as s', 'target7_data.structure_id', '=', 's.id')
+            ->get();
+
+
+        $percentualePS = [];
+        $percentualeDimissioniOspedaliere = [];
+        $percentualePrestazioneLab = [];
+        $percentualeRefRadiologia = [];
+        $percentualeAmbulatoriale = [];
+        $percentualeVaccinati = [];
+        $percentualePerstazioneErogate = [];
+        $percentualeDocumentiCDA2 = [];
+        $percentualeDocumentiPades = [];
+        foreach($prevenzioneTre as $row) {
+            // Estrai i dati del denominatore della struttura e dell'anno
+            $denominatore = DB::table('flows_sdo')
+                ->join('structures as s', 'flows_sdo.structure_id', '=', 's.id')
+                ->where('year',  $dataSelezionata)
+                ->where('structure_id',  $row->structure_id) 
+                ->select('ob7_1')
+                ->orderByDesc('month')
+                ->first();
+            $ob7PS = DB::table('flows_emur')
+                ->join('structures as s', 'flows_emur.structure_id', '=', 's.id')
+                ->where('structure_id',  $row->structure_id) 
+                ->where('year', "=",  $dataSelezionata)
+                ->sum('ia1_2');
+            $denFlussoC = DB::table('flows_c')
+                ->select(DB::raw('sum(ia1_3) as ia1_3'), DB::raw('sum(ia1_4) as ia1_4'), DB::raw('sum(ia1_5) as ia1_5'), DB::raw('sum(ia1_6) as ia1_6'))
+                ->where('year', "=", $dataSelezionata)
+                ->where('structure_id',  $row->structure_id) 
+                ->join('structures as s', 'flows_c.structure_id', '=', 's.id')
+                ->first();
+
+
+            $documentiCDA2 = isset($row->documenti_cda2) ? $row->documenti_cda2 : 0;
+            $percentualePSVal = $ob7PS != 0 ? round($row->dimissioni_ps / $ob7PS  * 100, 2) : 0;
+            $percDimizzioniOspedaliere = ($denominatore->ob7_1 != 0) ? round(($row->dimissioni_ospedaliere / $denominatore->ob7_1) * 100, 2) : 0;
+            $percPrestLab = $denFlussoC->ia1_3 != 0 ? round($row->prestazioni_laboratorio / $denFlussoC->ia1_3  * 100, 2) : 0;
+            $percRefRadiologia = $denFlussoC->ia1_4 != 0 ? round($row->prestazioni_radiologia / $denFlussoC->ia1_4 * 100, 2) : 0;
+            $percAmbulatoriale = $denFlussoC->ia1_5 != 0 ? round($row->prestazioni_ambulatoriali / $denFlussoC->ia1_5 * 100, 2) : 0;
+            $percVaccinati = $row->vaccinati != 0 ? round($row->certificati_indicizzati / $row->vaccinati * 100, 2) : 0;
+            $percPrestErogate = $denFlussoC->ia1_6 != 0 ? round($row->documenti_indicizzati / $denFlussoC->ia1_6 * 100, 2) : 0;
+            $percDocumentiCDA2 = $row->documenti_indicizzati_cda2 != 0 ? round($documentiCDA2 / $row->documenti_indicizzati_cda2 * 100, 2) : 0;
+            $percDocumentiPades = $row->documenti_indicizzati_pades != 0 ? round($row->documenti_pades / $row->documenti_indicizzati_pades * 100, 2) : 0;
+
+            //numeratori
+            $dataView['strutture'][$row->structure_id] = [
+                'nome_struttura' => $row->name,
+                'dimissioniOspedaliere' => isset($row->dimissioni_ospedaliere) ? $row->dimissioni_ospedaliere : 0,
+                'dimissioniPS' => isset($row->dimissioni_ps) ? $row->dimissioni_ps : 0,
+                'prestazioniLab' => isset($row->prestazioni_laboratorio) ? $row->prestazioni_laboratorio : 0,
+                'prestazioniRadiologia' => isset($row->prestazioni_radiologia) ? $row->prestazioni_radiologia : 0,
+                'specialisticaAmbulatoriale' => isset($row->prestazioni_ambulatoriali) ? $row->prestazioni_ambulatoriali : 0,
+                'vaccinati' => isset($row->vaccinati) ? $row->vaccinati : 0,
+                'certificatiIndicizzati' => isset($row->certificati_indicizzati) ? $row->certificati_indicizzati : 0,
+                'documentiIndicizzati' => isset($row->documenti_indicizzati) ? $row->documenti_indicizzati : 0,
+                'documentiIndicizzatiCDA2' => isset($row->documenti_indicizzati_cda2) ? $row->documenti_indicizzati_cda2 : 0,
+                'documentiCDA2' => $documentiCDA2,
+                'documentiPades' => isset($row->documenti_pades) ? $row->documenti_pades : 0,
+                'documentiIndicizzatiPades' => isset($row->documenti_indicizzati_pades) ? $row->documenti_indicizzati_pades : 0,
+
+                'ob7' => $denominatore->ob7_1,
+                'ob7PS' => $ob7PS,
+                'ia13' => $denFlussoC->ia1_3,
+                'ia14' => $denFlussoC->ia1_4,
+                'ia15' => $denFlussoC->ia1_5,                
+                'ia16' => $denFlussoC->ia1_6,                
+                'percentualePS' => $percentualePSVal,
+                'percentualeDimissioniOspedaliere' => $percDimizzioniOspedaliere,
+                'percentualePrestLab' => $percPrestLab,
+                'percentualeRefRadiologia' => $percRefRadiologia,
+                'percentualeAmbulatoriale' => $percAmbulatoriale,
+                'percentualeVaccinati' => $percVaccinati,
+                'percentualePrestErogate' => $percPrestErogate,
+                'percentualeDocumentiCDA2' => $percDocumentiCDA2,
+                'percentualeDocumentiPades' => $percDocumentiPades,
+            ];
+            $percentualePS[] = [
+                'nome_struttura' => $row->name,
+                'percentuale' => $percentualePSVal
+            ];
+            $percentualeDimissioniOspedaliere[] = [
+                'nome_struttura' => $row->name,
+                'percentuale' => $percDimizzioniOspedaliere
+            ];
+            $percentualePrestazioneLab[] = [
+                'nome_struttura' => $row->name,
+                'percentuale' => $percPrestLab
+            ];
+            $percentualeRefRadiologia[] = [
+                'nome_struttura' => $row->name,
+                'percentuale' => $percRefRadiologia
+            ];
+            $percentualeAmbulatoriale[] = [
+                'nome_struttura' => $row->name,
+                'percentuale' => $percAmbulatoriale
+            ];
+            $percentualeVaccinati[] = [
+                'nome_struttura' => $row->name,
+                'percentuale' => $percVaccinati
+            ];
+            $percentualePerstazioneErogate[] = [
+                'nome_struttura' => $row->name,
+                'percentuale' => $percPrestErogate
+            ];
+            $percentualeDocumentiCDA2[] = [
+                'nome_struttura' => $row->name,
+                'percentuale' => $percDocumentiCDA2
+            ];
+            $percentualeDocumentiPades[] = [
+                'nome_struttura' => $row->name,
+                'percentuale' => $percDocumentiPades
+            ];
+
+        }
+
+
+        $dataView['chartDimissioniOspedaliere'] = $this->chartFSE("chartDimissioniOspedaliere",
+        array_column($percentualeDimissioniOspedaliere, "nome_struttura"), array_column($percentualeDimissioniOspedaliere, "percentuale"),"% LDO Indicizzate"
+        );
+
+        /*****************************Dimissioni Pronto Soccorso****************************************************/
+        $dataView['chartProntoSoccorso'] = $this->chartFSE( "chartProntoSoccorso",
+        array_column($percentualePS, "nome_struttura"), array_column($percentualePS, "percentuale"),"% Verbali Indicizzati"
+        );
+
+        /*********************Prestazioni di Laboratorio****************************** */
+        $dataView['chartRefertiLaboratorio'] = $this->chartFSE( "chartRefertiLaboratorio",
+            array_column($percentualePrestazioneLab, "nome_struttura"), array_column($percentualePrestazioneLab, "percentuale"),"% Referti Indicizzati"
+        );
+
+        /*********************Ref radiologia*********************************************************** */
+        $dataView['chartRefertiRadiologia'] = $this->chartFSE("chartRefertiRadiologia",
+        array_column($percentualeRefRadiologia, "nome_struttura"), array_column($percentualeRefRadiologia, "percentuale"),"% Referti Indicizzati"
+        );
+
+        /**********************Specialistica Ambulatoriale**********************************************************/
+        $dataView['chartSpecialisticaAmbulatoriale'] = $this->chartFSE( "chartSpecialisticaAmbulatoriale",        
+        array_column($percentualeAmbulatoriale, "nome_struttura"), array_column($percentualeAmbulatoriale, "percentuale"),"% Referti Indicizzati"
+        );
+
+        /****************************Vaccinati****************************************************** */
+        $dataView['chartCertificatiVaccinali'] = $this->chartFSE( "chartCertificatiVaccinali",
+        array_column($percentualeVaccinati, "nome_struttura"), array_column($percentualeVaccinati, "percentuale"),"% Certificati Indicizzati"
+        );
+
+        /**************************Documentazione FSE************************************************************ */
+        $dataView['chartDocumentiFSE'] = $this->chartFSE( "chartDocumentiFSE",
+        array_column($percentualePerstazioneErogate, "nome_struttura"), array_column($percentualePerstazioneErogate, "percentuale"),"% Documenti Indicizzati"
+        );
+
+        /***************************Documenti in CDA2************************************************************* */
+        $dataView['chartDocumentiCDA2'] = $this->chartFSE( "chartDocumentiCDA2",
+        array_column($percentualeDocumentiCDA2, "nome_struttura"), array_column($percentualeDocumentiCDA2, "percentuale"),"% Verbali Indicizzati"
+        );
+
+        /***************************Documenti Pades************************************************************ */
+        $dataView['chartDocumentiPades'] = $this->chartFSE( "chartDocumentiPades",
+        array_column($percentualeDocumentiPades, "nome_struttura"), array_column($percentualeDocumentiPades, "percentuale"),"% Verbali Indicizzati"
+        );
+
+        return view("admin.fse")->with("dataView", $dataView);
+    }
+
+    public function certificabilita(Request $request) {
+        $dataView = $this->initView(obiettivo: 8);
+        $dataView['files'] = [];
+        $sottoCategorie = DB::table("target_categories")->where("target_number", 8)->pluck("id");
+        foreach(DB::table("structures")->select("id", "name")->get() as $struttura)
+            foreach($sottoCategorie as $subCategoria)
+                $dataView['files'][$struttura->name][$subCategoria] = 0;
+        
+        $files = DB::table('uploated_files as uf')
+            ->join(
+                DB::raw('(SELECT structure_id, target_category_id, target_number, MAX(created_at) AS max_created_at
+                          FROM uploated_files
+                          WHERE approved = 1 AND target_number = 8 
+                          GROUP BY structure_id, target_category_id, target_number) as latest_files'),
+                function($join) {
+                    $join->on('uf.structure_id', '=', 'latest_files.structure_id')
+                         ->on('uf.target_category_id', '=', 'latest_files.target_category_id')
+                         ->on('uf.target_number', '=', 'latest_files.target_number')
+                         ->on('uf.created_at', '=', 'latest_files.max_created_at');
+                }
+            )
+            ->join("structures", "structures.id", "=", "uf.structure_id")
+            ->join("target_categories", "target_categories.id", "=", "uf.target_category_id")
+            ->select('uf.structure_id', "structures.name", "uf.target_category_id")
+            ->get();
+
+        foreach($files as $row) {
+            $dataView['files'][$row->name][$row->target_category_id] = 1;
+        }
+
+        return view("admin.certificabilita")->with("dataView", $dataView);
+    }
+
+    public function farmaci(Request $request) {
+        $dataView = $this->initView( 9);
+
+        $anno = $request->has("year") ? $request->year : date('Y');
+        $dataView['strutture'] = Auth::user()->structures();
+        $dataView['annoSelezionato'] = $anno;
+
+        $dataView['anni'] = DB::table('flows_sdo')
+            ->distinct()
+            ->pluck("year");
+
+        $gare = DB::table('target9_gare as t')
+            ->join("structures", "structures.id", "=", "t.structure_id")
+            ->leftJoin('uploated_files as uf1', 't.uploated_file_gara_id', '=', 'uf1.id')
+            ->leftJoin('uploated_files as uf2', 't.uploated_file_delibera_id', '=', 'uf2.id')
+            ->select(
+                'structures.name',
+                DB::raw('COUNT(DISTINCT CASE WHEN uf1.approved = 1 THEN uf1.id END) AS gare_approvate'),
+                DB::raw('COUNT(DISTINCT CASE WHEN uf2.approved = 1 THEN uf2.id END) AS delibere_approvate')
+            )
+            ->where('t.year', $anno)
+            ->groupBy('structures.name')
+            ->get();
+
+        $dataView['gare'] = [];
+        $dataset = [];
+        foreach($gare as $struttura) {
+            $rapporto = $struttura->gare_approvate > 0 ? ($struttura->delibere_approvate / $struttura->gare_approvate * 100) : 0;
+
+            $dataView['gare'][$struttura->name] = [
+                'gare_approvate' => $struttura->gare_approvate,
+                'delibere_approvate' => $struttura->delibere_approvate,
+                'rapporto' => $rapporto,
+            ];
+
+            $dataset[] = [
+                "label" => $struttura->name,
+                "data" => [$rapporto]
+            ];
+        }
+
+        $pct = DB::table('target9_PCT as t')
+            ->join('uploated_files as uf', 't.uploated_file_id', '=', 'uf.id')
+            ->join("structures", "structures.id", "=", "uf.structure_id")
+            ->select('structures.name', 'uf.structure_id', 't.numerator')
+            ->where('uf.approved', 1)
+            ->where('t.year', $anno)
+            ->whereIn('t.id', function ($query) {
+                $query->select(DB::raw('MAX(id)'))
+                    ->from('target9_PCT')
+                    ->groupBy('structure_id');
+            })
+            ->get();
+
+        $denominatori = DB::table("flows_sdo")
+            ->join("structures", "structures.id", "=", "flows_sdo.structure_id")
+            ->where("flows_sdo.year", $anno)
+            ->select('flows_sdo.structure_id', DB::raw("sum(flows_sdo.ob9_2) as ob9_2"))
+            ->groupBy('flows_sdo.structure_id')
+            ->get()->pluck('ob9_2', 'structure_id')->toArray();        
+
+        $dataView['pct'] = [];
+        $dataset2 = [];
+        foreach($pct as $row) {
+            if(isset($denominatori[$row->structure_id])) {
+                $rapporto = $denominatori[$row->structure_id] != 0 ? round($row->numerator / $denominatori[$row->structure_id] * 100, 2) : 0;
+                $dataView['pct'][$row->name] = [
+                    'numeratore' => $row->numerator,
+                    'denominatore' => $denominatori[$row->structure_id],
+                    'rapporto' => $rapporto
+                ];
+            }
+            $dataset2[] = [
+                "label" => $row->name,
+                "data" => [$rapporto]
+            ];
+        }
+
+        $dataView['chart91'] = $this->showChart("bar", "chart91",
+            ["Percentuali"],
+            $dataset,
+            [
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        //'text' => ''
+                    ]
+                ]
+            ]
+        );
+        $dataView['chart92'] = $this->showChart("bar", "chart92",
+            ["Percentuali"],
+            $dataset2,
+            [
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        //'text' => ''
+                    ]
+                ]
+            ]
+        );
+        return view("admin.farmaci")->with("dataView", $dataView);
     }
 }
