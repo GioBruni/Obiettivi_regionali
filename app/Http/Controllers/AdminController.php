@@ -358,7 +358,7 @@ class AdminController extends Controller
         $dataView['dati'] = [];
         foreach ($allStructureIds as $structureId) {
             $denominatore = (isset($denominatoriC[$structureId]) ? $denominatoriC[$structureId]->tot : 0) + (isset($denominatoriM[$structureId]) ? $denominatoriM[$structureId]->tot : 0);
-            $percentuale = round($numeratori[$structureId]->totale_quantita / $denominatore * 100, 2);
+            $percentuale = ($denominatore != 0 && isset($numeratori[$structureId])) ? round($numeratori[$structureId]->totale_quantita / $denominatore * 100, 2) : 0;
             $dataView['dati'][$structureId] = [
                 'structure_id' => $structureId,
                 'numeratore' => isset($numeratori[$structureId]) ? $numeratori[$structureId]->totale_quantita : 0,

@@ -193,7 +193,7 @@
                         
                         <div class="card-body">
                             <div class="container">
-                                <form action="{{ route('donazioni') }}" method="GET" enctype="multipart/form-data">
+                                <form action="{{ route('admin.donazioni') }}" method="GET" enctype="multipart/form-data">
                                     <div class="row align-items-end">
                                         <div class="col-md-6">
                                             <div class="form-group d-flex">
