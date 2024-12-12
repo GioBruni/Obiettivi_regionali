@@ -14,17 +14,9 @@
 
 <body>
 
-    @if (config('bootstrap-italia.logo'))
-        @if (config('bootstrap-italia.logo.type') === 'icon')
-            <svg class="icon">
-                <use
-                    xlink:href="{{ asset('vendor/bootstrap-italia/dist/svg/sprite.svg#it-') }}{{ config('bootstrap-italia.logo.icon') }}">
-                </use>
-            </svg>
-        @else
-            <img alt="logo" class="icon" src="{{ config('bootstrap-italia.logo.url') }}">
-        @endif
-    @endif
+  
+            <img alt="logo" src="{{ config('bootstrap-italia.logo.url') }}">
+     
 
     <h1>Obiettivo 1</h1>
 

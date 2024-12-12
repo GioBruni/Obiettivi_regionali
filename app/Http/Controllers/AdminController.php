@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\controllerEmail;
 use App\Models\Gare;
 use App\Models\LocationsUsers;
 use App\Models\PCT;
@@ -16,6 +17,8 @@ use Illuminate\Support\Facades\DB;
 use Str;
 use Storage;
 use App\ChartTrait;
+use Illuminate\Support\Facades\Mail;
+
 
 class AdminController extends Controller
 {
@@ -167,6 +170,7 @@ class AdminController extends Controller
     }
 
     protected function updateUploatedFiles(Request $request, bool $validate) {
+
         //verifico che il file sia associato realmente all'obiettivo
         $uploatedFile = UploatedFile::where("target_number", $request->t)
             ->where("id", $request->id)->first();
@@ -178,7 +182,19 @@ class AdminController extends Controller
                 "validator_user_id" => Auth::user()->id,
             ]);
         }
+
+  
         
+        $emailData = [
+            'file' => $uploatedFile,
+            'validator' => Auth::user(),
+            'status' => $validate ? 'Approvato' : 'Non Approvato',
+        ];
+
+        Mail::to("sebastiano.ortisi.ext@asp.sr.it")->send(new ControllerEmail($emailData));
+        
+
+       
         return response()->json(['redirect' => route("controller.obiettivo", ["obiettivo" => $request->t])]);
     }
 
@@ -234,16 +250,25 @@ class AdminController extends Controller
             'uploated_file_id' => $request->fileId,
         ]);
 
+        $emailData = [
+           
+            'validator' => Auth::user(),
+       
+        ];
+        Mail::to("sebastiano.ortisi.ext@asp.sr.it")->send(new ControllerEmail(emailData: $emailData));
+
         return $this->showObiettivo($file->target_number);
     }
 
     
 
     public function valide(Request $request) {
+
         return $this->updateUploatedFiles($request, true);
     }
 
     public function notValide(Request $request) {
+   
         return $this->updateUploatedFiles($request, false);
     }
 
