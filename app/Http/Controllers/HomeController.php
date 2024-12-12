@@ -118,7 +118,157 @@ class HomeController extends Controller
         return $punteggioCalcolato;
     }
 
-    protected function calcoloPunteggioSub2($percentualeData)
+
+    //Tmp
+    protected function calcoloPunteggioOb4_1($overallAverageTmp, $overallAverageBoarding)
+    {
+        $dataView = [];
+
+        $dataView['userStructures'] = LocationsUsers::where("user_id", Auth::user()->id)
+            ->leftJoin("structures", "structures.id", "=", "users_structures.structure_id")
+            ->leftJoin("structure_type", "structure_type.code", "=", "structures.type")
+            ->orderby("structures.id")->get();
+
+        // dd($dataView['userStructures']);
+        $dataView['punteggi'] = [];
+        // Per ogni struttura e per ogni obiettivo recupero il punteggio teorico e calcolo il punteggio ottenuto
+        foreach ($dataView['userStructures'] as $struttura) {
+            //dd($struttura->column_points);
+            if ($struttura->column_points === 'ao') {
+                if ($overallAverageTmp >= 85) {
+                    $dataView['messaggioTmp'] = [
+                        'text' => "Pieno raggiungimento dell'obiettivo",
+                        'class' => 'text-success',
+                        'percentuale' => 100,
+                        'punteggio' => 5.6
+                    ];
+                } elseif ($overallAverageTmp >= 75) {
+                    $dataView['messaggioTmp'] = [
+                        'text' => "Raggiungimento dell'obiettivo al 50%",
+                        'class' => 'text-warning',
+                        'percentuale' => 50,
+                        'punteggio' => 2.8
+                    ];
+                } else { // se $overallAverageTmp < 75
+                    $dataView['messaggioTmp'] = [
+                        'text' => "Obiettivo non raggiunto",
+                        'class' => 'text-danger',
+                        'percentuale' => 0,
+                        'punteggio' => 0
+                    ];
+                }
+
+            } elseif ($struttura->column_points === 'asp') {
+                if ($overallAverageTmp >= 85) {
+                    $dataView['messaggioTmp'] = [
+                        'text' => "Pieno raggiungimento dell'obiettivo",
+                        'class' => 'text-success',
+                        'percentuale' => 100,
+                        'punteggio' => 2.8
+                    ];
+                } elseif ($overallAverageTmp >= 75) {
+                    $dataView['messaggioTmp'] = [
+                        'text' => "Raggiungimento dell'obiettivo al 50%",
+                        'class' => 'text-warning',
+                        'percentuale' => 50,
+                        'punteggio' => 1.4
+                    ];
+                } else { // se $overallAverageTmp < 75
+                    $dataView['messaggioTmp'] = [
+                        'text' => "Obiettivo non raggiunto",
+                        'class' => 'text-danger',
+                        'percentuale' => 0,
+                        'punteggio' => 0
+                    ];
+                }
+            }
+
+            return [
+                'messaggioTmp' => $dataView['messaggioTmp'],
+                // 'messaggioBoarding' => $dataView['messaggioBoarding'],
+                'overallAverageTmp' => $overallAverageTmp,
+                'overallAverageBoarding' => $overallAverageBoarding,
+            ];
+        }
+    }
+    //Boarding
+    protected function calcoloPunteggioOb4_2($overallAverageBoarding)
+    {
+
+        $dataView = [];
+
+        $dataView['userStructures'] = LocationsUsers::where("user_id", Auth::user()->id)
+            ->leftJoin("structures", "structures.id", "=", "users_structures.structure_id")
+            ->leftJoin("structure_type", "structure_type.code", "=", "structures.type")
+            ->orderby("structures.id")->get();
+
+        // dd($dataView['userStructures']);
+        $dataView['punteggi'] = [];
+        // Per ogni struttura e per ogni obiettivo recupero il punteggio teorico e calcolo il punteggio ottenuto
+        foreach ($dataView['userStructures'] as $struttura) {
+            //dd($struttura->column_points);
+            if ($struttura->column_points === 'ao') {
+                if ($overallAverageBoarding <= 2) {
+                    $dataView['messaggioBoarding'] = [
+                        'text' => "Pieno raggiungimento dell'obiettivo",
+                        'class' => 'text-success',
+                        'percentuale' => 100,
+                        'punteggio' => 2.4 // Punteggio massimo
+                    ];
+                } elseif ($overallAverageBoarding > 2 && $overallAverageBoarding <= 4) {
+                    $dataView['messaggioBoarding'] = [
+                        'text' => "Raggiungimento dell'obiettivo al 50%",
+                        'class' => 'text-warning',
+                        'percentuale' => 50,
+                        'punteggio' => 1.2 // 50% del punteggio massimo
+                    ];
+                } else { // se $overallAverageBoarding > 4
+                    $dataView['messaggioBoarding'] = [
+                        'text' => "Obiettivo non raggiunto",
+                        'class' => 'text-danger',
+                        'percentuale' => 0,
+                        'punteggio' => 0 // Punteggio nullo
+                    ];
+                }
+
+
+            } elseif ($struttura->column_points === 'asp') {
+
+                if ($overallAverageBoarding <= 2) {
+                    $dataView['messaggioBoarding'] = [
+                        'text' => "Pieno raggiungimento dell'obiettivo",
+                        'class' => 'text-success',
+                        'percentuale' => 100,
+                        'punteggio' => 1.2 // Punteggio massimo
+                    ];
+                } elseif ($overallAverageBoarding > 2 && $overallAverageBoarding <= 4) {
+                    $dataView['messaggioBoarding'] = [
+                        'text' => "Raggiungimento dell'obiettivo al 50%",
+                        'class' => 'text-warning',
+                        'percentuale' => 50,
+                        'punteggio' => 0.6 // 50% del punteggio massimo
+                    ];
+                } else { // se $overallAverageBoarding > 4
+                    $dataView['messaggioBoarding'] = [
+                        'text' => "Obiettivo non raggiunto",
+                        'class' => 'text-danger',
+                        'percentuale' => 0,
+                        'punteggio' => 0 // Punteggio nullo
+                    ];
+                }
+
+            }
+
+            return [
+                'messaggioBoarding' => $dataView['messaggioBoarding'],
+                //'overallAverageTmp' => $overallAverageTmp,
+                'overallAverageBoarding' => $overallAverageBoarding,
+            ];
+        }
+    }
+
+
+    protected function calcoloPunteggioOb6_2($percentualeData)
     {
 
         $dataView = [];
@@ -127,11 +277,17 @@ class HomeController extends Controller
         $array2025 = array(15, 10, 7);
         $array2026 = array(25, 15, 10);
 
+        $dataView['userStructures'] = LocationsUsers::where("user_id", Auth::user()->id)
+            ->leftJoin("structures", "structures.id", "=", "users_structures.structure_id")
+            ->leftJoin("structure_type", "structure_type.code", "=", "structures.type")
+            ->orderby("structures.id")->get();
+
+        // dd($dataView['userStructures']);
+        $dataView['punteggi'] = [];
 
         $anno = date('Y');
 
         if ($percentualeData < 0) {
-
             $dataView['messaggioTmp'] = [
                 'text' => $anno . ": " . "Percentuale negativa, obiettivo non raggiunto con punteggio: 0",
                 'class' => 'text-danger'
@@ -145,36 +301,238 @@ class HomeController extends Controller
                 $targetArray = $array2026;
             }
 
-            if ($percentualeData > $targetArray[0]) {
 
-                $dataView['messaggioTmp'] = [
-                    'text' => $anno . ": " . "Raggiungimento dell'obiettivo con punteggio: 1.5",
-                    'class' => 'text-success'
-                ];
-            } elseif ($percentualeData >= $targetArray[1] && $percentualeData <= $targetArray[0]) {
+            foreach ($dataView['userStructures'] as $struttura) {
+                if ($struttura->column_points === 'ao') {
+                    if ($percentualeData > $targetArray[0]) {
+                        $dataView['messaggioTmp'] = [
+                            'text' => $anno . ": " . "Raggiungimento dell'obiettivo con punteggio: 2.7",
+                            'class' => 'text-success'
+                        ];
+                    } elseif ($percentualeData >= $targetArray[1] && $percentualeData <= $targetArray[0]) {
 
-                $dataView['messaggioTmp'] = [
-                    'text' => $anno . ": " . "Raggiungimento dell'obiettivo all'80% con punteggio: 1.2",
-                    'class' => 'text-warning'
-                ];
-            } elseif ($percentualeData >= $targetArray[2] && $percentualeData < $targetArray[1]) {
+                        $dataView['messaggioTmp'] = [
+                            'text' => $anno . ": " . "Raggiungimento dell'obiettivo all'80% con punteggio: 2.16",
+                            'class' => 'text-warning'
+                        ];
+                    } elseif ($percentualeData >= $targetArray[2] && $percentualeData < $targetArray[1]) {
 
-                $dataView['messaggioTmp'] = [
-                    'text' => $anno . ": " . "Raggiungimento dell'obiettivo al 50% con punteggio: 0.75",
-                    'class' => 'text-warning'
-                ];
-            } else {
+                        $dataView['messaggioTmp'] = [
+                            'text' => $anno . ": " . "Raggiungimento dell'obiettivo al 50% con punteggio: 1.35",
+                            'class' => 'text-warning'
+                        ];
+                    } else {
 
-                $dataView['messaggioTmp'] = [
-                    'text' => $anno . ": " . "Obiettivo non raggiunto con punteggio: 0",
-                    'class' => 'text-danger'
-                ];
+                        $dataView['messaggioTmp'] = [
+                            'text' => $anno . ": " . "Obiettivo non raggiunto con punteggio: 0",
+                            'class' => 'text-danger'
+                        ];
+                    }
+                } elseif ($struttura->column_points === 'asp') {
+                    if ($percentualeData > $targetArray[0]) {
+                        $dataView['messaggioTmp'] = [
+                            'text' => $anno . ": " . "Raggiungimento dell'obiettivo con punteggio: 1.5",
+                            'class' => 'text-success'
+                        ];
+                    } elseif ($percentualeData >= $targetArray[1] && $percentualeData <= $targetArray[0]) {
+                        $dataView['messaggioTmp'] = [
+                            'text' => $anno . ": " . "Raggiungimento dell'obiettivo all'80% con punteggio: 1.2",
+                            'class' => 'text-warning'
+                        ];
+                    } elseif ($percentualeData >= $targetArray[2] && $percentualeData < $targetArray[1]) {
+                        $dataView['messaggioTmp'] = [
+                            'text' => $anno . ": " . "Raggiungimento dell'obiettivo al 50% con punteggio: 0.75",
+                            'class' => 'text-warning'
+                        ];
+                    } else {
+                        $dataView['messaggioTmp'] = [
+                            'text' => $anno . ": " . "Obiettivo non raggiunto con punteggio: 0",
+                            'class' => 'text-danger'
+                        ];
+                    }
+                }
+    
+              
             }
         }
-
-
         return $dataView;
     }
+
+
+    protected function calcoloPunteggioOb6_3($percentualeData)
+    {
+
+        $dataView = [];
+
+        $targetArray = array(38, 41, 45);  
+       // $array2025 = array(15, 10, 7);
+      //  $array2026 = array(25, 15, 10);
+
+        $dataView['userStructures'] = LocationsUsers::where("user_id", Auth::user()->id)
+            ->leftJoin("structures", "structures.id", "=", "users_structures.structure_id")
+            ->leftJoin("structure_type", "structure_type.code", "=", "structures.type")
+            ->orderby("structures.id")->get();
+
+        // dd($dataView['userStructures']);
+        $dataView['punteggi'] = [];
+
+        $anno = date('Y');
+
+        if ($percentualeData < 0) {
+            $dataView['messaggiOb6_3'] = [
+                'text' => $anno . ": " . "Percentuale negativa, obiettivo non raggiunto con punteggio: 0",
+                'class' => 'text-danger'
+            ];
+        } else {
+            foreach ($dataView['userStructures'] as $struttura) {
+                if ($struttura->column_points === 'asp') {
+                    
+                    if ($percentualeData <= $targetArray[0]) {
+                        // Se il valore è inferiore o uguale a 38%, obiettivo pienamente raggiunto (1.5 punti)
+                        $dataView['messaggiOb6_3'] = [
+                            'text' => $anno . ": " . "Raggiungimento dell'obiettivo con punteggio: 1.5",
+                            'class' => 'text-success'
+                        ];
+                    } elseif ($percentualeData > $targetArray[0] && $percentualeData <= $targetArray[1]) {
+                        // Se il valore è compreso tra 38% e 41%, obiettivo raggiunto all'80% (1.2 punti)
+                        $dataView['messaggiOb6_3'] = [
+                            'text' => $anno . ": " . "Raggiungimento dell'obiettivo all'80% con punteggio: 1.2",
+                            'class' => 'text-warning'
+                        ];
+                    } elseif ($percentualeData > $targetArray[1] && $percentualeData <= $targetArray[2]) {
+                        // Se il valore è compreso tra 41% e 45%, obiettivo raggiunto al 50% (0.75 punti)
+                        $dataView['messaggiOb6_3'] = [
+                            'text' => $anno . ": " . "Raggiungimento dell'obiettivo al 50% con punteggio: 0.75",
+                            'class' => 'text-warning'
+                        ];
+                    } else {
+                        // Se il valore è maggiore di 45%, obiettivo non raggiunto (0 punti)
+                        $dataView['messaggiOb6_3'] = [
+                            'text' => $anno . ": " . "Obiettivo non raggiunto con punteggio: 0",
+                            'class' => 'text-danger'
+                        ];
+                    }
+            
+                } elseif ($struttura->column_points === 'ao') {
+                    if ($percentualeData <= $targetArray[0]) {
+                       
+                        $dataView['messaggiOb6_3'] = [
+                            'text' => $anno . ": " . "Raggiungimento dell'obiettivo con punteggio: 2.7",
+                            'class' => 'text-success'
+                        ];
+                    } elseif ($percentualeData > $targetArray[0] && $percentualeData <= $targetArray[1]) {
+                        
+                        $dataView['messaggiOb6_3'] = [
+                            'text' => $anno . ": " . "Raggiungimento dell'obiettivo all'80% con punteggio: 2.16",
+                            'class' => 'text-warning'
+                        ];
+                    } elseif ($percentualeData > $targetArray[1] && $percentualeData <= $targetArray[2]) {
+                        
+                        $dataView['messaggiOb6_3'] = [
+                            'text' => $anno . ": " . "Raggiungimento dell'obiettivo al 50% con punteggio: 1.35",
+                            'class' => 'text-warning'
+                        ];
+                    } else {
+                       
+                        $dataView['messaggiOb6_3'] = [
+                            'text' => $anno . ": " . "Obiettivo non raggiunto con punteggio: 0",
+                            'class' => 'text-danger'
+                        ];
+                    }
+                }
+            }
+         }
+         return $dataView;
+     }
+
+     protected function calcoloPunteggioOb6_4($percentualeData)
+     {
+ 
+         $dataView = [];
+ 
+         $array2024 = array(10, 5, 3);
+         $array2025 = array(15, 10, 7);
+         $array2026 = array(30, 25, 20,15);
+ 
+         $dataView['userStructures'] = LocationsUsers::where("user_id", Auth::user()->id)
+             ->leftJoin("structures", "structures.id", "=", "users_structures.structure_id")
+             ->leftJoin("structure_type", "structure_type.code", "=", "structures.type")
+             ->orderby("structures.id")->get();
+ 
+         // dd($dataView['userStructures']);
+         $dataView['punteggi'] = [];
+ 
+         $anno = date('Y');
+ 
+         if ($percentualeData < 0) {
+             $dataView['messaggioTmp'] = [
+                 'text' => $anno . ": " . "Percentuale negativa, obiettivo non raggiunto con punteggio: 0",
+                 'class' => 'text-danger'
+             ];
+         } else {
+             if ($anno == 2024) {
+                 $targetArray = $array2024;
+             } elseif ($anno == 2025) {
+                 $targetArray = $array2025;
+             } elseif ($anno == 2026) {
+                 $targetArray = $array2026;
+             }
+ 
+             foreach ($dataView['userStructures'] as $struttura) {
+                 if ($struttura->column_points === 'ao') {
+                     if ($percentualeData > $targetArray[0]) {
+                         $dataView['messaggioTmp'] = [
+                             'text' => $anno . ": " . "Raggiungimento dell'obiettivo con punteggio: 2.7",
+                             'class' => 'text-success'
+                         ];
+                     } elseif ($percentualeData >= $targetArray[1] && $percentualeData <= $targetArray[0]) {
+ 
+                         $dataView['messaggioTmp'] = [
+                             'text' => $anno . ": " . "Raggiungimento dell'obiettivo all'80% con punteggio: 2.16",
+                             'class' => 'text-warning'
+                         ];
+                     } elseif ($percentualeData >= $targetArray[2] && $percentualeData < $targetArray[1]) {
+ 
+                         $dataView['messaggioTmp'] = [
+                             'text' => $anno . ": " . "Raggiungimento dell'obiettivo al 50% con punteggio: 1.35",
+                             'class' => 'text-warning'
+                         ];
+                     } else {
+ 
+                         $dataView['messaggioTmp'] = [
+                             'text' => $anno . ": " . "Obiettivo non raggiunto con punteggio: 0",
+                             'class' => 'text-danger'
+                         ];
+                     }
+                 } elseif ($struttura->column_points === 'asp') {
+                     if ($percentualeData > $targetArray[0]) {
+                         $dataView['messaggioTmp'] = [
+                             'text' => $anno . ": " . "Raggiungimento dell'obiettivo con punteggio: 1.5",
+                             'class' => 'text-success'
+                         ];
+                     } elseif ($percentualeData >= $targetArray[1] && $percentualeData <= $targetArray[0]) {
+                         $dataView['messaggioTmp'] = [
+                             'text' => $anno . ": " . "Raggiungimento dell'obiettivo all'80% con punteggio: 1.2",
+                             'class' => 'text-warning'
+                         ];
+                     } elseif ($percentualeData >= $targetArray[2] && $percentualeData < $targetArray[1]) {
+                         $dataView['messaggioTmp'] = [
+                             'text' => $anno . ": " . "Raggiungimento dell'obiettivo al 50% con punteggio: 0.75",
+                             'class' => 'text-warning'
+                         ];
+                     } else {
+                         $dataView['messaggioTmp'] = [
+                             'text' => $anno . ": " . "Obiettivo non raggiunto con punteggio: 0",
+                             'class' => 'text-danger'
+                         ];
+                     }
+                 }
+     
+               
+             }
+         }
+         return $dataView;
+     }
 
     protected function calcoloPunteggioSub4($percentualeData)
     {
@@ -228,6 +586,62 @@ class HomeController extends Controller
 
         return $dataView;
     }
+    protected function calcoloPunteggioOb5_1($percentualeAderenti)
+    {
+        $dataView = [];
+
+
+        if ($percentualeAderenti > 60) {
+            $dataView['messaggioOb5_1'] = [
+                'text' => "Raggiungimento dell'obiettivo con punteggio: 2",
+                'class' => 'text-success',
+                'punteggio' => 1
+            ];
+        } elseif ($percentualeAderenti >= 20) {
+            $dataView['messaggioOb5_1'] = [
+                'text' => "Raggiungimento dell'obiettivo parziale con punteggio: 1",
+                'class' => 'text-warning',
+                'punteggio' => 1
+            ];
+        } else {
+            $dataView['messaggioTmp'] = [
+                'text' => "Obiettivo non raggiunto con punteggio: 0",
+                'class' => 'text-danger',
+                'punteggio' => 0
+            ];
+        }
+
+        return [
+            'messaggioTmp' => $dataView['messaggioTmp'],
+            //'percentualeAderenti' => $percentualeAderenti,
+        ];
+    }
+
+    protected function calcoloPunteggioOb5_2($percentualeSub2)
+    {
+        $dataView = [];
+
+        if ($percentualeSub2 >= 0 && $percentualeSub2 <= 10) {
+            $dataView['messaggioTmpCodiciDD'] = [
+                'textCodiciDD' => "Pieno raggiungimento dell'obiettivo con punteggio: 1",
+                'classCodiciDD' => 'text-success',
+                'punteggio' => 1
+            ];
+        } elseif ($percentualeSub2 > 10) {
+            $dataView['messaggioTmpCodiciDD'] = [
+                'textCodiciDD' => "Obiettivo non raggiunto con punteggio: 0",
+                'classCodiciDD' => 'text-danger',
+                'punteggio' => 0
+            ];
+        }
+
+        // Restituzione dei dati
+        return [
+            'messaggioTmpCodiciDD' => $dataView['messaggioTmpCodiciDD'],
+            'percentualeSub2' => $percentualeSub2,
+        ];
+    }
+
 
     /*
         protected function punteggioOb7_1($dataView)
@@ -399,6 +813,7 @@ class HomeController extends Controller
                 ->leftJoin("structure_type", "structure_type.code", "=", "structures.type")
                 ->orderby("structures.id")->get();
 
+            //         dd($dataView['userStructures']);
             $dataView['punteggi'] = [];
             // Per ogni struttura e per ogni obiettivo recupero il punteggio teorico e calcolo il punteggio ottenuto
             foreach ($dataView['userStructures'] as $struttura) {
@@ -450,8 +865,8 @@ class HomeController extends Controller
                             break;
                         case 9:
                             $raggiunto = $punteggioRaggiunto[9];
-
                     }
+                    
                     $dataView['punteggi'][$struttura->name][] = [
                         "target_number" => $rowTmp->target_number,
                         "target" => $rowTmp->target,
@@ -639,49 +1054,57 @@ class HomeController extends Controller
                 ]
             ]);
 
+        $dataView['calcoloPunteggioOb4_1'] = $this->calcoloPunteggioOb4_1($overallAverageTmp, $overallAverageBoarding);
+        $dataView['calcoloPunteggioOb4_2'] = $this->calcoloPunteggioOb4_2($overallAverageBoarding, $complementaryValueBoarding);
 
-        if ($overallAverageTmp >= 85) {
-            $dataView['messaggioTmp'] = [
-                'text' => "Pieno raggiungimento dell'obiettivo",
-                'class' => 'text-success'
-            ];
-        } elseif ($overallAverageTmp >= 75) {
-            $dataView['messaggioTmp'] = [
-                'text' => "Raggiungimento dell'obiettivo al 50%",
-                'class' => 'text-warning'
-            ];
-        } else { // se $overallAverageTmp < 75
-            $dataView['messaggioTmp'] = [
-                'text' => "Obiettivo non raggiunto",
-                'class' => 'text-danger'
-            ];
-        }
 
-        /********************************************************* */
 
-        if ($overallAverageBoarding <= 2) {
-            $dataView['messaggioBoarding'] = [
-                'text' => "Pieno raggiungimento dell'obiettivo",
-                'class' => 'text-success'
-            ];
-        } elseif ($overallAverageBoarding > 2 && $overallAverageBoarding <= 4) {
-            $dataView['messaggioBoarding'] = [
-                'text' => "Raggiungimento dell'obiettivo al 50%",
-                'class' => 'text-warning'
-            ];
-        } elseif ($overallAverageBoarding > 4) {
-            $dataView['messaggioBoarding'] = [
-                'text' => "Obiettivo non raggiunto",
-                'class' => 'text-danger'
-            ];
-        }
 
-        return view("prontoSoccorso", [
-            'dataView' => $dataView,
-            'overallAverageTmp' => $overallAverageTmp,
-            'overallAverageBoarding' => $overallAverageBoarding,
-        ]);
+        /*
+                if ($overallAverageTmp >= 85) {
+                    $dataView['messaggioTmp'] = [
+                        'text' => "Pieno raggiungimento dell'obiettivo",
+                        'class' => 'text-success'
+                    ];
+                } elseif ($overallAverageTmp >= 75) {
+                    $dataView['messaggioTmp'] = [
+                        'text' => "Raggiungimento dell'obiettivo al 50%",
+                        'class' => 'text-warning'
+                    ];
+                } else { // se $overallAverageTmp < 75
+                    $dataView['messaggioTmp'] = [
+                        'text' => "Obiettivo non raggiunto",
+                        'class' => 'text-danger'
+                    ];
+                }
 
+
+                if ($overallAverageBoarding <= 2) {
+                    $dataView['messaggioBoarding'] = [
+                        'text' => "Pieno raggiungimento dell'obiettivo",
+                        'class' => 'text-success'
+                    ];
+                } elseif ($overallAverageBoarding > 2 && $overallAverageBoarding <= 4) {
+                    $dataView['messaggioBoarding'] = [
+                        'text' => "Raggiungimento dell'obiettivo al 50%",
+                        'class' => 'text-warning'
+                    ];
+                } elseif ($overallAverageBoarding > 4) {
+                    $dataView['messaggioBoarding'] = [
+                        'text' => "Obiettivo non raggiunto",
+                        'class' => 'text-danger'
+                    ];
+                }
+
+                return view("prontoSoccorso", [
+                    'dataView' => $dataView,
+                    'overallAverageTmp' => $overallAverageTmp,
+                    'overallAverageBoarding' => $overallAverageBoarding,
+                ]);
+
+                */
+
+        return view("prontoSoccorso")->with("dataView", $dataView);
     }
 
     public function donazioni(Request $request)
@@ -691,19 +1114,19 @@ class HomeController extends Controller
 
         // Numeratori sub.2
         $dataView['target6_data'] = DB::table('target6_data')
-        ->select('target6_data.totale_accertamenti', 'target6_data.anno', 'target6_data.numero_opposti', 'target6_data.totale_cornee', 'target6_data.structure_id', 'target6_data.created_at')
-        ->join('structures as s', 'target6_data.structure_id', '=', 's.id')
-        ->where('target6_data.structure_id', '=', Auth::user()->firstStructureId()->id)
-        ->whereIn('target6_data.id', function ($query) {
-            $query->select(DB::raw('MAX(id)'))
-                ->from('target6_data')
-                ->where('structure_id', '=', Auth::user()->firstStructureId()->id)
-                ->groupBy('anno')
-                ->orderBy('target6_data.created_at', 'desc');
-        })
-        ->orderBy('target6_data.anno')
-        ->get();
-    
+            ->select('target6_data.totale_accertamenti', 'target6_data.anno', 'target6_data.numero_opposti', 'target6_data.totale_cornee', 'target6_data.structure_id', 'target6_data.created_at')
+            ->join('structures as s', 'target6_data.structure_id', '=', 's.id')
+            ->where('target6_data.structure_id', '=', Auth::user()->firstStructureId()->id)
+            ->whereIn('target6_data.id', function ($query) {
+                $query->select(DB::raw('MAX(id)'))
+                    ->from('target6_data')
+                    ->where('structure_id', '=', Auth::user()->firstStructureId()->id)
+                    ->groupBy('anno')
+                    ->orderBy('target6_data.created_at', 'desc');
+            })
+            ->orderBy('target6_data.anno')
+            ->get();
+
 
         //Denominatore preso dal flusso
         /*
@@ -724,25 +1147,25 @@ class HomeController extends Controller
 
         // Calcolo la percentuale per ogni anno
         foreach ($dataView['target6_data'] as $target) {
-        //    $denominatoreTmp = $denominatore->firstWhere('year',  $target->anno);
+            //    $denominatoreTmp = $denominatore->firstWhere('year',  $target->anno);
             if ($target->anno == 2023) {
                 $accertamenti2023 = $target->totale_accertamenti;
                 $cornee2023 = $target->totale_cornee;
             }
 
-        /*
-                $percentualeAccertamenti = ($denominatoreTmp && $denominatoreTmp->ob6 != 0) 
-                    ? round(($target->totale_accertamenti / $denominatoreTmp->ob6) * 100, 2) 
-                    : 0;
+            /*
+                    $percentualeAccertamenti = ($denominatoreTmp && $denominatoreTmp->ob6 != 0) 
+                        ? round(($target->totale_accertamenti / $denominatoreTmp->ob6) * 100, 2) 
+                        : 0;
 
-                $percentualeCornee = ($denominatoreTmp && $denominatoreTmp->ob6 != 0) 
-                    ? round(($target->totale_cornee / $denominatoreTmp->ob6) * 100, 2) 
-                    : 0;
-*/
+                    $percentualeCornee = ($denominatoreTmp && $denominatoreTmp->ob6 != 0) 
+                        ? round(($target->totale_cornee / $denominatoreTmp->ob6) * 100, 2) 
+                        : 0;
+    */
             $dataView['result'][] = [
                 'anno' => $target->anno,
                 //'percentualeAccertamenti' => $percentualeAccertamenti,
-              //  'percentualeCornee' => $percentualeCornee,
+                //  'percentualeCornee' => $percentualeCornee,
                 'totale_accertamenti' => $target->totale_accertamenti,
                 'numero_opposti' => $target->numero_opposti,
                 'totale_cornee' => $target->totale_cornee,
@@ -752,7 +1175,7 @@ class HomeController extends Controller
             $labelsTmp[] = $target->anno;
         }
 
-     
+
 
         $incrementoSub2AnnoCorrente = 0;
         $incrementoSub4AnnoCorrente = 0;
@@ -762,8 +1185,12 @@ class HomeController extends Controller
                 $incrementoSub4AnnoCorrente = $row['incrementoCornee'];
             }
         }
-        //calcolo punteggio sub.2
-        $punteggioTotale = $this->calcoloPunteggioSub2($incrementoSub2AnnoCorrente);
+
+
+        
+        $punteggioTotale = $this->calcoloPunteggioOb6_2($incrementoSub2AnnoCorrente);
+
+      
         $dataView = array_merge($punteggioTotale, $dataView);
 
 
@@ -855,7 +1282,12 @@ class HomeController extends Controller
             ]
         );
 
+
+        $punteggioOb6_3= $this->calcoloPunteggioOb6_3($dataView['percentualeOpposizione']);
+        $dataView = array_merge($punteggioOb6_3, $dataView);
+
         //calcolo punteggio 3
+        /*
         if ($dataView['percentualeOpposizione'] <= 38) {
 
             // Obiettivo pienamente raggiunto
@@ -887,7 +1319,7 @@ class HomeController extends Controller
 
             ];
         }
-
+*/
         /******************************Sub.ob 4************************************ */
 
         //grafico sub.4
@@ -962,6 +1394,7 @@ class HomeController extends Controller
                 ]
             ]
         );
+
 
         $dataView['filesCaricati'] = $this->fileCaricati(1, $dataView['strutture']);
 
@@ -1177,6 +1610,7 @@ class HomeController extends Controller
 
 
         /***********************Messaggio punteggio MMG****************************/
+        /*
         if ($dataView['percentualeAderenti'] > 60) {
             $dataView['messaggioTmp'] = [
                 'text' => "Raggiungimento dell'obiettivo con punteggio: 2",
@@ -1194,7 +1628,7 @@ class HomeController extends Controller
             ];
         }
 
-        /********************Messagggio punteggio D02 E D03************************/
+
         if ($dataView['percentuale'] >= 0 && $dataView['percentuale'] <= 10) {
             $dataView['messaggioTmpCodiciDD'] = [
                 'textCodiciDD' => "Pieno raggiungimento dell'obiettivo con punteggio: 1",
@@ -1206,6 +1640,10 @@ class HomeController extends Controller
                 'classCodiciDD' => 'text-danger'
             ];
         }
+*/
+        $dataView['calcoloPunteggioOb5_2'] = $this->calcoloPunteggioOb5_2($dataView['percentualeAderenti']);
+
+        $dataView['calcoloPunteggioOb5_1'] = $this->calcoloPunteggioOb5_1($dataView['percentuale']);
 
         return view("screening")->with("dataView", $dataView);
     }
@@ -1280,8 +1718,6 @@ class HomeController extends Controller
         $mmg_coinvolti = $request->mmg_coinvolti;
         $structure_id = $request->structure_id;
 
-       
-
         $messages = [
             'tot_mmg.required' => 'Il totale MMG è obbligatorio.',
             'tot_mmg.numeric' => 'Il totale MMG deve essere un numero.',
@@ -1301,7 +1737,7 @@ class HomeController extends Controller
         if ($validator->fails()) {
             $dataView['errorsMMG'] = $validator->errors()->getMessages();
         } else {
-    
+
             InsertMmg::create([
                 'mmg_totale' => $tot_mmg,
                 'mmg_coinvolti' => $mmg_coinvolti,
@@ -1693,12 +2129,12 @@ class HomeController extends Controller
             case 6:
 
                 $dataView['target6_data'] = DB::table('target6_data')
-                ->select('totale_accertamenti', 'anno', 'numero_opposti', 'totale_cornee','structure_id')
-                ->join('structures as s', 'target6_data.structure_id', '=', 's.id')
-                ->where('structure_id', '=', Auth::user()->firstStructureId()->id)
-                ->orderBy('anno')
-                ->get();
-    
+                    ->select('totale_accertamenti', 'anno', 'numero_opposti', 'totale_cornee', 'structure_id')
+                    ->join('structures as s', 'target6_data.structure_id', '=', 's.id')
+                    ->where('structure_id', '=', Auth::user()->firstStructureId()->id)
+                    ->orderBy('anno')
+                    ->get();
+
                 $pdf = PDF::loadView('pdfs.donazioniPdf', $dataView);
 
                 return $pdf->download('certificazione_completa.pdf');
@@ -2104,8 +2540,6 @@ class HomeController extends Controller
             $rapportiPerMesePediatrico[] = $percentuale;
         }
 
-
-
         // Crea il grafico con i dati
         $dataView['ospedalizzazioneAdulta'] = Chartjs::build()
             ->name("ospedalizzazioneAdulta")
@@ -2196,8 +2630,6 @@ class HomeController extends Controller
 
 
         /*********************************************CIA1********************************************** */
-
-
 
 
         $mesi = [
@@ -2607,8 +3039,8 @@ class HomeController extends Controller
     public function fse(Request $request)
     {
 
-     
-   //     $dataSelezionata = $request->annoSelezionato ?? date('Y');
+
+        //     $dataSelezionata = $request->annoSelezionato ?? date('Y');
 
         $anno = $request->has("year") ? $request->year : date('Y');
         $dataView['strutture'] = Auth::user()->structures();
@@ -2647,14 +3079,14 @@ class HomeController extends Controller
             ->orderByDesc('month')
             ->first();
 
-            if ($denominatore) {
-                $dataView['ob7'] = $denominatore->ob7_1;
-            } else {
-                $dataView['ob7'] = 0; 
-            }
-            
-    
-        if($dataView['ob7'] != 0) {
+        if ($denominatore) {
+            $dataView['ob7'] = $denominatore->ob7_1;
+        } else {
+            $dataView['ob7'] = 0;
+        }
+
+
+        if ($dataView['ob7'] != 0) {
             $dataView['percentualeDimissioniOspedaliere'] = round(($dataView['dimissioniOspedaliere'] / $dataView['ob7']) * 100, 2);
         } else
             $dataView['percentualeDimissioniOspedaliere'] = 0;
@@ -2773,7 +3205,7 @@ class HomeController extends Controller
             ['Indicizzati', 'Non Indicizzati'],
             [$dataView['percentualeDocumentazioneFse'], $dataView['percentualeComplementareDocumentazioneFse']]
         );
-   
+
         /***************************Documenti in CDA2************************************************************* */
         if ($dataView['documentiIndicizzatiCDA2'] > 0) {
             $dataView['percentualeDocumentiCDA2'] = round($documentiCDA2 / $dataView['documentiIndicizzatiCDA2'] * 100, 2);
@@ -2801,7 +3233,7 @@ class HomeController extends Controller
             ['Pades', 'Non pades'],
             [$dataView['percentualePades'], $dataView['percentualeComplementarePades']]
         );
-      
+
 
         return view("fse")->with("dataView", $dataView);
     }
@@ -2877,7 +3309,7 @@ class HomeController extends Controller
     public function esiti(Request $request)
     {
 
-      //  $dataView['dataSelezionata'] = $request->annoSelezionato ?? date('Y');
+        //  $dataView['dataSelezionata'] = $request->annoSelezionato ?? date('Y');
 
         $anno = $request->has("year") ? $request->year : date('Y');
         $dataView['strutture'] = Auth::user()->structures();

@@ -70,9 +70,8 @@
                                         @endforeach
                                     </tbody>
                                 </table>
-                                <div class="legend p-3 border rounded mt-3 {{ $dataView['messaggioTmp']['class'] }}">
-                                    <strong>{{ $dataView['messaggioTmp']['text'] }}</strong>
-                                </div>
+                               
+
                             </div>
                         </div>
                         <br>
@@ -121,9 +120,11 @@
                                     </tbody>
                                 </table>
 
-                                <div class="legend p-3 border rounded mt-3 {{$dataView['messaggioTmpCodiciDD']['classCodiciDD'] }}">
-                                    <strong>{{$dataView['messaggioTmpCodiciDD']['textCodiciDD'] }}</strong>
+                                <div class="legend p-3 border rounded mt-3 {{ $dataView['calcoloPunteggioOb5_2']['messaggioTmpCodiciDD']['classCodiciDD'] }}">
+                                    <strong>{{ $dataView['calcoloPunteggioOb5_2']['messaggioTmpCodiciDD']['textCodiciDD'] }}</strong>
+                                   
                                 </div>
+
                             </div>
                         </div>
                         <br>

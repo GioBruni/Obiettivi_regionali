@@ -42,19 +42,21 @@
                                 @endforeach
                             </tbody>
                         </table>
-                        <div class="legend p-3 border rounded mt-3 {{ $dataView['messaggioTmp']['class'] }}">
-                            <strong>{{ $dataView['messaggioTmp']['text'] }}: {{$overallAverageTmp}} %</strong>
+                        <div class="legend p-3 border rounded mt-3 {{ $dataView['calcoloPunteggioOb4_1']['messaggioTmp']['class'] }}">
+                            <strong>{{ $dataView['calcoloPunteggioOb4_1']['messaggioTmp']['text'] }}: {{ $dataView['calcoloPunteggioOb4_1']['overallAverageTmp'] }}%</strong>
                         </div>
+                        <p>Punteggio:{{ $dataView['calcoloPunteggioOb4_1']['messaggioTmp']['punteggio']}}</p>
+
                     </div>
                 </div>
             </div>
 
             <div class="legend p-3 border rounded">
-                <strong>Valori di riferimento</strong><br>
-                <strong>TMP &ge; 85%:</strong> pieno raggiungimento dell'obiettivo<br>
+                <strong>Valori di riferimento (Punteggio massimo 5.6)</strong><br>
+                <strong>TMP &ge; 85%:</strong> pieno raggiungimento dell'obiettivo (5.6 punti)<br>
                 <strong>TMP compreso tra 75% e &lt; 85%:</strong> raggiungimento dell'obiettivo
-                al 50%<br>
-                <strong>TMP &lt; 75%:</strong> obiettivo non raggiunto
+                al 50% (2.8 punti)<br>
+                <strong>TMP &lt; 75%:</strong> obiettivo non raggiunto (0 punti).
             </div>
         </div>
     </div>
@@ -101,18 +103,22 @@
                                 </tbody>
                             </table>
 
-                            <div class="legend p-3 border rounded mt-3 {{ $dataView['messaggioBoarding']['class'] }}">
-                                <strong>{{ $dataView['messaggioBoarding']['text'] }}: {{$overallAverageBoarding}}</strong>
-                            </div>
+                            <div class="legend p-3 border rounded mt-3 {{ $dataView['calcoloPunteggioOb4_2']['messaggioBoarding']['class'] }}">
+                            <strong>{{ $dataView['calcoloPunteggioOb4_2']['messaggioBoarding']['text'] }}: {{ $dataView['calcoloPunteggioOb4_2']['overallAverageBoarding'] }}%</strong>
+                        </div>
+                        <p>Punteggio:{{ $dataView['calcoloPunteggioOb4_2']['messaggioBoarding']['punteggio']}}</p>
+
+                          
+
                         </div>
                     </div>
                 </div>
                 <div class="legend p-3 border rounded">
-                    <strong>Indicatore 2</strong><br>
-                    <strong>Boarding &le; 2%:</strong> pieno raggiungimento dell'obiettivo<br>
+                    <strong>Indicatore 2 (Punteggio massimo 2.4)</strong><br>
+                    <strong>Boarding &le; 2%:</strong> pieno raggiungimento dell'obiettivo (2.4 punti)<br>
                     <strong>Boarding compreso tra 2% e 4%:</strong> raggiungimento dell'obiettivo al
-                    50%<br>
-                    <strong>Boarding &gt; al 4%:</strong> obiettivo non raggiunto
+                    50% (1.2 punti)<br>
+                    <strong>Boarding &gt; al 4%:</strong> obiettivo non raggiunto (0 punti)
                 </div>
             </div>
         </div>

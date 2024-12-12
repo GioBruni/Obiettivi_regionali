@@ -8,6 +8,8 @@
 
 
 @section('content')
+
+
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-12 col-md-12">
@@ -335,8 +337,8 @@
                                         </tr>
                                     </tbody>
                                 </table>
-                                <div class="legend p-3 border rounded mt-3 {{ $dataView['messaggioTmpOpposizione']['classOpposizione'] }}">
-                                <strong>{{ $dataView['messaggioTmpOpposizione']['textOpposizione'] }}</strong>
+                                <div class="legend p-3 border rounded mt-3 {{ $dataView['messaggiOb6_3']['class'] }}">
+                                <strong>{{ $dataView['messaggiOb6_3']['text'] }}</strong>
                             </div>
                             </div>
                         </div>

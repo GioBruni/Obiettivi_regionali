@@ -29,7 +29,7 @@
     <h1>Obiettivo 5</h1>
 
     @foreach ($tableData as $dati)
-        <p>>Anno: <strong{{ $dati->year }}<strong></strong> </p>
+        <p>Anno: <strong{{ $dati->year }}<strong></strong> </p>
 
         <p>Totale MMG: <strong>{{ $dati->mmg_totale }}</strong></p>
         <p>MMG Coinvolti:<strong>{{ $dati->mmg_coinvolti }}</strong></>
