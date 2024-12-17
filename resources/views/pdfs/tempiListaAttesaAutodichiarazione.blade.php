@@ -15,7 +15,7 @@
 <body>
 
   
-            <img alt="logo" src="{{ config('bootstrap-italia.logo.url') }}">
+    <img alt="logo" src="{{ config('bootstrap-italia.logo.url') }}">
      
 
     <h1>Obiettivo 1</h1>

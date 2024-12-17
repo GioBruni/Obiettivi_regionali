@@ -311,8 +311,8 @@
                                                                 </tr>
                                                             </tbody>
                                                         </table>
-                                                        <div class="legend p-3 border rounded mt-3 ">
-                                                            Calcolo punteggio
+                                                        <div class="legend p-3 border rounded mt-3 {{$dataView['punteggioOb7_1']['classOb7_1'] }}">
+                                                            <strong>{{ $dataView['punteggioOb7_1']['textOb7_1']}}: {{$dataView['punteggioOb7_1']['punteggioOb7_1'] }}</strong>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -359,8 +359,8 @@
                                                                 </tr>
                                                             </tbody>
                                                         </table>
-                                                        <div class="legend p-3 border rounded mt-3 ">
-                                                            Calcolo punteggio
+                                                        <div class="legend p-3 border rounded mt-3 {{$dataView['punteggioOb7_3']['classOb7_3'] }}">
+                                                            <strong>{{ $dataView['punteggioOb7_3']['textOb7_3']}}: {{$dataView['punteggioOb7_3']['punteggioOb7_3'] }}</strong>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -407,8 +407,8 @@
                                                                 </tr>
                                                             </tbody>
                                                         </table>
-                                                        <div class="legend p-3 border rounded mt-3 ">
-                                                            Calcolo punteggio
+                                                        <div class="legend p-3 border rounded mt-3 {{$dataView['punteggioOb7_4']['classOb7_4'] }}">
+                                                            <strong>{{ $dataView['punteggioOb7_4']['textOb7_4']}}: {{$dataView['punteggioOb7_4']['punteggioOb7_4'] }}</strong>
                                                         </div>
                                                     </div>
                                                 </div>
