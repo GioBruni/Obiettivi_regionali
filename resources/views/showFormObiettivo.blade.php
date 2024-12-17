@@ -44,7 +44,10 @@
                                             <strong>Il file caricato il: {{ Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $file->created_at)->format('d/m/Y H:i') }} {{ $file->approved === 1 ? "" : "non " }}&egrave; stato approvato -> Obiettivo {{ $file->approved === 1 ? "" : "non " }}raggiunto!</strong>
                                             </div>
                                         @endif
-                                    @endif                            
+
+                                    @endif  
+                                    
+                              
                                 @endforeach
                                 @if ($trovata == -1)
                                     <div id="message5" class="message bg-light p-3 rounded border border-primary text-center w-100" style="color:red;">
