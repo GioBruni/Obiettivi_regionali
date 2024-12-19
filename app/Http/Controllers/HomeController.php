@@ -591,6 +591,7 @@ class HomeController extends Controller
             ];
         }
 
+<<<<<<< Updated upstream
 
             if ($percentualeOb7_4 == $targetArray[2]) {
                 $dataView['punteggioOb7_4'] = [
@@ -609,6 +610,24 @@ class HomeController extends Controller
             }
         
     
+=======
+        if ($percentualeOb7_4 == $targetArray[2]) {
+            $dataView['punteggioOb7_4'] = [
+                'textOb7_4' => $anno . ": Raggiungimento dell'obiettivo massimo con punteggio",
+                'punteggioOb7_4' => 2,
+                'percentualeOb7_4' => $percentualeOb7_4,
+                'classOb7_4' => 'text-success'
+            ];
+        } else {
+            $dataView['punteggioOb7_4'] = [
+                'textOb7_4' => $anno . ": Obiettivo non raggiunto",
+                'punteggioOb7_4' => 0,
+                'percentualeOb7_4' => $percentualeOb7_4,
+                'classOb7_4' => 'text-warning'
+            ];
+        }
+
+>>>>>>> Stashed changes
         return $dataView;
     }
 
