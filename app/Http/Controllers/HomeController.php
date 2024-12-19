@@ -548,86 +548,37 @@ class HomeController extends Controller
         $anno = date('Y');
 
 
-            if ($anno == 2024) {
-                $targetArray = $array2024;
-            } elseif ($anno == 2025) {
-                $targetArray = $array2025;
-            } elseif ($anno == 2026) {
-                $targetArray = $array2026;
-            } else {
-                $targetArray = [];
-            }
-
-            if ($percentualeOb7_1 >= $targetArray[0]) {
-                $dataView['punteggioOb7_1'] = [
-                    'textOb7_1' => $anno . ": Raggiungimento dell'obiettivo massimo con punteggio",
-                    'punteggioOb7_1' => 2.5,
-                    'percentualeOb7_1' => $percentualeOb7_1,
-                    'classOb7_1' => 'text-success'
-                ];
-            } else {
-                $dataView['punteggioOb7_1'] = [
-                    'textOb7_1' => $anno . ": Obiettivo non raggiunto",
-                    'punteggioOb7_1' => 0,
-                    'percentualeOb7_1' => $percentualeOb7_1,
-                    'classOb7_1' => 'text-warning'
-                ];
-            }
-
-        
-        if ($percentualeOb7_3 == $targetArray[1]) {
-            $dataView['punteggioOb7_3'] = [
-                'textOb7_3' => $anno . ": Raggiungimento dell'obiettivo massimo con punteggio",
-                'punteggioOb7_3' => 2.5,
-                'percentualeOb7_3' => $percentualeOb7_3,
-                'classOb7_3' => 'text-success'
-            ];
+        if ($anno == 2024) {
+            $targetArray = $array2024;
+        } elseif ($anno == 2025) {
+            $targetArray = $array2025;
+        } elseif ($anno == 2026) {
+            $targetArray = $array2026;
         } else {
-            $dataView['punteggioOb7_3'] = [
-                'textOb7_3' => $anno . ": Obiettivo non raggiunto",
-                'punteggioOb7_3' => 0,
-                'percentualeOb7_3' => $percentualeOb7_3,
-                'classOb7_3' => 'text-warning'
-            ];
+            $targetArray = [];
         }
 
-<<<<<<< Updated upstream
+        $dataView['punteggioOb7_1'] = [
+            'textOb7_1' => $anno . (($percentualeOb7_1 >= $targetArray[0]) ? ": Raggiungimento dell'obiettivo massimo con punteggio" : ": Obiettivo non raggiunto"),
+            'punteggioOb7_1' => ($percentualeOb7_1 >= $targetArray[0]) ? 2.5 : 0,
+            'percentualeOb7_1' => $percentualeOb7_1,
+            'classOb7_1' => ($percentualeOb7_1 >= $targetArray[0]) ? 'text-success' : 'text-warning',
+        ];
+       
+        $dataView['punteggioOb7_3'] = [
+            'textOb7_3' => $anno . (($percentualeOb7_3 == $targetArray[1]) ? ": Raggiungimento dell'obiettivo massimo con punteggio" : ": Obiettivo non raggiunto"),
+            'punteggioOb7_3' => ($percentualeOb7_3 == $targetArray[1]) ? 2.5 : 0,
+            'percentualeOb7_3' => $percentualeOb7_3,
+            'classOb7_3' => ($percentualeOb7_3 == $targetArray[1]) ? 'text-success' : 'text-warning',
+        ];
 
-            if ($percentualeOb7_4 == $targetArray[2]) {
-                $dataView['punteggioOb7_4'] = [
-                    'textOb7_4' => $anno . ": Raggiungimento dell'obiettivo massimo con punteggio",
-                    'punteggioOb7_4' => 2.5,
-                    'percentualeOb7_4' => $percentualeOb7_4,
-                    'classOb7_4' => 'text-success'
-                ];
-            } else {
-                $dataView['punteggioOb7_4'] = [
-                    'textOb7_4' => $anno . ": Obiettivo non raggiunto",
-                    'punteggioOb7_4' => 0,
-                    'percentualeOb7_4' => $percentualeOb7_4,
-                    'classOb7_4' => 'text-warning'
-                ];
-            }
-        
+        $dataView['punteggioOb7_4'] = [
+            'textOb7_4' => $anno . (($percentualeOb7_4 == $targetArray[2]) ? ": Raggiungimento dell'obiettivo massimo con punteggio" : ": Obiettivo non raggiunto"),
+            'punteggioOb7_4' => ($percentualeOb7_4 == $targetArray[2]) ? 2.5 : 0,
+            'percentualeOb7_4' => $percentualeOb7_4,
+            'classOb7_4' => ($percentualeOb7_4 == $targetArray[2]) ? 'text-success' : 'text-warning',
+        ];
     
-=======
-        if ($percentualeOb7_4 == $targetArray[2]) {
-            $dataView['punteggioOb7_4'] = [
-                'textOb7_4' => $anno . ": Raggiungimento dell'obiettivo massimo con punteggio",
-                'punteggioOb7_4' => 2,
-                'percentualeOb7_4' => $percentualeOb7_4,
-                'classOb7_4' => 'text-success'
-            ];
-        } else {
-            $dataView['punteggioOb7_4'] = [
-                'textOb7_4' => $anno . ": Obiettivo non raggiunto",
-                'punteggioOb7_4' => 0,
-                'percentualeOb7_4' => $percentualeOb7_4,
-                'classOb7_4' => 'text-warning'
-            ];
-        }
-
->>>>>>> Stashed changes
         return $dataView;
     }
 
