@@ -548,31 +548,31 @@ class HomeController extends Controller
         $anno = date('Y');
 
 
-            if ($anno == 2024) {
-                $targetArray = $array2024;
-            } elseif ($anno == 2025) {
-                $targetArray = $array2025;
-            } elseif ($anno == 2026) {
-                $targetArray = $array2026;
-            } else {
-                $targetArray = [];
-            }
+        if ($anno == 2024) {
+            $targetArray = $array2024;
+        } elseif ($anno == 2025) {
+            $targetArray = $array2025;
+        } elseif ($anno == 2026) {
+            $targetArray = $array2026;
+        } else {
+            $targetArray = [];
+        }
 
-            if ($percentualeOb7_1 >= $targetArray[0]) {
-                $dataView['punteggioOb7_1'] = [
-                    'textOb7_1' => $anno . ": Raggiungimento dell'obiettivo massimo con punteggio",
-                    'punteggioOb7_1' => 2.5,
-                    'percentualeOb7_1' => $percentualeOb7_1,
-                    'classOb7_1' => 'text-success'
-                ];
-            } else {
-                $dataView['punteggioOb7_1'] = [
-                    'textOb7_1' => $anno . ": Obiettivo non raggiunto",
-                    'punteggioOb7_1' => 0,
-                    'percentualeOb7_1' => $percentualeOb7_1,
-                    'classOb7_1' => 'text-warning'
-                ];
-            }
+        if ($percentualeOb7_1 >= $targetArray[0]) {
+            $dataView['punteggioOb7_1'] = [
+                'textOb7_1' => $anno . ": Raggiungimento dell'obiettivo massimo con punteggio",
+                'punteggioOb7_1' => 2.5,
+                'percentualeOb7_1' => $percentualeOb7_1,
+                'classOb7_1' => 'text-success'
+            ];
+        } else {
+            $dataView['punteggioOb7_1'] = [
+                'textOb7_1' => $anno . ": Obiettivo non raggiunto",
+                'punteggioOb7_1' => 0,
+                'percentualeOb7_1' => $percentualeOb7_1,
+                'classOb7_1' => 'text-warning'
+            ];
+        }
 
         
         if ($percentualeOb7_3 == $targetArray[1]) {
@@ -592,21 +592,21 @@ class HomeController extends Controller
         }
 
 
-            if ($percentualeOb7_4 == $targetArray[2]) {
-                $dataView['punteggioOb7_4'] = [
-                    'textOb7_4' => $anno . ": Raggiungimento dell'obiettivo massimo con punteggio",
-                    'punteggioOb7_4' => 2.5,
-                    'percentualeOb7_4' => $percentualeOb7_4,
-                    'classOb7_4' => 'text-success'
-                ];
-            } else {
-                $dataView['punteggioOb7_4'] = [
-                    'textOb7_4' => $anno . ": Obiettivo non raggiunto",
-                    'punteggioOb7_4' => 0,
-                    'percentualeOb7_4' => $percentualeOb7_4,
-                    'classOb7_4' => 'text-warning'
-                ];
-            }
+        if ($percentualeOb7_4 == $targetArray[2]) {
+            $dataView['punteggioOb7_4'] = [
+                'textOb7_4' => $anno . ": Raggiungimento dell'obiettivo massimo con punteggio",
+                'punteggioOb7_4' => 2.5,
+                'percentualeOb7_4' => $percentualeOb7_4,
+                'classOb7_4' => 'text-success'
+            ];
+        } else {
+            $dataView['punteggioOb7_4'] = [
+                'textOb7_4' => $anno . ": Obiettivo non raggiunto",
+                'punteggioOb7_4' => 0,
+                'percentualeOb7_4' => $percentualeOb7_4,
+                'classOb7_4' => 'text-warning'
+            ];
+        }
         
     
         return $dataView;
