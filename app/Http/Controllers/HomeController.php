@@ -624,81 +624,63 @@ class HomeController extends Controller
     protected function calcoloPunteggioOb3Ob8($obiettivo)
     {
         $dataView = $this->initView($obiettivo);
-
-        $dataView['filesCaricati'] = $this->fileCaricati($obiettivo, $dataView['strutture']);
     
+        $dataView['filesCaricati'] = $this->fileCaricati($obiettivo, $dataView['strutture']);
+        
         $dataView['categorie'] = DB::table("target_categories")
             ->where("target_number", $obiettivo)
             ->orderBy("order")
             ->get();
     
-           
-
-
-            $fileIds = $dataView['filesCaricati']->pluck('id')->toArray();
+        $fileIds = $dataView['filesCaricati']->pluck('id')->toArray();
         
-            $dataView['target3_data'] = DB::table("target3_data")
+        $dataView['target3_data'] = DB::table("target3_data")
             ->select("numerator", "denominator", "uploated_file_id")
             ->join("uploated_files", "target3_data.uploated_file_id", "=", "uploated_files.id")
             ->whereIn("uploated_files.id", $fileIds)
             ->get();
-        
-       
-        
-                
-            
+    
         $dataView['userStructures'] = LocationsUsers::where("user_id", Auth::user()->id)
             ->leftJoin("structures", "structures.id", "=", "users_structures.structure_id")
             ->leftJoin("structure_type", "structure_type.code", "=", "structures.type")
             ->orderBy("structures.id")->get();
     
-
- 
         $dataView['percentuali'] = [];
     
         switch ($obiettivo) {
             case 3:
-                // Variabile per verificare se il pre-requisito è caricato e approvato
                 $annullaTuttiPunteggi = false;
-            
-                // Verifica se il pre-requisito è caricato e approvato
+                $preRequisitoPresente = false;
+                
                 foreach ($dataView['filesCaricati'] as $file) {
-                    if ($file->category == 'Pre-requisito per il calcolo dell indicatore' && 
-                        ($file->approved === null || $file->approved == 0)) {
-                        // Se il pre-requisito non è caricato o approvato, azzera i punteggi
-                        $annullaTuttiPunteggi = true;
+                    if ($file->category == 'Pre-requisito per il calcolo dell indicatore') {
+                        $preRequisitoPresente = true;
+                        if ($file->approved === null || $file->approved == 0) {
+                            $annullaTuttiPunteggi = true;
+                        }
                         break; 
                     }
                 }
-            
-                // Se il pre-requisito non è approvato o caricato, azzera i punteggi per tutti
-                if ($annullaTuttiPunteggi) {
-                    foreach ($dataView['filesCaricati'] as $file) {
-                        foreach ($dataView['userStructures'] as $struttura) {
-                            $dataView['punteggioOb8'][] = 0;  // Azzera i punteggi
-                        }
-                    }
+    
+             
+                if ($annullaTuttiPunteggi || !$preRequisitoPresente) {
+                    $dataView['punteggioOb8'] = array_fill(0, count($dataView['userStructures']), 0);
                 } else {
-                    // Altrimenti, calcola i punteggi come previsto
                     foreach ($dataView['target3_data'] as $target3) {
                         $numeratore = $target3->numerator;
                         $denominatore = $target3->denominator;
-            
-                        if ($denominatore > 0) { 
-                            $percentuale = ($numeratore / $denominatore) * 100;
-                        } else {
-                            $percentuale = 0; 
-                        }
-            
-                        $dataView['percentuali'][$target3->uploated_file_id] = $percentuale;  
+                        $percentuale = ($denominatore > 0) ? ($numeratore / $denominatore) * 100 : 0;
+                        $dataView['percentuali'][$target3->uploated_file_id] = $percentuale;
                     }
+    
             
-                    // Calcola i punteggi se il pre-requisito è approvato
                     foreach ($dataView['filesCaricati'] as $file) {
-                        foreach ($dataView['userStructures'] as $struttura) {
-                            $punteggio = 0;
-            
-                            if ($file->approved !== null && $file->approved != 0) { 
+                        if ($file->approved !== null && $file->approved != 0) {
+                            foreach ($dataView['userStructures'] as $struttura) {
+                                $punteggio = 0;
+                                $percentuale = $dataView['percentuali'][$file->id] ?? 0;
+    
+                            
                                 switch ($struttura->column_points) {
                                     case 'ao':
                                         if ($percentuale == 100) {
@@ -707,8 +689,6 @@ class HomeController extends Controller
                                             $punteggio = 7.2;  // Livello II
                                         } elseif ($percentuale >= 75) {
                                             $punteggio = 6;  // Livello III
-                                        } else {
-                                            $punteggio = 0;  // Obiettivo non raggiunto
                                         }
                                         break;
                                     case 'asp':
@@ -718,20 +698,17 @@ class HomeController extends Controller
                                             $punteggio = 4.5;  // Livello II
                                         } elseif ($percentuale >= 75) {
                                             $punteggio = 3.75;  // Livello III
-                                        } else {
-                                            $punteggio = 0;  // Obiettivo non raggiunto
                                         }
                                         break;
                                 }
+    
+             
+                                $dataView['punteggioOb8'][] = $punteggio;
                             }
-            
-                            // Aggiungi il punteggio calcolato all'array
-                            $dataView['punteggioOb8'][] = $punteggio;
                         }
                     }
                 }
                 break;
-            
     
             case 8:
                 foreach ($dataView['filesCaricati'] as $file) {
@@ -744,7 +721,6 @@ class HomeController extends Controller
                 break;
         }
     
-        
         return $dataView;
     }
     
