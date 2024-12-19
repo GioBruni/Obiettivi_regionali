@@ -237,12 +237,15 @@ class AdminController extends Controller
 
     public function approvaObiettivo(Request $request)
     {
+      
 
         $file = UploatedFile::findOrFail($request->fileId);
         $file->approved = $request->esito;
         $file->validator_user_id = Auth::user()->id;
         $file->notes = $request->notes;
         $file->save();
+
+       
 
         DB::table("target3_data")->insert([
             'numerator' => $request->numeratore ?? null,
@@ -255,7 +258,7 @@ class AdminController extends Controller
             'validator' => Auth::user(),
        
         ];
-        Mail::to("sebastiano.ortisi.ext@asp.sr.it")->send(new ControllerEmail(emailData: $emailData));
+       //Mail::to("sebastiano.ortisi.ext@asp.sr.it")->send(new ControllerEmail(emailData: $emailData));
 
         return $this->showObiettivo($file->target_number);
     }

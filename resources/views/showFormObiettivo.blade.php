@@ -24,43 +24,95 @@
                     </div>
 
                     <div class="card-body">
-                    @foreach ($dataView["categorie"] as $categoria)
-                        <?php $trovata = -1; ?>
-                        <div class="card shadow-sm border-0 mt-2">
-                            <div class="card-header bg-primary text-white">
-                                <strong>{{ $categoria->category }}</strong>
-                            </div>
-                            <div class="card-body">
+                        @foreach ($dataView['categorie'] as $categoria)
+                            <?php $trovata = false; ?>
 
-                                @foreach($dataView['filesCaricati'] as $file)
-                                    @if ($file->target_category_id == $categoria->id)
-                                        <?php $trovata = 1; ?>
-                                        @if($file->validator_user_id === null)
-                                            <div id="message5" class="message bg-light p-3 rounded border border-primary text-center w-100" style = "color: orange;">
-                                                <strong>File caricato il: {{ Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $file->created_at)->format('d/m/Y H:i') }} in attesa di approvazione.</strong>
-                                            </div>
-                                        @else
-                                            <div id="message5" class="message bg-light p-3 rounded border border-primary text-center w-100" style="color:{{ $file->approved === 1 ? "green" : "red"}};">
-                                            <strong>Il file caricato il: {{ Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $file->created_at)->format('d/m/Y H:i') }} {{ $file->approved === 1 ? "" : "non " }}&egrave; stato approvato -> Obiettivo {{ $file->approved === 1 ? "" : "non " }}raggiunto!</strong>
-                                            </div>
+                            <!-- Card per Categoria -->
+                            <div class="card shadow-sm border-0 mt-2">
+                                <div class="card-header bg-primary text-white">
+                                    <strong>{{ $categoria->category }}</strong>
+                                </div>
+                                <div class="card-body">
+                                    <?php $trovata = false; ?>
+                                    @foreach ($dataView['filesCaricati'] as $index => $file)
+                                        @if ($file->target_category_id == $categoria->id)
+                                            <?php $trovata = true; ?>
+
+                                            <!-- Stato File -->
+                                            @if ($file->category == 'Pre-requisito per il calcolo dell indicatore')
+                                                @if ($file->approved === null)
+                                                    <!-- Caso: Pre-requisito caricato ma in attesa di approvazione -->
+                                                    <div class="message bg-light p-3 rounded border border-warning text-center w-100" style="color: orange;">
+                                                        <strong>
+                                                            File caricato il:
+                                                            {{ Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $file->created_at)->format('d/m/Y H:i') }}
+                                                            - Pre-requisito caricato, in attesa di approvazione.
+                                                        </strong>
+                                                    </div>
+                                                @elseif ($file->approved == 0)
+                                                    <!-- Caso: Pre-requisito non approvato -->
+                                                    <div class="message bg-light p-3 rounded border border-danger text-center w-100" style="color: red;">
+                                                        <strong>
+                                                            File caricato il:
+                                                            {{ Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $file->created_at)->format('d/m/Y H:i') }}
+                                                            - Pre-requisito non approvato -> Tutti i punteggi sono azzerati.
+                                                        </strong>
+                                                    </div>
+                                                    @break
+                                                @else
+                                                    <!-- Caso: Pre-requisito approvato -->
+                                                    <div class="message bg-light p-3 rounded border border-success text-center w-100" style="color: green;">
+                                                        <strong>
+                                                            File caricato il:
+                                                            {{ Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $file->created_at)->format('d/m/Y H:i') }}
+                                                            - Pre-requisito approvato.
+                                                        </strong>
+                                                    </div>
+                                                @endif
+                                            @else
+                                                <!-- Caso: File di altre categorie -->
+                                                @if ($file->approved === null)
+                                                    <!-- File caricato in attesa di approvazione -->
+                                                    <div class="message bg-light p-3 rounded border border-warning text-center w-100" style="color: orange;">
+                                                        <strong>
+                                                            File caricato il:
+                                                            {{ Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $file->created_at)->format('d/m/Y H:i') }}
+                                                            - In attesa di approvazione.
+                                                        </strong>
+                                                    </div>
+                                                @elseif ($file->approved == 0)
+                                                    <div class="message bg-light p-3 rounded border border-danger text-center w-100" style="color: red;">
+                                                        <strong>
+                                                            File caricato il:
+                                                            {{ Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $file->created_at)->format('d/m/Y H:i') }}
+                                                            - Non approvato -> Punteggio: 0
+                                                        </strong>
+                                                    </div>
+                                                @else
+                                                    <div class="message bg-light p-3 rounded border border-success text-center w-100" style="color: green;">
+                                                        <strong>
+                                                            File caricato il:
+                                                            {{ Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $file->created_at)->format('d/m/Y H:i') }}
+                                                            - Approvato -> Punteggio: {{ $dataView['punteggioOb8'][$index] }}
+                                                        </strong>
+                                                    </div>
+                                                @endif
+                                            @endif
                                         @endif
+                                    @endforeach
 
-                                    @endif  
-                                    
-                              
-                                @endforeach
-                                @if ($trovata == -1)
-                                    <div id="message5" class="message bg-light p-3 rounded border border-primary text-center w-100" style="color:red;">
-                                        <strong>Il file non &egrave; ancora stato caricato -> Obiettivo non raggiunto!</strong>
-                                    </div>
-                                @endif
+                                    @if (!$trovata)
+                                        <!-- Caso: Nessun file caricato -->
+                                        <div class="message bg-light p-3 rounded border border-primary text-center w-100" style="color: orange;">
+                                            <strong>File non ancora caricato -> Obiettivo non raggiunto!</strong>
+                                        </div>
+                                    @endif
+                                </div>
                             </div>
-                        </div>
-                    @endforeach
-
+                        @endforeach
                     </div>
-                </div>
 
+                </div>
             </div>
         </div>
     </div>
@@ -71,18 +123,18 @@
 @section('bootstrapitalia_js')
 <script>
 
-    $(document).ready(function() {
+    $(document).ready(function () {
         $.ajaxSetup({
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             }
         });
 
-        $("#categoriaSelect").change(function() {
+        $("#categoriaSelect").change(function () {
             var selectedOption = $(this).find('option:selected');
             var description = selectedOption.attr('data-description');
 
-            $('#descriptionText').text(description); 
+            $('#descriptionText').text(description);
         });
 
     });

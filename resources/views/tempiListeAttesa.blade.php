@@ -124,7 +124,6 @@
                                     <strong>{{ $categoria->category }}</strong>
                                 </div>
                                 <div class="card-body">
-
                                     @foreach($dataView['filesCaricati'] as $file)
                                         @if ($file->target_category_id == $categoria->id)
                                             <?php $trovata = 1; ?>
@@ -148,9 +147,7 @@
                             </div>
                         @endforeach
                     </div>
-
                 </div>
-
             </div>
         </div>
     </div>
