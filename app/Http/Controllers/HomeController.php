@@ -53,6 +53,7 @@ class HomeController extends Controller
             //->groupBy('nomenclator_code')
             ->sum('amount');
 
+
         $denominatoreC = DB::table(table: 'flows_c')
             ->where("structure_id", Auth::user()->firstStructureId()->id)
             ->where('year', $anno)
@@ -536,97 +537,228 @@ class HomeController extends Controller
     }
 
     //non abbiamo l'indicatore 2
-     protected function calcoloPunteggioOb7($percentualeOb7_1, $percentualeOb7_3, $percentualeOb7_4){
-            $dataView = [];
+    protected function calcoloPunteggioOb7($percentualeOb7_1, $percentualeOb7_3, $percentualeOb7_4)
+    {
+        $dataView = [];
 
-            $array2024 = [40, 80, 80];
-            $array2025 = [65, 90, 90];
-            $array2026 = [90, 90, 90];
+        $array2024 = [40, 80, 80];
+        $array2025 = [65, 90, 90];
+        $array2026 = [90, 90, 90];
 
-            $anno = date('Y');
+        $anno = date('Y');
 
-            if ($percentualeOb7_1 < 0) {
-                $dataView['messaggioTmpIncremento'] = [
-                    'textIncremento' => $anno . ": Percentuale negativa, obiettivo non raggiunto con punteggio",
-                    'punteggio' => 0,
-                    'classIncremento' => 'text-danger'
-                ];
+        if ($percentualeOb7_1 < 0) {
+            $dataView['messaggioTmpIncremento'] = [
+                'textIncremento' => $anno . ": Percentuale negativa, obiettivo non raggiunto con punteggio",
+                'punteggio' => 0,
+                'classIncremento' => 'text-danger'
+            ];
+        } else {
+
+            if ($anno == 2024) {
+                $targetArray = $array2024;
+            } elseif ($anno == 2025) {
+                $targetArray = $array2025;
+            } elseif ($anno == 2026) {
+                $targetArray = $array2026;
             } else {
-            
-                if ($anno == 2024) {
-                    $targetArray = $array2024;
-                } elseif ($anno == 2025) {
-                    $targetArray = $array2025;
-                } elseif ($anno == 2026) {
-                    $targetArray = $array2026;
-                } else {
-                    $targetArray = [];
-                }
-
-                if ($percentualeOb7_1  >=  $targetArray[0]) {
-                    $dataView['punteggioOb7_1'] = [
-                        'textOb7_1' => $anno . ": Raggiungimento dell'obiettivo massimo con punteggio",
-                        'punteggioOb7_1' => 2,
-                        'percentualeOb7_1' => $percentualeOb7_1,
-                        'classOb7_1' => 'text-success'
-                    ];
-                }  else {
-                    $dataView['punteggioOb7_1'] = [
-                        'textOb7_1' => $anno . ": Obiettivo non raggiunto",
-                        'punteggioOb7_1' => 0,
-                        'percentualeOb7_1' => $percentualeOb7_1,
-                        'classIncremento' => 'text-warning'
-                    ];
-                }
-
-
-            
-                } if ($percentualeOb7_3 == $targetArray[1]) {
-                    $dataView['punteggioOb7_3'] = [
-                        'textOb7_3' => $anno . ": Raggiungimento dell'obiettivo massimo con punteggio",
-                        'punteggioOb7_3' => 2,
-                        'percentualeOb7_3' => $percentualeOb7_3,
-                        'classOb7_3' => 'text-success'
-                    ];
-                }  else {
-                    $dataView['punteggioOb7_3'] = [
-                        'textOb7_3' => $anno . ": Obiettivo non raggiunto",
-                        'punteggioOb7_3' => 0,
-                        'percentualeOb7_3' => $percentualeOb7_3,
-                        'classOb7_3' => 'text-warning'
-                    ];
-
-
-            if ($percentualeOb7_4 ==  $targetArray[2]) {
-                    $dataView['punteggioOb7_4'] = [
-                        'textOb7_4' => $anno . ": Raggiungimento dell'obiettivo massimo con punteggio",
-                        'punteggioOb7_4' => 2,
-                        'percentualeOb7_4' => $percentualeOb7_4,
-                        'classOb7_4' => 'text-success'
-                    ];
-                } else {
-                    $dataView['punteggioOb7_4'] = [
-                        'textOb7_4' => $anno . ": Obiettivo non raggiunto",
-                        'punteggioOb7_4' => 0,
-                        'percentualeOb7_4' => $percentualeOb7_4,
-                        'classOb7_4' => 'text-warning'
-                    ];
-                } 
+                $targetArray = [];
             }
 
-            return $dataView;
+            if ($percentualeOb7_1 >= $targetArray[0]) {
+                $dataView['punteggioOb7_1'] = [
+                    'textOb7_1' => $anno . ": Raggiungimento dell'obiettivo massimo con punteggio",
+                    'punteggioOb7_1' => 2,
+                    'percentualeOb7_1' => $percentualeOb7_1,
+                    'classOb7_1' => 'text-success'
+                ];
+            } else {
+                $dataView['punteggioOb7_1'] = [
+                    'textOb7_1' => $anno . ": Obiettivo non raggiunto",
+                    'punteggioOb7_1' => 0,
+                    'percentualeOb7_1' => $percentualeOb7_1,
+                    'classIncremento' => 'text-warning'
+                ];
+            }
+
+
+
         }
+        if ($percentualeOb7_3 == $targetArray[1]) {
+            $dataView['punteggioOb7_3'] = [
+                'textOb7_3' => $anno . ": Raggiungimento dell'obiettivo massimo con punteggio",
+                'punteggioOb7_3' => 2,
+                'percentualeOb7_3' => $percentualeOb7_3,
+                'classOb7_3' => 'text-success'
+            ];
+        } else {
+            $dataView['punteggioOb7_3'] = [
+                'textOb7_3' => $anno . ": Obiettivo non raggiunto",
+                'punteggioOb7_3' => 0,
+                'percentualeOb7_3' => $percentualeOb7_3,
+                'classOb7_3' => 'text-warning'
+            ];
+
+
+            if ($percentualeOb7_4 == $targetArray[2]) {
+                $dataView['punteggioOb7_4'] = [
+                    'textOb7_4' => $anno . ": Raggiungimento dell'obiettivo massimo con punteggio",
+                    'punteggioOb7_4' => 2,
+                    'percentualeOb7_4' => $percentualeOb7_4,
+                    'classOb7_4' => 'text-success'
+                ];
+            } else {
+                $dataView['punteggioOb7_4'] = [
+                    'textOb7_4' => $anno . ": Obiettivo non raggiunto",
+                    'punteggioOb7_4' => 0,
+                    'percentualeOb7_4' => $percentualeOb7_4,
+                    'classOb7_4' => 'text-warning'
+                ];
+            }
+        }
+
+        return $dataView;
+    }
+
+
+    protected function calcoloPunteggioOb3Ob8($obiettivo)
+    {
+        $dataView = $this->initView($obiettivo);
+
+        $dataView['filesCaricati'] = $this->fileCaricati($obiettivo, $dataView['strutture']);
+    
+        $dataView['categorie'] = DB::table("target_categories")
+            ->where("target_number", $obiettivo)
+            ->orderBy("order")
+            ->get();
+    
+           
+
+
+            $fileIds = $dataView['filesCaricati']->pluck('id')->toArray();
+        
+            $dataView['target3_data'] = DB::table("target3_data")
+            ->select("numerator", "denominator", "uploated_file_id")
+            ->join("uploated_files", "target3_data.uploated_file_id", "=", "uploated_files.id")
+            ->whereIn("uploated_files.id", $fileIds)
+            ->get();
+        
+       
+        
+                
+            
+        $dataView['userStructures'] = LocationsUsers::where("user_id", Auth::user()->id)
+            ->leftJoin("structures", "structures.id", "=", "users_structures.structure_id")
+            ->leftJoin("structure_type", "structure_type.code", "=", "structures.type")
+            ->orderBy("structures.id")->get();
+    
+
+ 
+        $dataView['percentuali'] = [];
+    
+        switch ($obiettivo) {
+            case 3:
+                // Variabile per verificare se il pre-requisito è caricato e approvato
+                $annullaTuttiPunteggi = false;
+            
+                // Verifica se il pre-requisito è caricato e approvato
+                foreach ($dataView['filesCaricati'] as $file) {
+                    if ($file->category == 'Pre-requisito per il calcolo dell indicatore' && 
+                        ($file->approved === null || $file->approved == 0)) {
+                        // Se il pre-requisito non è caricato o approvato, azzera i punteggi
+                        $annullaTuttiPunteggi = true;
+                        break; 
+                    }
+                }
+            
+                // Se il pre-requisito non è approvato o caricato, azzera i punteggi per tutti
+                if ($annullaTuttiPunteggi) {
+                    foreach ($dataView['filesCaricati'] as $file) {
+                        foreach ($dataView['userStructures'] as $struttura) {
+                            $dataView['punteggioOb8'][] = 0;  // Azzera i punteggi
+                        }
+                    }
+                } else {
+                    // Altrimenti, calcola i punteggi come previsto
+                    foreach ($dataView['target3_data'] as $target3) {
+                        $numeratore = $target3->numerator;
+                        $denominatore = $target3->denominator;
+            
+                        if ($denominatore > 0) { 
+                            $percentuale = ($numeratore / $denominatore) * 100;
+                        } else {
+                            $percentuale = 0; 
+                        }
+            
+                        $dataView['percentuali'][$target3->uploated_file_id] = $percentuale;  
+                    }
+            
+                    // Calcola i punteggi se il pre-requisito è approvato
+                    foreach ($dataView['filesCaricati'] as $file) {
+                        foreach ($dataView['userStructures'] as $struttura) {
+                            $punteggio = 0;
+            
+                            if ($file->approved !== null && $file->approved != 0) { 
+                                switch ($struttura->column_points) {
+                                    case 'ao':
+                                        if ($percentuale == 100) {
+                                            $punteggio = 8;  // Livello I
+                                        } elseif ($percentuale >= 90) {
+                                            $punteggio = 7.2;  // Livello II
+                                        } elseif ($percentuale >= 75) {
+                                            $punteggio = 6;  // Livello III
+                                        } else {
+                                            $punteggio = 0;  // Obiettivo non raggiunto
+                                        }
+                                        break;
+                                    case 'asp':
+                                        if ($percentuale == 100) {
+                                            $punteggio = 5;  // Livello I
+                                        } elseif ($percentuale >= 90) {
+                                            $punteggio = 4.5;  // Livello II
+                                        } elseif ($percentuale >= 75) {
+                                            $punteggio = 3.75;  // Livello III
+                                        } else {
+                                            $punteggio = 0;  // Obiettivo non raggiunto
+                                        }
+                                        break;
+                                }
+                            }
+            
+                            // Aggiungi il punteggio calcolato all'array
+                            $dataView['punteggioOb8'][] = $punteggio;
+                        }
+                    }
+                }
+                break;
+            
+    
+            case 8:
+                foreach ($dataView['filesCaricati'] as $file) {
+                    if ($file->approved === null || $file->approved == 0) {
+                        $dataView['punteggioOb8'][] = 0;
+                    } else {
+                        $dataView['punteggioOb8'][] = 8;
+                    }
+                }
+                break;
+        }
+    
+        
+        return $dataView;
+    }
+    
+
+
 
     protected function calcoloPunteggioSub4($percentualeData)
     {
         $dataView = [];
-
         $array2024 = array(10, 5, 3);
         $array2025 = array(15, 10, 7);
         $array2026 = array(30, 25, 20, 15);
 
         $anno = date('Y');
-
 
         if ($percentualeData < 0) {
             $dataView['messaggioTmpIncremento'] = [
@@ -641,7 +773,6 @@ class HomeController extends Controller
             } elseif ($anno == 2026) {
                 $targetArray = $array2026;
             }
-
 
             if ($percentualeData > $targetArray[0]) {
                 $dataView['messaggioTmpIncremento'] = [
@@ -668,6 +799,7 @@ class HomeController extends Controller
 
         return $dataView;
     }
+
     protected function calcoloPunteggioOb5_1($percentualeAderenti)
     {
         $dataView = [];
@@ -783,7 +915,9 @@ class HomeController extends Controller
         $dataView['obiettivo'] = $obiettivo;
         $dataView['strutture'] = Auth::user()->structures();
         $dataView['categorie'] = DB::table(table: 'target_categories as tc')
-            ->where("target_number", $obiettivo)->get();
+            ->where("target_number", $obiettivo)
+            ->orderBy('order')
+            ->get();
 
         return $dataView;
     }
@@ -971,6 +1105,7 @@ class HomeController extends Controller
         $dataView = $this->initView(3);
         $dataView['files'][] = "obiettivo3.pdf";
 
+   
         return view("caricamentoPuntoNascite")->with("dataView", $dataView);
 
     }
@@ -991,7 +1126,6 @@ class HomeController extends Controller
         $dataView['files'] = null;
 
         return view("uploadTempiListaAttesa")->with("dataView", $dataView);
-
     }
 
     public function caricamentoFarmaci()
@@ -1020,23 +1154,57 @@ class HomeController extends Controller
 
     public function showObiettivo(Request $request)
     {
+
         $dataView = $this->initView($request->obiettivo);
         $dataView['categorie'] = DB::table("target_categories")
             ->where("target_number", $request->obiettivo)
             ->orderBy("order")
             ->get();
 
+       
         switch ($request->obiettivo) {
             case 3:
                 $dataView['files'][] = "obiettivo3.pdf";
                 $dataView['filesCaricati'] = $this->fileCaricati(3, $dataView['strutture']);
+
+                $calcoloPunteggioOb3 = $this->calcoloPunteggioOb3Ob8($request->obiettivo);
+                $dataView = array_merge($calcoloPunteggioOb3, $dataView);
+               
+                /*
+                                foreach ($dataView['filesCaricati'] as $file) {
+                                    if ($file->approved === null || $file->approved == 0) {
+
+                                        $dataView['punteggioOb8'][] = 0;
+                                     }else{
+                                        $dataView['punteggioOb8'][] = 8;
+                                     }
+                 
+                                }
+                                */
                 break;
 
             case 8:
                 $dataView['filesCaricati'] = $this->fileCaricati(8, $dataView['strutture']);
-                break;
+                $calcoloPunteggioOb8 = $this->calcoloPunteggioOb3Ob8($request->obiettivo);
 
+
+                $dataView = array_merge($calcoloPunteggioOb8, $dataView);
+                /*
+                foreach ($dataView['filesCaricati'] as $file) {
+                    if ($file->approved === null || $file->approved == 0) {
+
+                        $dataView['punteggioOb8'][] = 0;
+                     }else{
+                        $dataView['punteggioOb8'][] = 8;
+                     }
+ 
+                }
+
+             */
+                break;
         }
+
+
         $dataView['obiettivo'] = $request->obiettivo;
 
         return view("showFormObiettivo")->with("dataView", $dataView);
@@ -1474,9 +1642,7 @@ class HomeController extends Controller
             ]
         );
 
-
         $dataView['filesCaricati'] = $this->fileCaricati(1, $dataView['strutture']);
-
         return view("tempiListeAttesa")->with("dataView", $dataView);
     }
 
@@ -3286,6 +3452,7 @@ class HomeController extends Controller
         );
 
         /***************************Documenti in CDA2************************************************************* */
+
         if ($dataView['documentiIndicizzatiCDA2'] > 0) {
             $dataView['percentualeDocumentiCDA2'] = round($documentiCDA2 / $dataView['documentiIndicizzatiCDA2'] * 100, 2);
         } else {
@@ -3315,8 +3482,6 @@ class HomeController extends Controller
 
 
         $calcoloPunteggio = $this->calcoloPunteggioOb7($dataView['percentualeDocumentazioneFse'], $dataView['percentualeDocumentiCDA2'], $dataView['percentualePades']);
-
-
         $dataView = array_merge($calcoloPunteggio, $dataView);
 
         return view("fse")->with("dataView", $dataView);

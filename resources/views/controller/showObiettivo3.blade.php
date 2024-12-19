@@ -19,19 +19,25 @@
 
                     <!-- Numeratore e Denominatore (nascosti per ora) -->
                     <div class="row mt-3" id="numeratoreDenominatoreFields">
+                        
                         <div class="col-md-6">
                             <label for="numeratore" class="form-label">Numeratore: (numero di requisiti raggiunti del file)</label>
                         </div>
+
                         <div class="col-md-6">
                             <input type="number" id="numeratore" name="numeratore" class="form-control" min="0">
                         </div>
+
                         <div class="col-md-6">
                             <label for="denominatore" class="form-label">Denominatore: (totale requisiti richiesti dal file)</label>
                         </div>
+
                         <div class="col-md-6">
-                            <input type="number" id="denominatore" name="denominatore" class="form-control" min="0">
+                            <input type="number" id="denominatore" name="denominatore" class="form-control" disabled>
+                            <input type="hidden" name="denominatore" value="100">
                         </div>
                     </div>
+
 
                     <!-- Esito -->
                     <div class="row">
@@ -91,7 +97,6 @@
                         </thead>
                         <tbody>
                             @foreach($dataView['filesCaricati'] as $file)
-
                                 <tr class="{{ $file->validator_user_id == null ? "" : ($file->approved == 1 ? "table-success" : "table-danger") }}">
                                     <td scope="row"><a href="{{ $file->path }}" target="_blank">{{ strlen($file->filename) >= 20 ?  substr($file->filename, 0, 20) . "..." : $file->filename }}</a></td>
                                     @if (count($dataView['categorie']) > 0)
@@ -116,8 +121,7 @@
                         </tbody>
                     </table>
                 </div>
-            </div>
-                
+            </div>   
         </div>
     </div>
 </div>
