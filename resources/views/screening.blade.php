@@ -56,7 +56,6 @@
                                             <th>Totale MMG</th>
                                             <th>MMG Coinvolti</th>
                                             <th>Percentuale (%)</th>
-                                            <th>Struttura</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -65,7 +64,6 @@
                                                 <td>{{ $row->mmg_totale }}</td>
                                                 <td>{{ $row->mmg_coinvolti }}</td>
                                                 <td>{{ number_format($dataView['percentualeAderenti'], 2) }}</td>
-                                                <td>{{$row->nome_struttura}}</td>
                                             </tr>
                                         @endforeach
                                     </tbody>
