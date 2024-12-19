@@ -14,10 +14,8 @@
 
 <body>
 
-  
-    <img alt="logo" src="{{ config('bootstrap-italia.logo.url') }}">
-     
-
+    <img src="{{'data:image/png;base64,'.base64_encode(string: file_get_contents( public_path('/logo-regione-sicilia.png')))}}">
+    
     <h1>Obiettivo 1</h1>
 
     <p>Anno selezionato: {{ $anno }}</p>

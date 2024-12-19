@@ -25,7 +25,8 @@
 
                     @foreach ($dataView['users'] as $key => $user)
                         <div class="row {{ $key % 2 == 0 ? "odd-row" : ""}} {{ $user->enable == config("constants.ACTIVE") ? "" : "neutral-2-bg-a2"}} p-2">
-                            <div class="col-2"><a href="{{ url("/showUser", ['id' => $user->id]) }}">{{ $user->name }}</a></div>
+                            <!--div class="col-2"><a href="{{ url("/showUser", ['id' => $user->id]) }}">{{ $user->name }}</a></div-->
+                            <div class="col-2">{{ $user->name }}</div>
                             <div class="col-3">{{ $user->email }}</div>
                             <div class="col-4">{{ $user->locations }}</div>
                             <div class="col text-center">

@@ -107,8 +107,6 @@
                                                 <th>Struttura</th>
                                                 <th>Anno</th>
                                                 <th>Totale accertamenti</th>
-                                                <th>Dati SDO</th>
-                                                <th>Percentuale</th>
                                                 <th>Incr rispetto al 2023</th>
                                             </tr>
                                         </thead>
@@ -119,8 +117,6 @@
                                                         <td>{{ $res['nome_struttura'] }}</td> 
                                                         <td>{{ $res['anno'] }}</td> 
                                                         <td>{{ $res['totale_accertamenti'] }}</td> 
-                                                        <td>{{ $res['denominatore'] }}</td> 
-                                                        <td>{{ $res['percentualeAccertamenti'] }} %</td> 
                                                         <td>{{ $res['incrementoAccertamenti'] }} %</td>
                                                     </tr>
                                                 @endforeach
@@ -197,7 +193,7 @@
                         
                         <div class="card-body">
                             <div class="container">
-                                <form action="{{ route('donazioni') }}" method="GET" enctype="multipart/form-data">
+                                <form action="{{ route('admin.donazioni') }}" method="GET" enctype="multipart/form-data">
                                     <div class="row align-items-end">
                                         <div class="col-md-6">
                                             <div class="form-group d-flex">

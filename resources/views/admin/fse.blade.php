@@ -77,14 +77,16 @@
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
-                                                                @foreach($dataView['strutture'] as $idStruttura => $row)
-                                                                <tr>
-                                                                    <td>{{$row['nome_struttura']}}</td>
-                                                                    <td>{{$row['dimissioniOspedaliere']}}</td>
-                                                                    <td>{{$row['ob7']}}</td>
-                                                                    <td>{{$row['percentualeDimissioniOspedaliere']}}</td>
-                                                                </tr>
-                                                                @endforeach
+                                                                @if(isset($dataView['strutture']))
+                                                                    @foreach($dataView['strutture'] as $idStruttura => $row)
+                                                                    <tr>
+                                                                        <td>{{$row['nome_struttura']}}</td>
+                                                                        <td>{{$row['dimissioniOspedaliere']}}</td>
+                                                                        <td>{{$row['ob7']}}</td>
+                                                                        <td>{{$row['percentualeDimissioniOspedaliere']}}</td>
+                                                                    </tr>
+                                                                    @endforeach
+                                                                @endif
                                                             </tbody>
                                                         </table>
                                                     </div>
@@ -115,14 +117,16 @@
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
-                                                            @foreach($dataView['strutture'] as $idStruttura => $row)
-                                                                <tr>
-                                                                    <td>{{$row['nome_struttura']}}</td>
-                                                                    <td>{{$row['dimissioniPS'] }}</td>
-                                                                    <td>{{$row['ob7PS']}}</td>
-                                                                    <td>{{$row['percentualePS']}}</td>
-                                                                </tr>
-                                                            @endforeach
+                                                            @if(isset($dataView['strutture']))
+                                                                @foreach($dataView['strutture'] as $idStruttura => $row)
+                                                                    <tr>
+                                                                        <td>{{$row['nome_struttura']}}</td>
+                                                                        <td>{{$row['dimissioniPS'] }}</td>
+                                                                        <td>{{$row['ob7PS']}}</td>
+                                                                        <td>{{$row['percentualePS']}}</td>
+                                                                    </tr>
+                                                                @endforeach
+                                                            @endif
                                                             </tbody>
                                                         </table>
                                                     </div>
@@ -155,14 +159,16 @@
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
-                                                            @foreach($dataView['strutture'] as $idStruttura => $row)
-                                                                <tr>
-                                                                    <td>{{$row['nome_struttura']}}</td>
-                                                                    <td>{{$row['prestazioniLab']}}</td>
-                                                                    <td>{{$row['ia13']}}</td>
-                                                                    <td>{{$row['percentualePrestLab']}}</td>
-                                                                </tr>
-                                                            @endforeach
+                                                            @if(isset($dataView['strutture']))
+                                                                @foreach($dataView['strutture'] as $idStruttura => $row)
+                                                                    <tr>
+                                                                        <td>{{$row['nome_struttura']}}</td>
+                                                                        <td>{{$row['prestazioniLab']}}</td>
+                                                                        <td>{{$row['ia13']}}</td>
+                                                                        <td>{{$row['percentualePrestLab']}}</td>
+                                                                    </tr>
+                                                                @endforeach
+                                                            @endif
                                                             </tbody>
                                                         </table>
                                                     </div>
@@ -193,14 +199,16 @@
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
-                                                            @foreach($dataView['strutture'] as $idStruttura => $row)
-                                                                <tr>
-                                                                    <td>{{$row['nome_struttura']}}</td>
-                                                                    <td>{{$row['prestazioniRadiologia']}}</td>
-                                                                    <td>{{$row['ia14']}}</td>
-                                                                    <td>{{$row['percentualeRefRadiologia']}}</td>
-                                                                </tr>
-                                                            @endforeach
+                                                            @if(isset($dataView['strutture']))
+                                                                @foreach($dataView['strutture'] as $idStruttura => $row)
+                                                                    <tr>
+                                                                        <td>{{$row['nome_struttura']}}</td>
+                                                                        <td>{{$row['prestazioniRadiologia']}}</td>
+                                                                        <td>{{$row['ia14']}}</td>
+                                                                        <td>{{$row['percentualeRefRadiologia']}}</td>
+                                                                    </tr>
+                                                                @endforeach
+                                                            @endif
                                                             </tbody>
                                                         </table>
                                                     </div>
@@ -233,14 +241,17 @@
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
-                                                            @foreach($dataView['strutture'] as $idStruttura => $row)
-                                                                <tr>
-                                                                    <td>{{$row['nome_struttura']}}</td>
-                                                                    <td>{{$row['specialisticaAmbulatoriale']}}</td>
-                                                                    <td>{{$row['ia15']}}</td>
-                                                                    <td>{{$row['percentualeAmbulatoriale']}}</td>
-                                                                </tr>
-                                                            @endforeach
+                                                            @if(isset($dataView['strutture']))
+
+                                                                @foreach($dataView['strutture'] as $idStruttura => $row)
+                                                                    <tr>
+                                                                        <td>{{$row['nome_struttura']}}</td>
+                                                                        <td>{{$row['specialisticaAmbulatoriale']}}</td>
+                                                                        <td>{{$row['ia15']}}</td>
+                                                                        <td>{{$row['percentualeAmbulatoriale']}}</td>
+                                                                    </tr>
+                                                                @endforeach
+                                                            @endif
                                                             </tbody>
                                                         </table>
                                                     </div>
@@ -272,15 +283,18 @@
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
-                                                            @foreach($dataView['strutture'] as $idStruttura => $row)
-                                                                <tr>
-                                                                    <td>{{$row['nome_struttura']}}</td>
+                                                            @if(isset($dataView['strutture']))
 
-                                                                    <td>{{$row['certificatiIndicizzati']}}</td>
-                                                                    <td>{{$row['vaccinati']}}</td>
-                                                                    <td>{{$row['percentualeVaccinati']}}</td>
-                                                                </tr>
-                                                            @endforeach
+                                                                @foreach($dataView['strutture'] as $idStruttura => $row)
+                                                                    <tr>
+                                                                        <td>{{$row['nome_struttura']}}</td>
+
+                                                                        <td>{{$row['certificatiIndicizzati']}}</td>
+                                                                        <td>{{$row['vaccinati']}}</td>
+                                                                        <td>{{$row['percentualeVaccinati']}}</td>
+                                                                    </tr>
+                                                                @endforeach
+                                                            @endif
                                                             </tbody>
                                                         </table>
                                                     </div>
@@ -311,14 +325,17 @@
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
-                                                            @foreach($dataView['strutture'] as $idStruttura => $row)
-                                                                <tr>
-                                                                    <td>{{$row['nome_struttura']}}</td>
-                                                                    <td>{{$row['documentiIndicizzati']}}</td>
-                                                                    <td>{{$row['ia16']}}</td>
-                                                                    <td>{{ $row['percentualePrestErogate']}}</td>
-                                                                </tr>
-                                                            @endforeach
+                                                            @if(isset($dataView['strutture']))
+
+                                                                @foreach($dataView['strutture'] as $idStruttura => $row)
+                                                                    <tr>
+                                                                        <td>{{$row['nome_struttura']}}</td>
+                                                                        <td>{{$row['documentiIndicizzati']}}</td>
+                                                                        <td>{{$row['ia16']}}</td>
+                                                                        <td>{{ $row['percentualePrestErogate']}}</td>
+                                                                    </tr>
+                                                                @endforeach
+                                                            @endif
                                                             </tbody>
                                                         </table>
                                                         <div class="legend p-3 border rounded mt-3 ">
@@ -361,14 +378,17 @@
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
-                                                            @foreach($dataView['strutture'] as $idStruttura => $row)
-                                                                <tr>
-                                                                    <td>{{$row['nome_struttura']}}</td>
-                                                                    <td>{{$row['documentiIndicizzati']}}</td>
-                                                                    <td>{{$row['documentiIndicizzatiCDA2'] }}</td>
-                                                                    <td>{{$row['percentualeDocumentiCDA2']}}</td>
-                                                                </tr>
-                                                            @endforeach
+                                                            @if(isset($dataView['strutture']))
+
+                                                                @foreach($dataView['strutture'] as $idStruttura => $row)
+                                                                    <tr>
+                                                                        <td>{{$row['nome_struttura']}}</td>
+                                                                        <td>{{$row['documentiIndicizzati']}}</td>
+                                                                        <td>{{$row['documentiIndicizzatiCDA2'] }}</td>
+                                                                        <td>{{$row['percentualeDocumentiCDA2']}}</td>
+                                                                    </tr>
+                                                                @endforeach
+                                                            @endif
                                                             </tbody>
                                                         </table>
                                                         <div class="legend p-3 border rounded mt-3 ">
@@ -411,14 +431,17 @@
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
-                                                            @foreach($dataView['strutture'] as $idStruttura => $row)
-                                                                <tr>
-                                                                    <td>{{$row['nome_struttura']}}</td>
-                                                                    <td>{{$row['documentiPades']}}</td>
-                                                                    <td>{{$row['documentiIndicizzatiPades']}}</td>
-                                                                    <td>{{$row['percentualeDocumentiPades']}}</td>
-                                                                </tr>
-                                                            @endforeach
+                                                            @if(isset($dataView['strutture']))
+
+                                                                @foreach($dataView['strutture'] as $idStruttura => $row)
+                                                                    <tr>
+                                                                        <td>{{$row['nome_struttura']}}</td>
+                                                                        <td>{{$row['documentiPades']}}</td>
+                                                                        <td>{{$row['documentiIndicizzatiPades']}}</td>
+                                                                        <td>{{$row['percentualeDocumentiPades']}}</td>
+                                                                    </tr>
+                                                                @endforeach
+                                                            @endif
                                                             </tbody>
                                                         </table>
                                                         <div class="legend p-3 border rounded mt-3 ">

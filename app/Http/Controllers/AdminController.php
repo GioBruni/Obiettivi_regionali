@@ -386,7 +386,7 @@ class AdminController extends Controller
         $dataView['dati'] = [];
         foreach ($allStructureIds as $structureId) {
             $denominatore = (isset($denominatoriC[$structureId]) ? $denominatoriC[$structureId]->tot : 0) + (isset($denominatoriM[$structureId]) ? $denominatoriM[$structureId]->tot : 0);
-            $percentuale = round($numeratori[$structureId]->totale_quantita / $denominatore * 100, 2);
+            $percentuale = ($denominatore != 0 && isset($numeratori[$structureId])) ? round($numeratori[$structureId]->totale_quantita / $denominatore * 100, 2) : 0;
             $dataView['dati'][$structureId] = [
                 'structure_id' => $structureId,
                 'numeratore' => isset($numeratori[$structureId]) ? $numeratori[$structureId]->totale_quantita : 0,
@@ -987,12 +987,22 @@ class AdminController extends Controller
 
 
         $dataView['tableData'] = DB::table('target6_data')
-        ->select('totale_accertamenti', 'numero_opposti','totale_cornee', 'anno', 'structure_id', 's.name')
+        ->select('totale_accertamenti', 'numero_opposti','totale_cornee', 'target6_data.anno', 'target6_data.structure_id', 's.name')
         ->join('structures as s', 'target6_data.structure_id', '=', 's.id')
-        ->orderBy("name")
-        ->orderBy("anno")
+        ->join(
+            DB::raw('(SELECT structure_id, anno, MAX(created_at) AS max_created_at
+                      FROM target6_data
+                      GROUP BY structure_id, anno) as latest_data'),
+            function($join) {
+                $join->on('target6_data.structure_id', '=', 'latest_data.structure_id')
+                     ->on('target6_data.anno', '=', 'latest_data.anno')
+                     ->on('target6_data.created_at', '=', 'latest_data.max_created_at');
+            }
+        )
+        ->orderBy("s.name")
+        ->orderBy("target6_data.anno")
         ->get();
-
+/*
         //Denominatore preso dal flusso
         $denominatore = DB::table('flows_sdo as f')
         ->join(
@@ -1004,7 +1014,7 @@ class AdminController extends Controller
             })
         ->select('f.structure_id', 'f.year', 'f.ob6', 'f.created_at')
         ->get();
-
+*/
         $dataView['result'] = [];
         $incrementi = [];
         $percentualiAnnoSelezionato = [];
@@ -1012,26 +1022,26 @@ class AdminController extends Controller
         // Calcolo la percentuale per ogni anno
         foreach ($dataView['tableData'] as $target) {
             
-            $denominatoreTmp = $denominatore->firstWhere('year',  $target->anno);
+            //$denominatoreTmp = $denominatore->firstWhere('year',  $target->anno);
             if($target->anno == 2023) {
                 $accertamenti2023 = $target->totale_accertamenti;
                 $cornee2023 = $target->totale_cornee;
             }
-            $percentualeAccertamenti = ($denominatoreTmp->ob6 != 0) ? round(($target->totale_accertamenti / $denominatoreTmp->ob6) * 100, 2) : 0;
-            $percentualeCornee = ($denominatoreTmp->ob6 != 0) ? round(($target->totale_cornee / $denominatoreTmp->ob6) * 100, 2) : 0;
+            //$percentualeAccertamenti = ($denominatoreTmp->ob6 != 0) ? round(($target->totale_accertamenti / $denominatoreTmp->ob6) * 100, 2) : 0;
+            //$percentualeCornee = ($denominatoreTmp->ob6 != 0) ? round(($target->totale_cornee / $denominatoreTmp->ob6) * 100, 2) : 0;
             $percentualeOpposizioni = ($target->totale_accertamenti != 0) ? round(($target->numero_opposti / $target->totale_accertamenti) * 100, 2) : 0;
             $incrAccertamenti = ($target->anno > 2023 && $accertamenti2023 != 0) ? round((($target->totale_accertamenti - $accertamenti2023) / $accertamenti2023) * 100, 2): 0;
             $incrementoCornee = ($target->anno > 2023 && $cornee2023 != 0) ? round((($target->totale_cornee - $cornee2023) / $cornee2023) * 100, 2): 0;
             $dataView['result'][] = [
                 'nome_struttura' => $target->name,
                 'anno' => $target->anno,
-                'percentualeAccertamenti' => $percentualeAccertamenti,
-                'percentualeCornee' => $percentualeCornee,
+                //'percentualeAccertamenti' => $percentualeAccertamenti,
+                //'percentualeCornee' => $percentualeCornee,
                 'percentualeOpposizioni' => $percentualeOpposizioni,
                 'totale_accertamenti' => $target->totale_accertamenti,
                 'numero_opposti' => $target->numero_opposti,
                 'totale_cornee' => $target->totale_cornee,
-                'denominatore' => $denominatoreTmp->ob6,
+                //'denominatore' => $denominatoreTmp->ob6,
                 'incrementoAccertamenti' => $incrAccertamenti,
                 'incrementoCornee' => $incrementoCornee,
             ];

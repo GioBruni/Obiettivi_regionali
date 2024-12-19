@@ -152,6 +152,10 @@
 </p><p>
                         Accedi ora alle sezioni appropriate per una gestione completa e precisa delle risorse e degli obiettivi.
                         </p>
+                    @elseif (Auth::user()->hasRole('controller'))
+                    <p>
+                        Il menù "Controller" consente di approvare o non approvare i dati caricati dall'utente finale. Il punteggio viene assegnato solo dopo che i dati sono stati approvati, garantendo che venga valutato solo ciò che è stato ritenuto valido.
+                        </p>
                     @endif
                 </div>
             </div>
