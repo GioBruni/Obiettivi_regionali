@@ -33,7 +33,7 @@
                         </div>
 
                         <div class="col-md-6">
-                            <input type="number" id="denominatore" name="denominatore" class="form-control" disabled>
+                            <input type="number" id="denominatore" name="denominatore" placeholder="100" class="form-control" disabled >
                             <input type="hidden" name="denominatore" value="100">
                         </div>
                     </div>

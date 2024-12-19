@@ -547,13 +547,6 @@ class HomeController extends Controller
 
         $anno = date('Y');
 
-        if ($percentualeOb7_1 < 0) {
-            $dataView['messaggioTmpIncremento'] = [
-                'textIncremento' => $anno . ": Percentuale negativa, obiettivo non raggiunto con punteggio",
-                'punteggio' => 0,
-                'classIncremento' => 'text-danger'
-            ];
-        } else {
 
             if ($anno == 2024) {
                 $targetArray = $array2024;
@@ -568,7 +561,7 @@ class HomeController extends Controller
             if ($percentualeOb7_1 >= $targetArray[0]) {
                 $dataView['punteggioOb7_1'] = [
                     'textOb7_1' => $anno . ": Raggiungimento dell'obiettivo massimo con punteggio",
-                    'punteggioOb7_1' => 2,
+                    'punteggioOb7_1' => 2.5,
                     'percentualeOb7_1' => $percentualeOb7_1,
                     'classOb7_1' => 'text-success'
                 ];
@@ -577,17 +570,15 @@ class HomeController extends Controller
                     'textOb7_1' => $anno . ": Obiettivo non raggiunto",
                     'punteggioOb7_1' => 0,
                     'percentualeOb7_1' => $percentualeOb7_1,
-                    'classIncremento' => 'text-warning'
+                    'classOb7_1' => 'text-warning'
                 ];
             }
 
-
-
-        }
+        
         if ($percentualeOb7_3 == $targetArray[1]) {
             $dataView['punteggioOb7_3'] = [
                 'textOb7_3' => $anno . ": Raggiungimento dell'obiettivo massimo con punteggio",
-                'punteggioOb7_3' => 2,
+                'punteggioOb7_3' => 2.5,
                 'percentualeOb7_3' => $percentualeOb7_3,
                 'classOb7_3' => 'text-success'
             ];
@@ -598,12 +589,13 @@ class HomeController extends Controller
                 'percentualeOb7_3' => $percentualeOb7_3,
                 'classOb7_3' => 'text-warning'
             ];
+        }
 
 
             if ($percentualeOb7_4 == $targetArray[2]) {
                 $dataView['punteggioOb7_4'] = [
                     'textOb7_4' => $anno . ": Raggiungimento dell'obiettivo massimo con punteggio",
-                    'punteggioOb7_4' => 2,
+                    'punteggioOb7_4' => 2.5,
                     'percentualeOb7_4' => $percentualeOb7_4,
                     'classOb7_4' => 'text-success'
                 ];
@@ -615,8 +607,8 @@ class HomeController extends Controller
                     'classOb7_4' => 'text-warning'
                 ];
             }
-        }
-
+        
+    
         return $dataView;
     }
 
@@ -701,8 +693,6 @@ class HomeController extends Controller
                                         }
                                         break;
                                 }
-    
-             
                                 $dataView['punteggioOb8'][] = $punteggio;
                             }
                         }
