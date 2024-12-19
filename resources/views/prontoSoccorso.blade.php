@@ -7,12 +7,19 @@
 @section('content')
 <div id="boarding" class="row justify-content-center">
     <div class="col-md-12">
-        <h1 class="text-center my-4">Obiettivo 4 - Pronto Soccorso</h1>
         <div class="card shadow-sm border-0">
-            <div class="card-header bg-primary text-white">
-                <b class="h4">{{ __('Indicatore TMP') }}</b> <!-- Increased font size -->
+            <div class="card-header bg-primary text-white text-center">
+                <h4>
+                    <i class="{{ $dataView['icona'] }}"></i>
+                    {{ $dataView['titolo'] }}
+                </h4>
+                <small>{{ $dataView['tooltip'] }}</small>
+            </div>
+            
+            <div class="card-header bg-primary text-white mt-4">
+                <b>{{ __('Indicatore TMP') }}</b>
                 <br />
-                <small class="h6">{{ __('aggiungere descrizione') }}</small> <!-- Adjusted font size -->
+                <small>{{ __('Tempo massimo dalla presa in carico dal triage alla conclusione della prestazione di pronto soccorso <= 8h') }}</small>
             </div>
             <div class="card-body">
                 <div class="row">
@@ -23,7 +30,6 @@
                     </div>
 
                     <div class="col-md-6">
-                        <h5 class="text-center">Tabella</h5>
                         <table class="table table-striped table-bordered">
                             <thead>
                                 <tr>
@@ -43,9 +49,9 @@
                             </tbody>
                         </table>
                         <div class="legend p-3 border rounded mt-3 {{ $dataView['calcoloPunteggioOb4_1']['messaggioTmp']['class'] }}">
-                            <strong>{{ $dataView['calcoloPunteggioOb4_1']['messaggioTmp']['text'] }}: {{ $dataView['calcoloPunteggioOb4_1']['overallAverageTmp'] }}%</strong>
+                            <strong>{{ $dataView['calcoloPunteggioOb4_1']['messaggioTmp']['text'] }}: {{ $dataView['calcoloPunteggioOb4_1']['overallAverageTmp'] }} %</strong>
+                            <p>Punteggio: {{ $dataView['calcoloPunteggioOb4_1']['messaggioTmp']['punteggio']}}</p>
                         </div>
-                        <p>Punteggio:{{ $dataView['calcoloPunteggioOb4_1']['messaggioTmp']['punteggio']}}</p>
 
                     </div>
                 </div>
@@ -68,9 +74,9 @@
         <div class="card shadow-sm border-0">
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-primary text-white">
-                    <b class="h4">{{ __('Indicatore Boarding') }}</b> <!-- Increased font size -->
+                    <b>{{ __('Indicatore Boarding') }}</b>
                     <br />
-                    <small class="h6">{{ __('aggiungere descrizione') }}</small> <!-- Adjusted font size -->
+                    <small>{{ __('Percentuale di pazienti con permanenza pre-ricovero maggiore di 44 ore') }}</small>
                 </div>
 
                 <div class="card-body">
@@ -83,7 +89,6 @@
                         </div>
 
                         <div class="col-md-6">
-                            <h5 class="text-center">Tabella </h5>
                             <table class="table table-striped table-bordered">
                                 <thead>
                                     <tr>
@@ -104,12 +109,9 @@
                             </table>
 
                             <div class="legend p-3 border rounded mt-3 {{ $dataView['calcoloPunteggioOb4_2']['messaggioBoarding']['class'] }}">
-                            <strong>{{ $dataView['calcoloPunteggioOb4_2']['messaggioBoarding']['text'] }}: {{ $dataView['calcoloPunteggioOb4_2']['overallAverageBoarding'] }}%</strong>
-                        </div>
-                        <p>Punteggio:{{ $dataView['calcoloPunteggioOb4_2']['messaggioBoarding']['punteggio']}}</p>
-
-                          
-
+                                <strong>{{ $dataView['calcoloPunteggioOb4_2']['messaggioBoarding']['text'] }}: {{ $dataView['calcoloPunteggioOb4_2']['overallAverageBoarding'] }} %</strong>
+                                <p>Punteggio: {{ $dataView['calcoloPunteggioOb4_2']['messaggioBoarding']['punteggio']}}</p>
+                            </div>
                         </div>
                     </div>
                 </div>

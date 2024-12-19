@@ -1052,6 +1052,7 @@ class HomeController extends Controller
                     ->distinct()
                     ->pluck('s.company_code');
         */
+        $dataView = $this->initView(4);
 
         $dataView['flowEmur'] = DB::table('flows_emur as fe')
             //->join('structures as s', 'fe.structure_id', '=', 's.id')
@@ -1063,10 +1064,10 @@ class HomeController extends Controller
             ->get();
 
 
-        $overallAverageTmp = $dataView['flowEmur']->avg('tmp');
+        $overallAverageTmp = round($dataView['flowEmur']->avg('tmp'), 2);
         $complementaryValueTmp = 100 - $overallAverageTmp;
 
-        $overallAverageBoarding = $dataView['flowEmur']->avg('boarding');
+        $overallAverageBoarding = round($dataView['flowEmur']->avg('boarding'), 2);
         $complementaryValueBoarding = 100 - $overallAverageBoarding;
 
         $labelsTmp = [
