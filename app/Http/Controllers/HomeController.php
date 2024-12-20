@@ -53,7 +53,6 @@ class HomeController extends Controller
             //->groupBy('nomenclator_code')
             ->sum('amount');
 
-
         $denominatoreC = DB::table(table: 'flows_c')
             ->where("structure_id", Auth::user()->firstStructureId()->id)
             ->where('year', $anno)
@@ -84,9 +83,66 @@ class HomeController extends Controller
             $penalizzazione = $eccesso / 20;  // Penalizza di 1 punto per ogni 20% in più
             $punteggio = max(5 - $penalizzazione, 0);  // Assicuriamoci che non vada sotto 0
         }
+
+
+        ($overallPercentuale == 100) ? $punteggio = 5 : $punteggio = 0;
+
+
         $dataView['punteggio'] = round($punteggio, 2);
 
+
         return $dataView;
+    }
+
+    protected function calcoloPunteggioOb2($percentualeOb2_1, $percentualeOb2_2, $percentualeOb2_3, $percentualeOb2_4)
+    {
+
+        $dataView = [];
+
+        //sub.1
+        if ($percentualeOb2_1 <= 60) {
+            $dataView['punteggoOb2_1'] = 0; // Obiettivo non raggiunto
+        } elseif ($percentualeOb2_1 >= 96) {
+            $dataView['punteggoOb2_1'] = 4; // Punteggio massimo se la percentuale è maggiore o uguale a 96
+        } else {
+            // Calcolo lineare del punteggio
+            $dataView['punteggoOb2_1'] = round(0.1 * ($percentualeOb2_1 - 60), 2);
+        }
+
+        //sub.2
+        if ($percentualeOb2_2 >= 30) {
+            $dataView['punteggoOb2_2'] = 0; // Punteggio 0 se il valore è superiore o uguale al valore minimo (obiettivo non raggiunto)
+        } elseif ($percentualeOb2_2 <= 10) {
+            $dataView['punteggoOb2_2'] = 4; // Punteggio massimo se la percentuale è inferiore o uguale al valore obiettivo
+        } else {
+            // Calcolo lineare del punteggio proporzionale tra 1 e 4
+            $punteggio = 1 + ((30 - $percentualeOb2_2) / (20)) * (4 - 1);
+            $dataView['punteggoOb2_2'] = round($punteggio, 2);
+        }
+
+        //sub.3
+        if ($percentualeOb2_3 <= 60) {
+            $dataView['punteggoOb2_3'] = 0; // Obiettivo non raggiunto
+        } elseif ($percentualeOb2_3 >= 82) {
+            $dataView['punteggoOb2_3'] = 4; // Punteggio massimo se la percentuale è maggiore o uguale a 96
+        } else {
+            // Calcolo lineare del punteggio
+            $dataView['punteggoOb2_3'] = round(0.1 * ($percentualeOb2_3 - 60), 2);
+        }
+        
+
+        //sub.4
+        if ($percentualeOb2_4 <= 70) {
+            $dataView['punteggoOb2_4'] = 0; // Obiettivo non raggiunto
+        } elseif ($percentualeOb2_4 >= 96) {
+            $dataView['punteggoOb2_4'] = 4; // Punteggio massimo se la percentuale è maggiore o uguale a 96
+        } else {
+            // Calcolo lineare del punteggio
+            $dataView['punteggoOb2_4'] = round(0.1 * ($percentualeOb2_4 - 70), 2);
+        }
+       
+        return $dataView;
+
     }
 
 
@@ -564,7 +620,7 @@ class HomeController extends Controller
             'percentualeOb7_1' => $percentualeOb7_1,
             'classOb7_1' => ($percentualeOb7_1 >= $targetArray[0]) ? 'text-success' : 'text-warning',
         ];
-       
+
         $dataView['punteggioOb7_3'] = [
             'textOb7_3' => $anno . (($percentualeOb7_3 == $targetArray[1]) ? ": Raggiungimento dell'obiettivo massimo con punteggio" : ": Obiettivo non raggiunto"),
             'punteggioOb7_3' => ($percentualeOb7_3 == $targetArray[1]) ? 2.5 : 0,
@@ -578,7 +634,7 @@ class HomeController extends Controller
             'percentualeOb7_4' => $percentualeOb7_4,
             'classOb7_4' => ($percentualeOb7_4 == $targetArray[2]) ? 'text-success' : 'text-warning',
         ];
-    
+
         return $dataView;
     }
 
@@ -586,45 +642,44 @@ class HomeController extends Controller
     protected function calcoloPunteggioOb3Ob8($obiettivo)
     {
         $dataView = $this->initView($obiettivo);
-    
         $dataView['filesCaricati'] = $this->fileCaricati($obiettivo, $dataView['strutture']);
-        
+
         $dataView['categorie'] = DB::table("target_categories")
             ->where("target_number", $obiettivo)
             ->orderBy("order")
             ->get();
-    
+
         $fileIds = $dataView['filesCaricati']->pluck('id')->toArray();
-        
+
         $dataView['target3_data'] = DB::table("target3_data")
             ->select("numerator", "denominator", "uploated_file_id")
             ->join("uploated_files", "target3_data.uploated_file_id", "=", "uploated_files.id")
             ->whereIn("uploated_files.id", $fileIds)
             ->get();
-    
+
         $dataView['userStructures'] = LocationsUsers::where("user_id", Auth::user()->id)
             ->leftJoin("structures", "structures.id", "=", "users_structures.structure_id")
             ->leftJoin("structure_type", "structure_type.code", "=", "structures.type")
             ->orderBy("structures.id")->get();
-    
+
         $dataView['percentuali'] = [];
-    
+
         switch ($obiettivo) {
             case 3:
                 $annullaTuttiPunteggi = false;
                 $preRequisitoPresente = false;
-                
+
                 foreach ($dataView['filesCaricati'] as $file) {
                     if ($file->category == 'Pre-requisito per il calcolo dell indicatore') {
                         $preRequisitoPresente = true;
                         if ($file->approved === null || $file->approved == 0) {
                             $annullaTuttiPunteggi = true;
                         }
-                        break; 
+                        break;
                     }
                 }
-    
-             
+
+
                 if ($annullaTuttiPunteggi || !$preRequisitoPresente) {
                     $dataView['punteggioOb8'] = array_fill(0, count($dataView['userStructures']), 0);
                 } else {
@@ -634,15 +689,15 @@ class HomeController extends Controller
                         $percentuale = ($denominatore > 0) ? ($numeratore / $denominatore) * 100 : 0;
                         $dataView['percentuali'][$target3->uploated_file_id] = $percentuale;
                     }
-    
-            
+
+
                     foreach ($dataView['filesCaricati'] as $file) {
                         if ($file->approved !== null && $file->approved != 0) {
                             foreach ($dataView['userStructures'] as $struttura) {
                                 $punteggio = 0;
                                 $percentuale = $dataView['percentuali'][$file->id] ?? 0;
-    
-                            
+
+
                                 switch ($struttura->column_points) {
                                     case 'ao':
                                         if ($percentuale == 100) {
@@ -669,7 +724,7 @@ class HomeController extends Controller
                     }
                 }
                 break;
-    
+
             case 8:
                 foreach ($dataView['filesCaricati'] as $file) {
                     if ($file->approved === null || $file->approved == 0) {
@@ -680,10 +735,10 @@ class HomeController extends Controller
                 }
                 break;
         }
-    
+
         return $dataView;
     }
-    
+
 
 
 
@@ -1041,7 +1096,7 @@ class HomeController extends Controller
         $dataView = $this->initView(3);
         $dataView['files'][] = "obiettivo3.pdf";
 
-   
+
         return view("caricamentoPuntoNascite")->with("dataView", $dataView);
 
     }
@@ -1097,7 +1152,7 @@ class HomeController extends Controller
             ->orderBy("order")
             ->get();
 
-       
+
         switch ($request->obiettivo) {
             case 3:
                 $dataView['files'][] = "obiettivo3.pdf";
@@ -1105,7 +1160,7 @@ class HomeController extends Controller
 
                 $calcoloPunteggioOb3 = $this->calcoloPunteggioOb3Ob8($request->obiettivo);
                 $dataView = array_merge($calcoloPunteggioOb3, $dataView);
-               
+
                 /*
                                 foreach ($dataView['filesCaricati'] as $file) {
                                     if ($file->approved === null || $file->approved == 0) {
@@ -1546,11 +1601,13 @@ class HomeController extends Controller
 
     public function tempiListeAttesa(Request $request)
     {
+
         $tmpAnno = isset($request->anno) ? $request->anno : date('Y');
         $tmpMeseInizio = isset($request->mese_inizio) ? $request->mese_inizio : 1;
         $tmpMeseFine = isset($request->mese_fine) ? $request->mese_fine : date("m");
 
         $dataView = $this->initView(1);
+
         $dataView = array_merge($dataView, $this->punteggioOb1_1($tmpAnno, $tmpMeseInizio, $tmpMeseFine));
         $dataView['anno'] = $tmpAnno;
         $dataView['meseInizio'] = $tmpMeseInizio;
@@ -4002,6 +4059,11 @@ class HomeController extends Controller
                     ]
                 ]
             ]);
+
+        
+            $calcoloPunteggioOb2 = $this->calcoloPunteggioOb2($dataView['percentualeFratturaFemore'],$dataView['percentualePartiMinoreMille'], $dataView['percentualeIma'], $dataView['percentualeCole']);
+
+            $dataView = array_merge($calcoloPunteggioOb2, $dataView);
 
 
         return view("esisti")->with("dataView", $dataView);

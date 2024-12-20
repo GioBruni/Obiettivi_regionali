@@ -78,14 +78,14 @@
                                                     <td>{{ $dataView['nome_struttura']}}</td>
                                                     <td>{{$dataView['NumMaxFemore'] }}</td>
                                                     <td>{{$dataView['DenMaxFemore'] }}</td>
-                                                    <td>{{ $dataView['percentualeFratturaFemore']}}</td>
+                                                    <td>{{ $dataView['percentualeFratturaFemore']}}%</td>
                                                 </tr>
                                             </tbody>
                                         </table>
                                     </div>
                                     <div id="message1"
                                         class="message bg-light p-3 rounded border border-primary text-center w-100">
-                                        Messaggio
+                                        {{$dataView['punteggoOb2_1']}}
                                     </div>
                                 </div>
                             </div>
@@ -144,7 +144,7 @@
                                                         <td>{{ $dataView['nome_struttura']}}</td>
                                                         <td>{{ $dataView['numeratoreMaxPartiMinoreMille']}}</td>
                                                         <td>{{ $dataView['denominatoreMaxPartiMinoreMille']}}</td>
-                                                        <td>{{ $dataView['percentualePartiMinoreMille']}}</td>
+                                                        <td>{{ $dataView['percentualePartiMinoreMille']}}%</td>
                                                         
                                                     </tr>
                                                 </tbody>
@@ -191,7 +191,7 @@
                                                         <td>{{ $dataView['nome_struttura']}}</td>
                                                         <td>{{ $dataView['numeratoreMaxPartiMaggioreMille']}}</td>
                                                         <td>{{ $dataView['denominatoreMaxPartiMaggioreMille']}}</td>
-                                                        <td>{{ $dataView['percentualePartiMaggioreMille']}}</td>
+                                                        <td>{{ $dataView['percentualePartiMaggioreMille']}}%</td>
                                                         
                                                     </tr>
                                                 </tbody>
@@ -261,14 +261,14 @@
                                                     <td>{{ $dataView['nome_struttura']}}</td>
                                                     <td>{{ $dataView['numeratoreMaxIma']}}</td>
                                                     <td>{{ $dataView['denominatoreMaxIma']}}</td>
-                                                    <td>{{ $dataView['percentualeIma']}}</td>
+                                                    <td>{{ $dataView['percentualeIma']}}%</td>
                                                 </tr>
                                             </tbody>
                                         </table>
                                     </div>
                                     <div id="message3"
                                         class="message bg-light p-3 rounded border border-primary text-center w-100">
-                                        messaggio punteggio
+                                         {{$dataView['punteggoOb2_3']}}
                                     </div>
                                 </div>
                             </div>
@@ -322,14 +322,14 @@
                                                     <td>{{ $dataView['nome_struttura']}}</td>
                                                     <td>{{ $dataView['numeratoreMaxCole']}}</td>
                                                     <td>{{ $dataView['denominatoreMaxCole']}}</td>
-                                                    <td>{{ $dataView['percentualeCole']}}</td>
+                                                    <td>{{ $dataView['percentualeCole']}}%</td>
                                                 </tr>
                                             </tbody>
                                         </table>
                                     </div>
                                     <div id="message4"
                                         class="message bg-light p-3 rounded border border-primary text-center w-100">
-                                         messaggio punteggio
+                                        {{$dataView['punteggoOb2_4']}}
                                     </div>
                                 </div>
                             </div>

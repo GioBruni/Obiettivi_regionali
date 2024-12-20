@@ -384,8 +384,8 @@
                             </table>
 
                             <div class="legend p-3 border rounded mt-3 {{ $dataView['messaggioTmpIncremento']['classIncremento'] }}">
-                            <strong>{{ $dataView['messaggioTmpIncremento']['textIncremento'] }}</strong>
-                        </div>
+                                <strong>{{ $dataView['messaggioTmpIncremento']['textIncremento'] }}</strong>
+                            </div>
                             </div>
                         </div>
                         <br>

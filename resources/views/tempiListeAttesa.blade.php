@@ -2,7 +2,7 @@
 
 
 @section(section: "bootstrapitalia_js")
-    <script src="{{ asset("js/chart.js") }}"></script>
+<script src="{{ asset("js/chart.js") }}"></script>
 @endsection
 
 
@@ -26,7 +26,8 @@
 
                 <div class="box mt-4">
                     <div class="card-header bg-primary text-white mb-3 mt-2">
-                        1.1 - Numero di accertamenti di morte con criterio neurologico/numero di decessi aziendali per grave neurolesione 
+                        1.1 - Numero di accertamenti di morte con criterio neurologico/numero di decessi aziendali per
+                        grave neurolesione
                     </div>
 
                     <div class="card-body">
@@ -35,7 +36,7 @@
                                 <div class="col-md-3 mb-3">
                                     <label for="anno">Anno:</label>
                                     <select name="anno" class="form-control">
-                                        @for ($i = date('Y'); $i >= 2023; $i-- )
+                                        @for ($i = date('Y'); $i >= 2023; $i--)
                                             <option value="{{ $i }}" {{ (isset($dataView['anno']) && $dataView['anno'] == $i) ? "selected" : "" }}>{{ $i }}</option>
                                         @endfor
                                     </select>
@@ -87,8 +88,10 @@
                                         </tr>
                                     </tbody>
                                 </table>
+                                <div class="legend p-3 border rounded mt-3">
+                                    <strong>Punteggio: {{$dataView['punteggio']}}</strong>
+                                </div>
                             </div>
-
                         </div>
                     </div>
 
@@ -96,14 +99,16 @@
                         <strong>Valori di riferimento</strong><br>
                         <table class="formula-table">
                             <tr class="numeratore">
-                                <td>Numero prestazioni ambulatoriali di primo accesso pubbliche e private accreditate<sup>^</sup></td>
+                                <td>Numero prestazioni ambulatoriali di primo accesso pubbliche e private
+                                    accreditate<sup>^</sup></td>
                             </tr>
                             <tr class="denominatore">
                                 <td>Numero di prestazioni ambulatoriali erogate<sup>^^</sup></td>
                             </tr>
                         </table>
                         <p>
-                            <sup>^</sup> (fonte dati: esclusivamente CUP di ASP e Aziende Ospedaliere; i dati delle prestazioni private
+                            <sup>^</sup> (fonte dati: esclusivamente CUP di ASP e Aziende Ospedaliere; i dati delle
+                            prestazioni private
                             accreditate devono obbligatoriamente essere estratti esclusivamente dai CUP delle ASP)</br>
                             <sup>^^</sup> (fonte dati: flusso C e flusso M)
                         </p><br>
@@ -113,12 +118,13 @@
 
                 <div class="box mt-4">
                     <div class="card-header bg-primary text-white mb-3 mt-2">
-                        1.2 - Favorire la presa in carico dei pazienti affetti da patologie cronico-degenerative e oncologiche (D.L. 73/2024) 
+                        1.2 - Favorire la presa in carico dei pazienti affetti da patologie cronico-degenerative e
+                        oncologiche (D.L. 73/2024)
                     </div>
 
                     <div class="card-body">
                         @foreach ($dataView["categorie"] as $categoria)
-                            <?php $trovata = -1; ?>
+                            <?php    $trovata = -1; ?>
                             <div class="card shadow-sm border-0 mt-2">
                                 <div class="card-header bg-primary text-white">
                                     <strong>{{ $categoria->category }}</strong>
@@ -126,21 +132,33 @@
                                 <div class="card-body">
                                     @foreach($dataView['filesCaricati'] as $file)
                                         @if ($file->target_category_id == $categoria->id)
-                                            <?php $trovata = 1; ?>
+                                            <?php            $trovata = 1; ?>
                                             @if($file->validator_user_id === null)
-                                                <div id="message5" class="message bg-light p-3 rounded border border-primary text-center w-100" style = "color: orange;">
-                                                    <strong>File caricato il: {{ Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $file->created_at)->format('d/m/Y H:i') }} in attesa di approvazione.</strong>
+                                                <div id="message5"
+                                                    class="message bg-light p-3 rounded border border-primary text-center w-100"
+                                                    style="color: orange;">
+                                                    <strong>File caricato il:
+                                                        {{ Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $file->created_at)->format('d/m/Y H:i') }}
+                                                        in attesa di approvazione.</strong>
                                                 </div>
                                             @else
-                                                <div id="message5" class="message bg-light p-3 rounded border border-primary text-center w-100" style="color:{{ $file->approved === 1 ? "green" : "red"}};">
-                                                <strong>Il file caricato il: {{ Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $file->created_at)->format('d/m/Y H:i') }} {{ $file->approved === 1 ? "" : "non " }}&egrave; stato approvato -> Obiettivo {{ $file->approved === 1 ? "" : "non " }}raggiunto!</strong>
+                                                <div id="message5"
+                                                    class="message bg-light p-3 rounded border border-primary text-center w-100"
+                                                    style="color:{{ $file->approved === 1 ? "green" : "red"}};">
+                                                    <strong>Il file caricato il:
+                                                        {{ Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $file->created_at)->format('d/m/Y H:i') }}
+                                                        {{ $file->approved === 1 ? "" : "non " }}&egrave; stato approvato -> Obiettivo
+                                                        {{ $file->approved === 1 ? "" : "non " }}raggiunto!</strong>
                                                 </div>
                                             @endif
-                                        @endif                            
+                                        @endif
                                     @endforeach
                                     @if ($trovata == -1)
-                                        <div id="message5" class="message bg-light p-3 rounded border border-primary text-center w-100" style="color:red;">
-                                            <strong>Il file non &egrave; ancora stato caricato -> Obiettivo non raggiunto!</strong>
+                                        <div id="message5"
+                                            class="message bg-light p-3 rounded border border-primary text-center w-100"
+                                            style="color:red;">
+                                            <strong>Il file non &egrave; ancora stato caricato -> Obiettivo non
+                                                raggiunto!</strong>
                                         </div>
                                     @endif
                                 </div>
