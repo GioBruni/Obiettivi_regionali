@@ -31,6 +31,7 @@ Route::group(['middleware' => ['role:user_manager']], routes: function (): void 
     Route::post('/enableUser', [AdminController::class, 'enableUser'])->name('enableUser');
 
     Route::get('/admin/tempiListeAttesa', [AdminController::class, 'tempiListeAttesa'])->name('admin.tempiListeAttesa');
+    Route::get('/admin/esiti', [AdminController::class, 'esiti'])->name('admin.esiti');
     Route::get('/admin/puntiNascita', [AdminController::class, 'puntiNascita'])->name('puntiNascita');
     Route::get('/admin/prontoSoccorso', [AdminController::class, 'prontoSoccorso'])->name('admin.prontoSoccorso');
     Route::get('/admin/screening', [AdminController::class, 'screening'])->name('admin.screening');
