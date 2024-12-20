@@ -67,7 +67,7 @@
                                     <div class="row justify-content-center">
                                         @foreach ($chunk as $id => $column)
                                         <div class="col-12 col-md-2 text-center">
-                                            <button class="btn btn-primary btn-obiettivo {{in_array($idP*5+$id+1, [2,10]) ? "disabled" : "" }}" @if ($column['route'])
+                                            <button class="btn btn-primary btn-obiettivo {{in_array($idP*5+$id+1, [10]) ? "disabled" : "" }}" @if ($column['route'])
                                                 onclick="window.location.href='{{ $column['routeAdmin'] }}'" @endif data-bs-toggle="tooltip"
                                                 data-bs-placement="top" title="{{ $column['tooltip'] }}">
                                                 <i class="{{ $column['icon'] }}"></i>

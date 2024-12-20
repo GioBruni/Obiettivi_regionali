@@ -453,6 +453,232 @@ class AdminController extends Controller
     }
 
 
+    public function esiti(Request $request)
+    {
+        $anno = $request->has("year") ? $request->year : date('Y');
+        $dataView = $this->initView(2);
+
+        $dataView['strutture'] = Structure::all();
+        $dataView['annoSelezionato'] = $anno;
+        $dataView['anni'] = DB::table('flows_sdo')
+            ->distinct()
+            ->pluck("year");
+/*
+        $flowsSdo = DB::table('flows_sdo')
+            ->select(
+                'flows_sdo.ob2_3_numeratore',
+                'flows_sdo.ob2_3_denominatore',
+                'flows_sdo.ob2_2_minore_mille_numeratore',
+                'flows_sdo.ob2_2_minore_mille_denominatore',
+                'flows_sdo.ob2_2_maggiore_mille_numeratore',
+                'flows_sdo.ob2_2_maggiore_mille_denominatore',
+                'flows_sdo.ob2_1_numeratore',
+                'flows_sdo.ob2_1_denominatore',
+                'flows_sdo.ob2_4_numeratore',
+                'flows_sdo.ob2_4_denominatore',
+                'flows_sdo.month',
+                's.name'
+            )
+            ->join('structures as s', 'flows_sdo.structure_id', '=', 's.id')
+            ->where('flows_sdo.year', '=', $anno)
+            ->orderBy("flows_sdo.structure_id")
+            ->orderBy('flows_sdo.month', 'DESC')
+            ->get();
+     // il mese più grande
+        $flowsMeseMassimo = $flowsSdo->first();
+        //$flowsSdo = $flowsSdo->sortBy('month');
+
+*/
+
+        $data = DB::table('flows_sdo as f1')
+            ->select(
+                'f1.ob2_3_numeratore',
+                'f1.ob2_3_denominatore',
+                'f1.ob2_2_minore_mille_numeratore',
+                'f1.ob2_2_minore_mille_denominatore',
+                'f1.ob2_2_maggiore_mille_numeratore',
+                'f1.ob2_2_maggiore_mille_denominatore',
+                'f1.ob2_1_numeratore',
+                'f1.ob2_1_denominatore',
+                'f1.ob2_4_numeratore',
+                'f1.ob2_4_denominatore',
+                'f1.month',
+                's.name'
+            )
+            ->join('structures as s', 'f1.structure_id', '=', 's.id')
+            ->where('f1.year', '=', $anno)
+            ->whereRaw('f1.month = (
+                SELECT MAX(f2.month)
+                FROM flows_sdo as f2
+                WHERE f2.structure_id = f1.structure_id
+                AND f2.year = f1.year
+            )')
+            ->orderBy('f1.structure_id')
+            ->get();
+
+        // Raggruppa i dati per mese e struttura
+        $groupedData = $data->groupBy('month')->map(function ($monthGroup) {
+            return $monthGroup->groupBy('name');
+        });
+
+
+        $percentualeFratturaFemoreDataset = [];
+        $percentualePartiMinoreMilleDataset = [];
+        $percentualePartiMaggioreMilleDataset = [];
+        $percentualeIMADataset = [];
+        $percentualeColecistiDataset = [];
+
+        // Converte in array (se necessario)
+        $groupedDataArray = $groupedData->toArray();
+        foreach ($groupedDataArray as $mese => $asps) {
+            foreach($asps as $struttura => $items) {
+                foreach($items as $item) {
+                    $percentualeFratturaFemore = ($item->ob2_1_denominatore != 0) ? round(($item->ob2_1_numeratore / $item->ob2_1_denominatore) * 100, 2) : 0;
+                    $percentualePartiMinoreMille = ($item->ob2_2_minore_mille_denominatore != 0) ? round(($item->ob2_2_minore_mille_numeratore / $item->ob2_2_minore_mille_denominatore) * 100, 2) : 0;
+                    $percentualePartiMaggioreMille = ($item->ob2_2_maggiore_mille_denominatore != 0) ? round(($item->ob2_2_maggiore_mille_numeratore / $item->ob2_2_maggiore_mille_denominatore) * 100, 2) : 0;
+                    $percentualeIma = ($item->ob2_3_denominatore != 0) ? round(($item->ob2_3_numeratore / $item->ob2_3_denominatore) * 100, 2) : 0;
+                    $percentualeColecisti = ($item->ob2_4_denominatore != 0) ? round(($item->ob2_4_numeratore / $item->ob2_4_denominatore) * 100, 2) : 0;
+
+                    $dataFemore[$struttura][$mese-1] = [
+                        'struttura' => $struttura,
+                        'numMaxFemore' => $item->ob2_1_numeratore,
+                        'denMaxFemore' => $item->ob2_1_denominatore,
+                        'percentualeFratturaFemore' => $percentualeFratturaFemore,
+                    ];
+                    $dataPartiMinoreMille[$struttura][$mese-1] = [
+                        'struttura' => $struttura,
+                        'numeratoreMaxPartiMinoreMille' => $item->ob2_2_minore_mille_numeratore,
+                        'denominatoreMaxPartiMinoreMille' => $item->ob2_2_minore_mille_denominatore,
+                        'percentualePartiMinoreMille' => $percentualePartiMinoreMille,
+                    ];
+                    $dataPartiMaggoreMille[$struttura][$mese-1] = [
+                        'struttura' => $struttura,
+                        'numeratoreMaxPartiMaggioreMille' => $item->ob2_2_maggiore_mille_numeratore,
+                        'denominatoreMaxPartiMaggioreMille' => $item->ob2_2_maggiore_mille_denominatore,
+                        'percentualePartiMaggioreMille' => $percentualePartiMaggioreMille,
+                    ];
+                    $dataIMA[$struttura][$mese-1] = [
+                        'struttura' => $struttura,
+                        'numeratoreMaxIma' => $item->ob2_3_numeratore,
+                        'denominatoreMaxIma' => $item->ob2_3_denominatore,
+                        'percentualeIma' => $percentualeIma,
+                    ];
+                    $dataColecisti[$struttura][$mese-1] = [
+                        'struttura' => $struttura,
+                        'numeratoreMaxCole' => $item->ob2_4_numeratore,
+                        'denominatoreMaxCole' => $item->ob2_4_denominatore,
+                        'percentualeColecisti' => $percentualeColecisti,
+                    ];
+
+                    $percentualeFratturaFemoreDataset[] = $percentualeFratturaFemore;
+                    $percentualePartiMinoreMilleDataset[] = $percentualePartiMinoreMille;
+                    $percentualePartiMaggioreMilleDataset[] = $percentualePartiMaggioreMille;
+                    $percentualeIMADataset[] = $percentualeIma;
+                    $percentualeColecistiDataset[] = $percentualeColecisti;
+                }
+            }
+        }
+        $dataView['femore'] = $dataFemore;
+        $dataView['partiMinoreMille'] = $dataPartiMinoreMille;
+        $dataView['partiMaggioreMille'] = $dataPartiMaggoreMille;
+        $dataView['IMA'] = $dataIMA;
+        $dataView['colecisti'] = $dataColecisti;
+
+
+        $dataView['chartFratturaFemore'] = $this->showChart("bar", "chartFratturaFemore",
+        array_keys($dataFemore),  //['Intervento <= 2', 'Intervento >= 2'],
+            [
+                [
+                    "label" => "Percentuali",
+                    "data" => $percentualeFratturaFemoreDataset
+                ]
+                ],[
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => ''
+                    ]
+                ]
+            ]);
+
+
+        /*********************************Minore di mille********************************************/
+
+        $dataView['chartPartiCesareiMenoMille'] = $this->showChart("bar", "chartPartiCesareiMenoMille",
+        array_keys($dataPartiMinoreMille),[
+                [
+                    "label" => "Percentuali",
+                    "data" => $percentualePartiMinoreMilleDataset
+                ]
+                ],[
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => ''
+                    ]
+                ]
+            ]);
+
+        /************************* Maggiori di mille ******************************** */
+
+        $dataView['chartPartiCesareiMaggioriMille'] = $this->showChart("bar", "chartPartiCesareiMaggioriMille",
+        array_keys($dataPartiMaggoreMille),[
+                [
+                    "label" => "Percentuali",
+                    "data" => $percentualePartiMaggioreMilleDataset
+                ]
+                ],[
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => ''
+                    ]
+                ]
+            ]);
+
+        /*********************** sub 3 *************************************/
+
+        $dataView['chartIma'] = $this->showChart("bar", "chartIma",
+        array_keys($dataIMA),[
+                [
+                    "label" => "Percentuali",
+                    "data" => $percentualeIMADataset
+                ]
+                ],[
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => 'PTCA effettuate entro 90 minuti / numero totale di di I.M.A. SISTEMI diagnosticati'
+                    ]
+                ]
+            ]);
+
+
+        /************************sub 4 *************************** */
+
+        $dataView['chartColecistectomia'] = $this->showChart("bar", "chartColecistectomia",
+        array_keys($dataColecisti),[
+                [
+                    "label" => "Percentuali",
+                    "data" => $percentualeColecistiDataset
+                ]
+                ],[
+                'responsive' => true,
+                'plugins' => [
+                    'title' => [
+                        'display' => true,
+                        'text' => ''
+                    ]
+                ]
+            ]);
+
+        return view("admin.esiti")->with("dataView", $dataView);
+    }
+
     public function puntiNascita(Request $request)
     {
         $dataView = $this->initView(obiettivo: 3);
