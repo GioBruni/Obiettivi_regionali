@@ -96,7 +96,6 @@ class HomeController extends Controller
 
     protected function calcoloPunteggioOb2($percentualeOb2_1, $percentualeOb2_2, $percentualeOb2_3, $percentualeOb2_4)
     {
-
         $dataView = [];
 
         //sub.1
@@ -129,7 +128,7 @@ class HomeController extends Controller
             // Calcolo lineare del punteggio
             $dataView['punteggoOb2_3'] = round(0.1 * ($percentualeOb2_3 - 60), 2);
         }
-        
+
 
         //sub.4
         if ($percentualeOb2_4 <= 70) {
@@ -140,9 +139,8 @@ class HomeController extends Controller
             // Calcolo lineare del punteggio
             $dataView['punteggoOb2_4'] = round(0.1 * ($percentualeOb2_4 - 70), 2);
         }
-       
-        return $dataView;
 
+        return $dataView;
     }
 
 
@@ -897,6 +895,246 @@ class HomeController extends Controller
         }
     */
 
+
+    protected function calcoloPunteggioOb10Prevenzione($percentualeCoperturaVaccinale, $percentualeCoperturaVaccinaleCicloBase, $percentualeVeterinaria, $percentualeAlimenti)
+    {
+        $dataView = [];
+    
+        //***************************** Copertura Vaccinale ************************************/
+        if ($percentualeCoperturaVaccinale < 90) {
+            $punteggio = 0;
+            $dataView['messaggioCoperturaVaccinale'] = [
+                'text' => "Obiettivo non raggiunto con copertura $percentualeCoperturaVaccinale%",
+                'class' => 'text-danger',
+                'punteggio' => $punteggio
+            ];
+        } elseif ($percentualeCoperturaVaccinale < 92) {
+            $punteggio = 30 * $percentualeCoperturaVaccinale - 2700;
+            $dataView['messaggioCoperturaVaccinale'] = [
+                'text' => "Copertura buona, punteggio calcolato $punteggio",
+                'class' => 'text-warning',
+                'punteggio' => $punteggio
+            ];
+        } elseif ($percentualeCoperturaVaccinale < 95) {
+            $punteggio = 13.3333 * $percentualeCoperturaVaccinale - 1166.6667;
+            $dataView['messaggioCoperturaVaccinale'] = [
+                'text' => "Copertura ottima, punteggio calcolato $punteggio",
+                'class' => 'text-success',
+                'punteggio' => $punteggio
+            ];
+        } else {
+            $punteggio = 100;
+            $dataView['messaggioCoperturaVaccinale'] = [
+                'text' => "Obiettivo raggiunto al 100%! Punteggio massimo.",
+                'class' => 'text-success',
+                'punteggio' => $punteggio
+            ];
+        }
+    
+        //***************************** Copertura Vaccinale Ciclo Base ************************************/
+        if ($percentualeCoperturaVaccinaleCicloBase < 90) {
+            $punteggio = 0;
+            $dataView['messaggioCoperturaVaccinaleCicloBase'] = [
+                'text' => "Obiettivo non raggiunto con copertura $percentualeCoperturaVaccinaleCicloBase%",
+                'class' => 'text-danger',
+                'punteggio' => $punteggio
+            ];
+        } elseif ($percentualeCoperturaVaccinaleCicloBase < 92) {
+            $punteggio = 30 * $percentualeCoperturaVaccinaleCicloBase - 2700;
+            $dataView['messaggioCoperturaVaccinaleCicloBase'] = [
+                'text' => "Copertura buona, punteggio calcolato $punteggio",
+                'class' => 'text-warning',
+                'punteggio' => $punteggio
+            ];
+        } elseif ($percentualeCoperturaVaccinaleCicloBase < 95) {
+            $punteggio = 13.3333 * $percentualeCoperturaVaccinaleCicloBase - 1166.6667;
+            $dataView['messaggioCoperturaVaccinaleCicloBase'] = [
+                'text' => "Copertura ottima, punteggio calcolato $punteggio",
+                'class' => 'text-success',
+                'punteggio' => $punteggio
+            ];
+        } else {
+            $punteggio = 100;
+            $dataView['messaggioCoperturaVaccinaleCicloBase'] = [
+                'text' => "Obiettivo raggiunto al 100%! Punteggio massimo.",
+                'class' => 'text-success',
+                'punteggio' => $punteggio
+            ];
+        }
+    
+        //***************************** Veterinaria *******************************************************/
+        if ($percentualeVeterinaria < 70) {
+            $punteggio = 0;
+            $dataView['messaggioVeterinaria'] = [
+                'text' => "Veterinaria: Obiettivo non raggiunto con copertura $percentualeVeterinaria%",
+                'class' => 'text-danger',
+                'punteggio' => $punteggio
+            ];
+        } elseif ($percentualeVeterinaria < 90) {
+            $punteggio = ($percentualeVeterinaria - 70) * (3 / 20);
+            $dataView['messaggioVeterinaria'] = [
+                'text' => "Veterinaria: Copertura sufficiente, punteggio calcolato $punteggio",
+                'class' => 'text-warning',
+                'punteggio' => $punteggio
+            ];
+        } else {
+            $punteggio = 3;
+            $dataView['messaggioVeterinaria'] = [
+                'text' => "Veterinaria: Obiettivo pienamente raggiunto! Punteggio massimo.",
+                'class' => 'text-success',
+                'punteggio' => $punteggio
+            ];
+        }
+    
+        //***************************** Alimenti ***********************************************************/
+        if ($percentualeAlimenti < 80) {
+            $punteggio = 0;
+            $dataView['messaggioAlimenti'] = [
+                'text' => "Alimenti: Obiettivo non raggiunto con copertura $percentualeAlimenti%",
+                'class' => 'text-danger',
+                'punteggio' => $punteggio
+            ];
+        } elseif ($percentualeAlimenti < 90) {
+            $punteggio = ($percentualeAlimenti - 80) * (3 / 10);
+            $dataView['messaggioAlimenti'] = [
+                'text' => "Alimenti: Copertura sufficiente, punteggio calcolato $punteggio",
+                'class' => 'text-warning',
+                'punteggio' => $punteggio
+            ];
+        } else {
+            $punteggio = 3;
+            $dataView['messaggioAlimenti'] = [
+                'text' => "Alimenti: Obiettivo pienamente raggiunto! Punteggio massimo.",
+                'class' => 'text-success',
+                'punteggio' => $punteggio
+            ];
+        }
+    
+        return $dataView;
+    }
+
+
+    protected function calcoloPunteggioOb10AssistenzaDistrettuale($punteggioCIA1, $punteggioCIA2, $punteggioCIA3, $percentualeTumoreCP){
+    $dataView = [];
+
+    // Calcolo del punteggio finale (ADI)
+    $punteggioFinale100 = ($punteggioCIA1 * 0.15) + ($punteggioCIA2 * 0.35) + ($punteggioCIA3 * 0.50);
+
+    // Porta il punteggio finale nella scala da 0 a 5
+    $dataView['punteggioFinale'] = ($punteggioFinale100 / 20);
+
+    //************************************************************************//
+   
+    if ($percentualeTumoreCP >= 0 && $percentualeTumoreCP < 5) {
+        $punteggio = 0; // Obiettivo non raggiunto
+        $dataView['messaggioTumoreCP'] = [
+            'textTumoreCP' => "Obiettivo non raggiunto per Tumore CP con percentuale: $percentualeTumoreCP%",
+            'class' => 'text-danger',
+            'punteggio' => $punteggio
+        ];
+    } elseif ($percentualeTumoreCP >= 5 && $percentualeTumoreCP < 55) {
+        $punteggio = 2 * $percentualeTumoreCP - 10;
+        $dataView['messaggioTumoreCP'] = [
+            'textTumoreCP' => "Percentuale Tumore CP sufficiente, punteggio calcolato: $punteggio",
+            'class' => 'text-warning',
+            'punteggio' => $punteggio
+        ];
+    } else {
+        $punteggio = 100;
+        $dataView['messaggioTumoreCP'] = [
+            'textTumoreCP' => "Obiettivo raggiunto al 100% con percentuale: $percentualeTumoreCP%",
+            'class' => 'text-success',
+            'punteggio' => $punteggio
+        ];
+    }
+
+
+    if ($percentualeTumoreCP > 35) {
+        $punteggio = 100;
+        $dataView['messaggioTumoreCP'] = [
+            'textTumoreCP' => "Obiettivo raggiunto al 100% con percentuale superiore a 35%: $percentualeTumoreCP%",
+            'class' => 'text-success',
+            'punteggio' => $punteggio
+        ];
+    }
+
+    return $dataView;
+}
+
+
+//da rivedere
+    protected function calcoloPunteggioOb10AssistenzaOspedaliera($percentualeDRG, $percentualeTumoreMammella,$numeratoreTumoreMammella)
+    {
+        $dataView = [];
+
+    //DRG
+
+    if ($percentualeDRG >= 0 && $percentualeDRG < 0.15) {
+        $punteggio = 100; // Obiettivo massimo
+        $dataView['messaggioDRG'] = [
+            'textDRG' => "Obiettivo raggiunto al 100% con percentuale: $percentualeDRG",
+            'class' => 'text-success',
+            'punteggio' => $punteggio
+        ];
+    } elseif ($percentualeDRG >= 0.15 && $percentualeDRG < 0.375) {
+       
+        $punteggio = (-444.4444 * $percentualeDRG) + 166.6667;
+        $dataView['messaggioDRG'] = [
+            'textDRG' => "Percentuale DRG sufficiente, punteggio calcolato: $punteggio",
+            'class' => 'text-warning',
+            'punteggio' => $punteggio
+        ];
+    } else {
+        $punteggio = 0; // Obiettivo non raggiunto
+        $dataView['messaggioDRG'] = [
+            'textDRG' => "Obiettivo non raggiunto per DRG con percentuale: $percentualeDRG",
+            'class' => 'text-danger',
+            'punteggio' => $punteggio
+        ];
+    }
+
+    //Tumore mammella
+
+
+    
+    if ($numeratoreTumoreMammella < 135) {
+        $punteggio = 2; 
+        $dataView['messaggioTumoreMammella'] = [
+            'text' => "Numeratore Tumore Mammella inferiore a 135, punteggio: $punteggio",
+            'class' => 'text-danger',  
+            'punteggio' => $punteggio
+        ];
+    } else {
+        // Calcolo della percentuale Tumore Mammella
+        if ($percentualeTumoreMammella >= 0 && $percentualeTumoreMammella <= 1.2702) {
+            $punteggio = 0;  // Punteggio 0 se la percentuale è tra 0 e 1.2702
+            $dataView['messaggioTumoreMammella'] = [
+                'text' => "Percentuale Tumore Mammella tra 0 e 1.2702, punteggio: $punteggio",
+                'class' => 'text-warning',  
+                'punteggio' => $punteggio
+            ];
+        } elseif ($percentualeTumoreMammella > 1.2702 && $percentualeTumoreMammella < 90) {
+            // Calcolo polinomiale per percentuale tra 1.2702 e 90
+            $punteggio = 1.2702 * pow(10, -2) * pow($percentualeTumoreMammella, 2) - 3.2266 * pow(10, -2) * $percentualeTumoreMammella + 2.0492 * pow(10, -2);
+            $dataView['messaggioTumoreMammella'] = [
+                'text' => "Percentuale Tumore Mammella tra 1.2702 e 90, punteggio calcolato: $punteggio",
+                'class' => 'text-warning',  
+                'punteggio' => $punteggio
+            ];
+        } else {
+            $punteggio = 100;  // Punteggio massimo se la percentuale è maggiore di 90
+            $dataView['messaggioTumoreMammella'] = [
+                'text' => "Percentuale Tumore Mammella superiore a 90, punteggio massimo: $punteggio",
+                'class' => 'text-success',  
+                'punteggio' => $punteggio
+            ];
+        }
+    }
+
+
+       return $dataView;
+    }
+    
 
     protected function initView(int $obiettivo)
     {
@@ -2888,11 +3126,28 @@ class HomeController extends Controller
 
 
         $percentualiPerMese = [];
+        $numeratoreAnnuale = 0;
+        $denominatoreAnnuale = 0;
+        
         foreach ($dataLea as $record) {
             if ($record->cia_1_den != 0) {
+                // Calcola la percentuale mensile
                 $percentualiPerMese[$record->mese] = ($record->cia_1_num / $record->cia_1_den) * 100;
+        
+                // Accumula il numeratore e il denominatore per il calcolo annuale
+                $numeratoreAnnuale += $record->cia_1_num;
+                $denominatoreAnnuale += $record->cia_1_den;
             }
         }
+        
+        // Calcola la percentuale annuale
+        $percentualeAnnualeCia1 = ($denominatoreAnnuale != 0) 
+            ? ($numeratoreAnnuale / $denominatoreAnnuale) * 100 
+            : 0; // Gestione del caso in cui il denominatore annuale è 0
+        
+        $dataView['percentualiPerMeseCia1'] = $percentualiPerMese;
+        $dataView['percentualeAnnualeCia1'] = $percentualeAnnualeCia1;
+        
 
         // Preparazione dei dati per il grafico
         $graficoDati = [];
@@ -2949,12 +3204,29 @@ class HomeController extends Controller
 
 
         $percentualiPerMeseCia2 = [];
+        $numeratoreAnnuale = 0;
+        $denominatoreAnnuale = 0;
+        
         foreach ($dataLea as $record) {
             if ($record->cia_2_den != 0) {
+                // Calcola la percentuale mensile
                 $percentualiPerMeseCia2[$record->mese] = ($record->cia_2_num / $record->cia_2_den) * 100;
+        
+                // Accumula il numeratore e il denominatore per il calcolo annuale
+                $numeratoreAnnuale += $record->cia_2_num;
+                $denominatoreAnnuale += $record->cia_2_den;
             }
         }
-
+        
+        // Calcola la percentuale annuale
+        $percentualeAnnualeCia2 = ($denominatoreAnnuale != 0) 
+            ? ($numeratoreAnnuale / $denominatoreAnnuale) * 100 
+            : 0; // Gestione del caso in cui il denominatore annuale è 0
+        
+      
+        $dataView['percentualiPerMeseCia2'] = $percentualiPerMeseCia2;
+        $dataView['percentualeAnnualeCia2'] = $percentualeAnnualeCia2;
+        
 
         $graficoDatiCia2 = [];
         foreach (array_keys($mesi) as $meseNumero) {
@@ -3010,11 +3282,29 @@ class HomeController extends Controller
         /****************************************CIA3***************************************************** */
 
         $percentualiPerMeseCia3 = [];
+        $numeratoreAnnuale = 0;
+        $denominatoreAnnuale = 0;
+        
         foreach ($dataLea as $record) {
             if ($record->cia_3_den != 0) {
+                // Calcola la percentuale mensile
                 $percentualiPerMeseCia3[$record->mese] = ($record->cia_3_num / $record->cia_3_den) * 100;
+        
+                // Accumula il numeratore e il denominatore per il calcolo annuale
+                $numeratoreAnnuale += $record->cia_3_num;
+                $denominatoreAnnuale += $record->cia_3_den;
             }
         }
+        
+        // Calcola la percentuale annuale
+        $percentualeAnnualeCia3 = ($denominatoreAnnuale != 0) 
+            ? ($numeratoreAnnuale / $denominatoreAnnuale) * 100 
+            : 0; // Gestione del caso in cui il denominatore annuale è 0
+        
+    
+        $dataView['percentualiPerMeseCia3'] = $percentualiPerMeseCia3;
+        $dataView['percentualeAnnualeCia3'] = $percentualeAnnualeCia3;
+        
 
 
         $graficoDatiCia2 = [];
@@ -3148,16 +3438,29 @@ class HomeController extends Controller
         /************************************AREA OSPEDALIERA 2*********************************************************/
 
         $percentualiMensili = [];
-
-
+        $numeratoreTotale = 0;
+        $denominatoreTotale = 0;
+        
         foreach ($dataView['dataSDO'] as $record) {
             if ($record->ob10_ao_2_den != 0) {
                 $percentualiMensili[$record->month] = round(($record->ob10_ao_2_num / $record->ob10_ao_2_den) * 100, 2);
+                $numeratoreTotale += $record->ob10_ao_2_num; 
+                $denominatoreTotale += $record->ob10_ao_2_den; 
             } else {
                 $percentualiMensili[$record->month] = 0;
             }
         }
-
+        
+    
+        if ($denominatoreTotale != 0) {
+            $percentualeAnnuale = round(($numeratoreTotale / $denominatoreTotale) * 100, 2);
+        } else {
+            $percentualeAnnuale = 0;  
+        }
+        
+  
+        $dataView['percentualeAnnualeDRG'] = $percentualeAnnuale;
+        
 
         $datiGrafico = [];
         for ($mese = 1; $mese <= 12; $mese++) {
@@ -3268,7 +3571,25 @@ class HomeController extends Controller
                 ]
             ]);
 
+            
 
+            $calcoloPunteggioPrevenzione = $this->calcoloPunteggioOb10Prevenzione( $dataView['percentualeCicloBase'],$dataView['percentualePrimaDose'],$dataView['percentualeTotaleVeterinaria'], $dataView['percentualeTotaleAlimenti']);
+            $dataView = array_merge($calcoloPunteggioPrevenzione, $dataView);
+
+            $calcoloPunteggioDistrettuale = $this->calcoloPunteggioOb10AssistenzaDistrettuale($dataView['percentualeAnnualeCia1'],$dataView['percentualeAnnualeCia2'],$dataView['percentualeAnnualeCia3'], $dataView['percentualeOb10_ao_4']);
+            $dataView = array_merge($calcoloPunteggioDistrettuale, $dataView);
+
+            
+            $calcoloPunteggioOspedaliera = $this->calcoloPunteggioOb10AssistenzaOspedaliera($dataView['percentualeAnnualeDRG'],$dataView['percentualeOb10_ao_1'],$dataView['ultimoDataSDO']->ob10_ao_1_num );
+            $dataView = array_merge($calcoloPunteggioOspedaliera, $dataView);
+
+
+
+            
+
+
+
+            
         return view("garanzia-lea")->with("dataView", $dataView);
     }
 
@@ -4060,10 +4381,10 @@ class HomeController extends Controller
                 ]
             ]);
 
-        
-            $calcoloPunteggioOb2 = $this->calcoloPunteggioOb2($dataView['percentualeFratturaFemore'],$dataView['percentualePartiMinoreMille'], $dataView['percentualeIma'], $dataView['percentualeCole']);
 
-            $dataView = array_merge($calcoloPunteggioOb2, $dataView);
+        $calcoloPunteggioOb2 = $this->calcoloPunteggioOb2($dataView['percentualeFratturaFemore'], $dataView['percentualePartiMinoreMille'], $dataView['percentualeIma'], $dataView['percentualeCole']);
+
+        $dataView = array_merge($calcoloPunteggioOb2, $dataView);
 
 
         return view("esisti")->with("dataView", $dataView);
