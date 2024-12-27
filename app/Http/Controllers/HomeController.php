@@ -2429,7 +2429,6 @@ class HomeController extends Controller
             ->orderBy('target9_PCT.created_at', 'desc')
             //->select("numerator")
             ->first();
-
            
         $denominatore = DB::table("flows_sdo")
             ->where("year", $anno)
@@ -2482,8 +2481,25 @@ class HomeController extends Controller
                 ]
             ]);
 
+            $dataView['chart92'] = Chartjs::build()
+            ->name("DH")
+            ->type("doughnut")
+            ->size(["width" => 300, "height" => 150])
+            ->labels(['Gare con delibere', 'Gare totali'])
+            ->datasets([
+                [
+                    "label" => "Gare (?)",
+                    "backgroundColor" => [
+                        "rgba(38, 185, 154, 0.7)",
+                        "rgba(255, 99, 132, 0.7)"
+                    ],
+                    "data" => [$numeratore, $denominatore]
 
-            dd($dataView['pct']);
+                ]
+            ]);
+
+
+
         /*
         ->options([
             'responsive' => true,

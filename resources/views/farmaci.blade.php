@@ -124,6 +124,7 @@
                                     <small>{{ __('Ottimizzazione della gestione del I ciclo di terapia a pazienti dimessi sia in DH che in ricovero ordinario.') }}</small>
                                 </div>
                                 <div class="card-body">
+                                    
                                     <div class="row">
                                         <div class="col-md-3">
                                             <label for="numeratore">Numeratore certificato:
@@ -143,6 +144,15 @@
                                                 {{ $dataView['pct']['rapporto'] }}</label>
                                         </div>
                                     </div>
+
+                                    <div class="col-md-4">
+                                        <div class="row">
+                                            <div style="width:75%;">
+                                                <x-chartjs-component :chart="$dataView['chart92']" />
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <div class="legend p-3 border rounded mt-3 {{ $dataView['messaggioOb9_2']['class'] }}">
                                         <strong>{{ $dataView['messaggioOb9_2']['text'] }}</strong>
                                         <p>Punteggio: {{ $dataView['messaggioOb9_2']['punteggio'] }}</p>
@@ -153,7 +163,6 @@
                                         Obiettivo raggiunto al 100% se il risultato è un rapporto pari o superiore a
                                         80%.
                                     </div>
-
                                 </div>
                             </div>
                         </div>
