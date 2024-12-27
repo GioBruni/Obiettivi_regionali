@@ -1,8 +1,8 @@
 @extends('bootstrap-italia::page')
 
 @section("bootstrapitalia_js")
-    <script src="{{ asset( 'js/chart.js') }}" rel="text/javascript"></script>
-    <script src="{{ asset( 'js/chartjs-adapter-date-fns.js') }}" rel="text/javascript"></script>
+<script src="{{ asset('js/chart.js') }}" rel="text/javascript"></script>
+<script src="{{ asset('js/chartjs-adapter-date-fns.js') }}" rel="text/javascript"></script>
 @endsection
 
 @section('bootstrapitalia_css')
@@ -41,8 +41,9 @@
                             <div class="col-md-2">
                                 <label for="year">Anno:</label>
                                 <select id="year" class="form-control" name="year" id="year">
-                                    @foreach ( $dataView['anni'] as $year )
-                                        <option value="{{ $year }}" {{ ($year == date('Y') ) ? " selected" : "" }}>{{ $year }}</option>
+                                    @foreach ($dataView['anni'] as $year)
+                                        <option value="{{ $year }}" {{ ($year == date('Y')) ? " selected" : "" }}>{{ $year }}
+                                        </option>
                                     @endforeach
                                 </select>
                             </div>
@@ -51,9 +52,9 @@
                                 <select class="form-control" name="structure_id" required id="structure_id">
                                     <option value="">-- Seleziona --</option>
                                     @foreach ($dataView['strutture'] as $rowStruttura)
-                                    <option value="{{ $rowStruttura->id }}" {{ (count($dataView['strutture']) == 1  || (isset($dataView['pct']) && $dataView['pct']['numeratore']->structure_id == $rowStruttura->id )) ? "selected" : "" }}>
-                                        {{ $rowStruttura->name }}
-                                    </option>
+                                        <option value="{{ $rowStruttura->id }}" {{ (count($dataView['strutture']) == 1 || (isset($dataView['pct']) && $dataView['pct']['numeratore']->structure_id == $rowStruttura->id)) ? "selected" : "" }}>
+                                            {{ $rowStruttura->name }}
+                                        </option>
                                     @endforeach
                                 </select>
                                 @if ($errors->has('structure_id'))
@@ -66,7 +67,7 @@
                             </div>
                         </div>
                     </form>
-    
+
                     <!-- Indicatore 1 -->
                     <div id="GareCUC" class="row justify-content-center mt-4">
                         <div class="col-md-12">
@@ -89,7 +90,7 @@
                                             </div>
                                         </div>
                                         <div class="col-md-4">
-                                        <div class="row">
+                                            <div class="row">
                                                 <div style="width:75%;">
                                                     Gare con delibere: {{ $dataView['gare']['conDelibere']}}<br />
                                                     Gare totali: {{ $dataView['gare']['totali']}}<br />
@@ -97,10 +98,16 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        <div
+                                            class="legend p-3 border rounded mt-3 {{ $dataView['messaggioOb9_1']['class'] }}">
+                                            <strong>{{ $dataView['messaggioOb9_1']['text'] }}</strong>
+                                            <p>Punteggio: {{ $dataView['messaggioOb9_1']['punteggio'] }}</p>
+                                        </div>
                                     </div>
                                     <div class="legend p-3 border rounded">
                                         <strong>Valori di riferimento</strong><br>
-                                        Obiettivo raggiunto al 100% se il risultato è un rapporto pari o superiore a 95%.
+                                        Obiettivo raggiunto al 100% se il risultato è un rapporto pari o superiore a
+                                        95%.
                                     </div>
                                 </div>
                             </div>
@@ -119,25 +126,34 @@
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-3">
-                                            <label for="numeratore">Numeratore certificato: {{ isset($dataView['pct']['numeratore']) ? $dataView['pct']['numeratore']->numerator : "***" }}</label>
+                                            <label for="numeratore">Numeratore certificato:
+                                                {{ isset($dataView['pct']['numeratore']) ? $dataView['pct']['numeratore']->numerator : "***" }}</label>
                                         </div>
                                     </div>
-                                    <div class="row">                                            
+                                    <div class="row">
                                         <div class="col-md-6">
-                                            <label for="denominatore">Denominatore certificato: {{ isset($dataView['pct']['denominatore']) ? $dataView['pct']['denominatore'] :  "***" }}</label>
+                                            <label for="denominatore">Denominatore certificato:
+                                                {{ isset($dataView['pct']['denominatore']) ? $dataView['pct']['denominatore'] : "***" }}</label>
                                         </div>
                                     </div>
 
-                                    <div class="row">                                            
+                                    <div class="row">
                                         <div class="col-md-6">
-                                            <label for="denominatore">Rapporto in percentuale: {{ $dataView['pct']['rapporto'] }}</label>
+                                            <label for="denominatore">Rapporto in percentuale:
+                                                {{ $dataView['pct']['rapporto'] }}</label>
                                         </div>
                                     </div>
+                                    <div class="legend p-3 border rounded mt-3 {{ $dataView['messaggioOb9_2']['class'] }}">
+                                        <strong>{{ $dataView['messaggioOb9_2']['text'] }}</strong>
+                                        <p>Punteggio: {{ $dataView['messaggioOb9_2']['punteggio'] }}</p>
+                                    </div>
+
                                     <div class="legend p-3 border rounded">
                                         <strong>Valori di riferimento</strong><br>
-                                        Obiettivo raggiunto al 100% se il risultato è un rapporto pari o superiore a 80%.
+                                        Obiettivo raggiunto al 100% se il risultato è un rapporto pari o superiore a
+                                        80%.
                                     </div>
-                                    
+
                                 </div>
                             </div>
                         </div>
@@ -152,7 +168,7 @@
 
 @section('bootstrapitalia_js')
 <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
         $.ajaxSetup({
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')

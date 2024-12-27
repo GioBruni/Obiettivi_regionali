@@ -848,8 +848,6 @@ class HomeController extends Controller
     /*
         protected function punteggioOb7_1($dataView)
         {
-
-
             $array2024 = array();//metto la percentuale del 2024);
             $array2025 = array(15, 10, 7);
             $array2026 = array(30, 25, 20, 15);
@@ -894,6 +892,50 @@ class HomeController extends Controller
             return $dataView;
         }
     */
+
+    protected function calcoloPunteggioOb9($percentualeOb9_1,$percentualeOb9_2){
+
+        $dataView=[];
+
+        //Sub.1
+        if ($percentualeOb9_1 >= 95) {
+            $punteggio = 2.5;
+            $dataView['messaggioOb9_1'] = [
+                'text' => "Percentuale  sufficiente, punteggio calcolato: $punteggio",
+                'class' => 'text-success',
+                'punteggio' => $punteggio
+            ];
+        } else {
+            $punteggio = (($percentualeOb9_1 / 95) * 2.5);
+            $dataView['messaggioOb9_1'] = [
+                'textDRG' => "Percentuale insufficiente, punteggio calcolato: $punteggio",
+                'class' => 'text-danger',
+                'punteggio' => $punteggio
+            ];
+        }
+
+        //Sub.2
+        if ($percentualeOb9_2 >= 80) {
+            $punteggio = 2.5;
+            $dataView['messaggioPb9_2'] = [
+                'text' => "Percentuale  sufficiente, punteggio calcolato: $punteggio",
+                'class' => 'text-success',
+                'punteggio' => $punteggio
+            ];
+        } else {
+            $punteggio = (($percentualeOb9_2 / 80) * 2.5);
+            $dataView['messaggioOb9_2'] = [
+                'text' => "Percentuale  insufficiente, punteggio calcolato: $punteggio",
+                'class' => 'text-danger',
+                'punteggio' => $punteggio
+            ];
+        }
+
+
+        return $dataView;
+    }
+
+
 
 
     protected function calcoloPunteggioOb10Prevenzione($percentualeCoperturaVaccinale, $percentualeCoperturaVaccinaleCicloBase, $percentualeVeterinaria, $percentualeAlimenti)
@@ -1009,7 +1051,7 @@ class HomeController extends Controller
                 'punteggio' => $punteggio
             ];
         }
-    
+
         return $dataView;
     }
 
@@ -1130,7 +1172,6 @@ class HomeController extends Controller
             ];
         }
     }
-
 
        return $dataView;
     }
@@ -2388,6 +2429,8 @@ class HomeController extends Controller
             ->orderBy('target9_PCT.created_at', 'desc')
             //->select("numerator")
             ->first();
+
+           
         $denominatore = DB::table("flows_sdo")
             ->where("year", $anno)
             ->where("structure_id", $strutturaId)
@@ -2438,6 +2481,9 @@ class HomeController extends Controller
 
                 ]
             ]);
+
+
+            dd($dataView['pct']);
         /*
         ->options([
             'responsive' => true,
@@ -2462,6 +2508,12 @@ class HomeController extends Controller
                         ];
                     }
         */
+
+        
+
+        $calcoloPunteggioOb9 = $this->calcoloPunteggioOb9($rapporto, $dataView['pct']['rapporto']);
+        $dataView = array_merge($calcoloPunteggioOb9, $dataView);
+
 
         return view("farmaci")->with("dataView", $dataView);
     }
