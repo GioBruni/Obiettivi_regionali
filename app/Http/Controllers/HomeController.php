@@ -2669,12 +2669,11 @@ class HomeController extends Controller
 public function uploadFileScreeningAo(Request $request)
     {
     
-        dd($request->all());
         Target5::updateOrInsert(
             [
                 'structure_id' => Auth::user()->firstStructureId()->id,
                 'year' => $request->anno,
-                'month' => ,
+                'month' => null,
             ],
             [
                 'structure_id' => Auth::user()->firstStructureId()->id,
