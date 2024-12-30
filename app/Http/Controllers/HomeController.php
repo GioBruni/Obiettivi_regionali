@@ -688,13 +688,11 @@ class HomeController extends Controller
                         $dataView['percentuali'][$target3->uploated_file_id] = $percentuale;
                     }
 
-
                     foreach ($dataView['filesCaricati'] as $file) {
                         if ($file->approved !== null && $file->approved != 0) {
                             foreach ($dataView['userStructures'] as $struttura) {
                                 $punteggio = 0;
                                 $percentuale = $dataView['percentuali'][$file->id] ?? 0;
-
 
                                 switch ($struttura->column_points) {
                                     case 'ao':
@@ -736,8 +734,6 @@ class HomeController extends Controller
 
         return $dataView;
     }
-
-
 
 
     protected function calcoloPunteggioSub4($percentualeData)
@@ -893,9 +889,10 @@ class HomeController extends Controller
         }
     */
 
-    protected function calcoloPunteggioOb9($percentualeOb9_1,$percentualeOb9_2){
+    protected function calcoloPunteggioOb9($percentualeOb9_1, $percentualeOb9_2)
+    {
 
-        $dataView=[];
+        $dataView = [];
 
         //Sub.1
         if ($percentualeOb9_1 >= 95) {
@@ -941,7 +938,7 @@ class HomeController extends Controller
     protected function calcoloPunteggioOb10Prevenzione($percentualeCoperturaVaccinale, $percentualeCoperturaVaccinaleCicloBase, $percentualeVeterinaria, $percentualeAlimenti)
     {
         $dataView = [];
-    
+
         //***************************** Copertura Vaccinale ************************************/
         if ($percentualeCoperturaVaccinale < 90) {
             $punteggio = 0;
@@ -972,7 +969,7 @@ class HomeController extends Controller
                 'punteggio' => $punteggio
             ];
         }
-    
+
         //***************************** Copertura Vaccinale Ciclo Base ************************************/
         if ($percentualeCoperturaVaccinaleCicloBase < 90) {
             $punteggio = 0;
@@ -1003,7 +1000,7 @@ class HomeController extends Controller
                 'punteggio' => $punteggio
             ];
         }
-    
+
         //***************************** Veterinaria *******************************************************/
         if ($percentualeVeterinaria < 70) {
             $punteggio = 0;
@@ -1027,7 +1024,7 @@ class HomeController extends Controller
                 'punteggio' => $punteggio
             ];
         }
-    
+
         //***************************** Alimenti ***********************************************************/
         if ($percentualeAlimenti < 80) {
             $punteggio = 0;
@@ -1056,126 +1053,127 @@ class HomeController extends Controller
     }
 
 
-    protected function calcoloPunteggioOb10AssistenzaDistrettuale($punteggioCIA1, $punteggioCIA2, $punteggioCIA3, $percentualeTumoreCP){
-    $dataView = [];
-
-    // Calcolo del punteggio finale (ADI)
-    $punteggioFinale100 = ($punteggioCIA1 * 0.15) + ($punteggioCIA2 * 0.35) + ($punteggioCIA3 * 0.50);
-
-    // Porta il punteggio finale nella scala da 0 a 5
-    $dataView['punteggioFinale'] = ($punteggioFinale100 / 20);
-
-    //************************************************************************//
-   
-    if ($percentualeTumoreCP >= 0 && $percentualeTumoreCP < 5) {
-        $punteggio = 0; // Obiettivo non raggiunto
-        $dataView['messaggioTumoreCP'] = [
-            'textTumoreCP' => "Obiettivo non raggiunto per Tumore CP con percentuale: $percentualeTumoreCP%",
-            'class' => 'text-danger',
-            'punteggio' => $punteggio
-        ];
-    } elseif ($percentualeTumoreCP >= 5 && $percentualeTumoreCP < 55) {
-        $punteggio = 2 * $percentualeTumoreCP - 10;
-        $dataView['messaggioTumoreCP'] = [
-            'textTumoreCP' => "Percentuale Tumore CP sufficiente, punteggio calcolato: $punteggio",
-            'class' => 'text-warning',
-            'punteggio' => $punteggio
-        ];
-    } else {
-        $punteggio = 100;
-        $dataView['messaggioTumoreCP'] = [
-            'textTumoreCP' => "Obiettivo raggiunto al 100% con percentuale: $percentualeTumoreCP%",
-            'class' => 'text-success',
-            'punteggio' => $punteggio
-        ];
-    }
-
-
-    if ($percentualeTumoreCP > 35) {
-        $punteggio = 100;
-        $dataView['messaggioTumoreCP'] = [
-            'textTumoreCP' => "Obiettivo raggiunto al 100% con percentuale superiore a 35%: $percentualeTumoreCP%",
-            'class' => 'text-success',
-            'punteggio' => $punteggio
-        ];
-    }
-
-    return $dataView;
-}
-
-
-//da rivedere
-    protected function calcoloPunteggioOb10AssistenzaOspedaliera($percentualeDRG, $percentualeTumoreMammella,$numeratoreTumoreMammella)
+    protected function calcoloPunteggioOb10AssistenzaDistrettuale($punteggioCIA1, $punteggioCIA2, $punteggioCIA3, $percentualeTumoreCP)
     {
         $dataView = [];
 
-    //DRG
+        // Calcolo del punteggio finale (ADI)
+        $punteggioFinale100 = ($punteggioCIA1 * 0.15) + ($punteggioCIA2 * 0.35) + ($punteggioCIA3 * 0.50);
 
-    if ($percentualeDRG >= 0 && $percentualeDRG < 0.15) {
-        $punteggio = 100; // Obiettivo massimo
-        $dataView['messaggioDRG'] = [
-            'textDRG' => "Obiettivo raggiunto al 100% con percentuale: $percentualeDRG",
-            'class' => 'text-success',
-            'punteggio' => $punteggio
-        ];
-    } elseif ($percentualeDRG >= 0.15 && $percentualeDRG < 0.375) {
-       
-        $punteggio = (-444.4444 * $percentualeDRG) + 166.6667;
-        $dataView['messaggioDRG'] = [
-            'textDRG' => "Percentuale DRG sufficiente, punteggio calcolato: $punteggio",
-            'class' => 'text-warning',
-            'punteggio' => $punteggio
-        ];
-    } else {
-        $punteggio = 0; // Obiettivo non raggiunto
-        $dataView['messaggioDRG'] = [
-            'textDRG' => "Obiettivo non raggiunto per DRG con percentuale: $percentualeDRG",
-            'class' => 'text-danger',
-            'punteggio' => $punteggio
-        ];
-    }
+        // Porta il punteggio finale nella scala da 0 a 5
+        $dataView['punteggioFinale'] = ($punteggioFinale100 / 20);
 
-    //Tumore mammella
+        //************************************************************************//
 
-
-    
-    if ($numeratoreTumoreMammella < 135) {
-        $punteggio = 2; 
-        $dataView['messaggioTumoreMammella'] = [
-            'text' => "Numeratore Tumore Mammella inferiore a 135, punteggio: $punteggio",
-            'class' => 'text-danger',  
-            'punteggio' => $punteggio
-        ];
-    } else {
-        // Calcolo della percentuale Tumore Mammella
-        if ($percentualeTumoreMammella >= 0 && $percentualeTumoreMammella <= 1.2702) {
-            $punteggio = 0;  // Punteggio 0 se la percentuale è tra 0 e 1.2702
-            $dataView['messaggioTumoreMammella'] = [
-                'text' => "Percentuale Tumore Mammella tra 0 e 1.2702, punteggio: $punteggio",
-                'class' => 'text-warning',  
+        if ($percentualeTumoreCP >= 0 && $percentualeTumoreCP < 5) {
+            $punteggio = 0; // Obiettivo non raggiunto
+            $dataView['messaggioTumoreCP'] = [
+                'textTumoreCP' => "Obiettivo non raggiunto per Tumore CP con percentuale: $percentualeTumoreCP%",
+                'class' => 'text-danger',
                 'punteggio' => $punteggio
             ];
-        } elseif ($percentualeTumoreMammella > 1.2702 && $percentualeTumoreMammella < 90) {
-            // Calcolo polinomiale per percentuale tra 1.2702 e 90
-            $punteggio = 1.2702 * pow(10, -2) * pow($percentualeTumoreMammella, 2) - 3.2266 * pow(10, -2) * $percentualeTumoreMammella + 2.0492 * pow(10, -2);
-            $dataView['messaggioTumoreMammella'] = [
-                'text' => "Percentuale Tumore Mammella tra 1.2702 e 90, punteggio calcolato: $punteggio",
-                'class' => 'text-warning',  
+        } elseif ($percentualeTumoreCP >= 5 && $percentualeTumoreCP < 55) {
+            $punteggio = 2 * $percentualeTumoreCP - 10;
+            $dataView['messaggioTumoreCP'] = [
+                'textTumoreCP' => "Percentuale Tumore CP sufficiente, punteggio calcolato: $punteggio",
+                'class' => 'text-warning',
                 'punteggio' => $punteggio
             ];
         } else {
-            $punteggio = 100;  // Punteggio massimo se la percentuale è maggiore di 90
-            $dataView['messaggioTumoreMammella'] = [
-                'text' => "Percentuale Tumore Mammella superiore a 90, punteggio massimo: $punteggio",
-                'class' => 'text-success',  
+            $punteggio = 100;
+            $dataView['messaggioTumoreCP'] = [
+                'textTumoreCP' => "Obiettivo raggiunto al 100% con percentuale: $percentualeTumoreCP%",
+                'class' => 'text-success',
                 'punteggio' => $punteggio
             ];
         }
+
+
+        if ($percentualeTumoreCP > 35) {
+            $punteggio = 100;
+            $dataView['messaggioTumoreCP'] = [
+                'textTumoreCP' => "Obiettivo raggiunto al 100% con percentuale superiore a 35%: $percentualeTumoreCP%",
+                'class' => 'text-success',
+                'punteggio' => $punteggio
+            ];
+        }
+
+        return $dataView;
     }
 
-       return $dataView;
+
+    //da rivedere
+    protected function calcoloPunteggioOb10AssistenzaOspedaliera($percentualeDRG, $percentualeTumoreMammella, $numeratoreTumoreMammella)
+    {
+        $dataView = [];
+
+        //DRG
+
+        if ($percentualeDRG >= 0 && $percentualeDRG < 0.15) {
+            $punteggio = 100; // Obiettivo massimo
+            $dataView['messaggioDRG'] = [
+                'textDRG' => "Obiettivo raggiunto al 100% con percentuale: $percentualeDRG",
+                'class' => 'text-success',
+                'punteggio' => $punteggio
+            ];
+        } elseif ($percentualeDRG >= 0.15 && $percentualeDRG < 0.375) {
+
+            $punteggio = (-444.4444 * $percentualeDRG) + 166.6667;
+            $dataView['messaggioDRG'] = [
+                'textDRG' => "Percentuale DRG sufficiente, punteggio calcolato: $punteggio",
+                'class' => 'text-warning',
+                'punteggio' => $punteggio
+            ];
+        } else {
+            $punteggio = 0; // Obiettivo non raggiunto
+            $dataView['messaggioDRG'] = [
+                'textDRG' => "Obiettivo non raggiunto per DRG con percentuale: $percentualeDRG",
+                'class' => 'text-danger',
+                'punteggio' => $punteggio
+            ];
+        }
+
+        //Tumore mammella
+
+
+
+        if ($numeratoreTumoreMammella < 135) {
+            $punteggio = 2;
+            $dataView['messaggioTumoreMammella'] = [
+                'text' => "Numeratore Tumore Mammella inferiore a 135, punteggio: $punteggio",
+                'class' => 'text-danger',
+                'punteggio' => $punteggio
+            ];
+        } else {
+            // Calcolo della percentuale Tumore Mammella
+            if ($percentualeTumoreMammella >= 0 && $percentualeTumoreMammella <= 1.2702) {
+                $punteggio = 0;  // Punteggio 0 se la percentuale è tra 0 e 1.2702
+                $dataView['messaggioTumoreMammella'] = [
+                    'text' => "Percentuale Tumore Mammella tra 0 e 1.2702, punteggio: $punteggio",
+                    'class' => 'text-warning',
+                    'punteggio' => $punteggio
+                ];
+            } elseif ($percentualeTumoreMammella > 1.2702 && $percentualeTumoreMammella < 90) {
+                // Calcolo polinomiale per percentuale tra 1.2702 e 90
+                $punteggio = 1.2702 * pow(10, -2) * pow($percentualeTumoreMammella, 2) - 3.2266 * pow(10, -2) * $percentualeTumoreMammella + 2.0492 * pow(10, -2);
+                $dataView['messaggioTumoreMammella'] = [
+                    'text' => "Percentuale Tumore Mammella tra 1.2702 e 90, punteggio calcolato: $punteggio",
+                    'class' => 'text-warning',
+                    'punteggio' => $punteggio
+                ];
+            } else {
+                $punteggio = 100;  // Punteggio massimo se la percentuale è maggiore di 90
+                $dataView['messaggioTumoreMammella'] = [
+                    'text' => "Percentuale Tumore Mammella superiore a 90, punteggio massimo: $punteggio",
+                    'class' => 'text-success',
+                    'punteggio' => $punteggio
+                ];
+            }
+        }
+
+        return $dataView;
     }
-    
+
 
     protected function initView(int $obiettivo)
     {
@@ -1375,9 +1373,7 @@ class HomeController extends Controller
         $dataView = $this->initView(3);
         $dataView['files'][] = "obiettivo3.pdf";
 
-
         return view("caricamentoPuntoNascite")->with("dataView", $dataView);
-
     }
 
 
@@ -2162,9 +2158,24 @@ class HomeController extends Controller
 
         $dataView['calcoloPunteggioOb5_1'] = $this->calcoloPunteggioOb5_1($dataView['percentuale']);
 
-        return view("screening")->with("dataView", $dataView);
-    }
+        $dataView['userStructures'] = LocationsUsers::where("user_id", Auth::user()->id)
+            ->leftJoin("structures", "structures.id", "=", "users_structures.structure_id")
+            ->leftJoin("structure_type", "structure_type.code", "=", "structures.type")
+            ->orderby("structures.id")->get();
 
+
+        foreach ($dataView['userStructures'] as $struttura) {
+            if ($struttura->column_points === 'ao') {
+
+                return view("screeningAO")->with("dataView", $dataView);
+
+            } elseif ($struttura->column_points === 'asp') {
+
+                return view("screening")->with("dataView", $dataView);
+            }
+
+        }
+    }
 
     public function uploadFileObiettivo(Request $request)
     {
@@ -2427,14 +2438,17 @@ class HomeController extends Controller
             ->where('target9_PCT.structure_id', $strutturaId)
             ->where('f.approved', 1)
             ->orderBy('target9_PCT.created_at', 'desc')
-            //->select("numerator")
+            // ->select("numerator")
             ->first();
-           
+
+
+
         $denominatore = DB::table("flows_sdo")
             ->where("year", $anno)
             ->where("structure_id", $strutturaId)
             ->sum("ob9_2");
         $rapporto = ($denominatore > 0 && isset($numeratore)) ? round($numeratore->numerator / $denominatore * 100, 2) : 0;
+
 
         $dataView['pct'] = [
             "numeratore" => $numeratore,
@@ -2481,7 +2495,7 @@ class HomeController extends Controller
                 ]
             ]);
 
-            $dataView['chart92'] = Chartjs::build()
+        $dataView['chart92'] = Chartjs::build()
             ->name("DH")
             ->type("doughnut")
             ->size(["width" => 300, "height" => 150])
@@ -2525,7 +2539,7 @@ class HomeController extends Controller
                     }
         */
 
-        
+
 
         $calcoloPunteggioOb9 = $this->calcoloPunteggioOb9($rapporto, $dataView['pct']['rapporto']);
         $dataView = array_merge($calcoloPunteggioOb9, $dataView);
@@ -2652,11 +2666,76 @@ class HomeController extends Controller
         return response()->json(['description' => $description]);
     }
 
+public function uploadFileScreeningAo(Request $request)
+    {
+    
+        dd($request->all());
+        Target5::updateOrInsert(
+            [
+                'structure_id' => Auth::user()->firstStructureId()->id,
+                'year' => $request->anno,
+                'month' => ,
+            ],
+            [
+                'structure_id' => Auth::user()->firstStructureId()->id,
+                'year' => 3,
+                'month' => 4,
+                'mammografico' => null,
+                'cercocarcinoma' => null,
+                'colonretto' => null,
+                'numeratore_ao' => $request->numeratore_ao,
+                'denominatore_ao' => 8,
+            ]
+        );
+//***********+Carico il file************************** */
+        $request->validate([
+            'file' => 'required|file|mimes:pdf|max:5096',
+        ]);
+
+        $file = $request->file('file');
+        $path = $request->file('file')->store('uploads', 'public');
+        $url = Storage::url($path);
+
+
+
+        // Salva le informazioni nel database
+        UploatedFile::create([
+            'filename' => $file->getClientOriginalName(),
+            'path' => $url,
+            'user_id' => Auth::user()->id,
+            'structure_id' => $request->structure_id,
+            'notes' => null,
+            'target_number' => $request->obiettivo,
+            'target_category_id' => $request->has("categoria") ? $request->categoria : null,
+            'year' => $request->anno,
+        ]);
+
+        return redirect()->back()->with('status', 'File caricato con successo e in attesa di approvazione.');
+    }
+
+
+
 
     public function caricamentoScreening(Request $request)
     {
         $dataView = $this->screeningCommon();
-        return view('caricamentoScreening')->with("dataView", $dataView);
+
+        $dataView['userStructures'] = LocationsUsers::where("user_id", Auth::user()->id)
+            ->leftJoin("structures", "structures.id", "=", "users_structures.structure_id")
+            ->leftJoin("structure_type", "structure_type.code", "=", "structures.type")
+            ->orderby("structures.id")->get();
+
+
+        foreach ($dataView['userStructures'] as $struttura) {
+            if ($struttura->column_points === 'ao') {
+
+                return view("caricamentoScreeningAO")->with("dataView", $dataView);
+
+            } elseif ($struttura->column_points === 'asp') {
+
+                return view('caricamentoScreening')->with("dataView", $dataView);
+            }
+        }
     }
 
 
@@ -3196,26 +3275,26 @@ class HomeController extends Controller
         $percentualiPerMese = [];
         $numeratoreAnnuale = 0;
         $denominatoreAnnuale = 0;
-        
+
         foreach ($dataLea as $record) {
             if ($record->cia_1_den != 0) {
                 // Calcola la percentuale mensile
                 $percentualiPerMese[$record->mese] = ($record->cia_1_num / $record->cia_1_den) * 100;
-        
+
                 // Accumula il numeratore e il denominatore per il calcolo annuale
                 $numeratoreAnnuale += $record->cia_1_num;
                 $denominatoreAnnuale += $record->cia_1_den;
             }
         }
-        
+
         // Calcola la percentuale annuale
-        $percentualeAnnualeCia1 = ($denominatoreAnnuale != 0) 
-            ? ($numeratoreAnnuale / $denominatoreAnnuale) * 100 
+        $percentualeAnnualeCia1 = ($denominatoreAnnuale != 0)
+            ? ($numeratoreAnnuale / $denominatoreAnnuale) * 100
             : 0; // Gestione del caso in cui il denominatore annuale è 0
-        
+
         $dataView['percentualiPerMeseCia1'] = $percentualiPerMese;
         $dataView['percentualeAnnualeCia1'] = $percentualeAnnualeCia1;
-        
+
 
         // Preparazione dei dati per il grafico
         $graficoDati = [];
@@ -3274,27 +3353,27 @@ class HomeController extends Controller
         $percentualiPerMeseCia2 = [];
         $numeratoreAnnuale = 0;
         $denominatoreAnnuale = 0;
-        
+
         foreach ($dataLea as $record) {
             if ($record->cia_2_den != 0) {
                 // Calcola la percentuale mensile
                 $percentualiPerMeseCia2[$record->mese] = ($record->cia_2_num / $record->cia_2_den) * 100;
-        
+
                 // Accumula il numeratore e il denominatore per il calcolo annuale
                 $numeratoreAnnuale += $record->cia_2_num;
                 $denominatoreAnnuale += $record->cia_2_den;
             }
         }
-        
+
         // Calcola la percentuale annuale
-        $percentualeAnnualeCia2 = ($denominatoreAnnuale != 0) 
-            ? ($numeratoreAnnuale / $denominatoreAnnuale) * 100 
+        $percentualeAnnualeCia2 = ($denominatoreAnnuale != 0)
+            ? ($numeratoreAnnuale / $denominatoreAnnuale) * 100
             : 0; // Gestione del caso in cui il denominatore annuale è 0
-        
-      
+
+
         $dataView['percentualiPerMeseCia2'] = $percentualiPerMeseCia2;
         $dataView['percentualeAnnualeCia2'] = $percentualeAnnualeCia2;
-        
+
 
         $graficoDatiCia2 = [];
         foreach (array_keys($mesi) as $meseNumero) {
@@ -3352,27 +3431,27 @@ class HomeController extends Controller
         $percentualiPerMeseCia3 = [];
         $numeratoreAnnuale = 0;
         $denominatoreAnnuale = 0;
-        
+
         foreach ($dataLea as $record) {
             if ($record->cia_3_den != 0) {
                 // Calcola la percentuale mensile
                 $percentualiPerMeseCia3[$record->mese] = ($record->cia_3_num / $record->cia_3_den) * 100;
-        
+
                 // Accumula il numeratore e il denominatore per il calcolo annuale
                 $numeratoreAnnuale += $record->cia_3_num;
                 $denominatoreAnnuale += $record->cia_3_den;
             }
         }
-        
+
         // Calcola la percentuale annuale
-        $percentualeAnnualeCia3 = ($denominatoreAnnuale != 0) 
-            ? ($numeratoreAnnuale / $denominatoreAnnuale) * 100 
+        $percentualeAnnualeCia3 = ($denominatoreAnnuale != 0)
+            ? ($numeratoreAnnuale / $denominatoreAnnuale) * 100
             : 0; // Gestione del caso in cui il denominatore annuale è 0
-        
-    
+
+
         $dataView['percentualiPerMeseCia3'] = $percentualiPerMeseCia3;
         $dataView['percentualeAnnualeCia3'] = $percentualeAnnualeCia3;
-        
+
 
 
         $graficoDatiCia2 = [];
@@ -3508,27 +3587,27 @@ class HomeController extends Controller
         $percentualiMensili = [];
         $numeratoreTotale = 0;
         $denominatoreTotale = 0;
-        
+
         foreach ($dataView['dataSDO'] as $record) {
             if ($record->ob10_ao_2_den != 0) {
                 $percentualiMensili[$record->month] = round(($record->ob10_ao_2_num / $record->ob10_ao_2_den) * 100, 2);
-                $numeratoreTotale += $record->ob10_ao_2_num; 
-                $denominatoreTotale += $record->ob10_ao_2_den; 
+                $numeratoreTotale += $record->ob10_ao_2_num;
+                $denominatoreTotale += $record->ob10_ao_2_den;
             } else {
                 $percentualiMensili[$record->month] = 0;
             }
         }
-        
-    
+
+
         if ($denominatoreTotale != 0) {
             $percentualeAnnuale = round(($numeratoreTotale / $denominatoreTotale) * 100, 2);
         } else {
-            $percentualeAnnuale = 0;  
+            $percentualeAnnuale = 0;
         }
-        
-  
+
+
         $dataView['percentualeAnnualeDRG'] = $percentualeAnnuale;
-        
+
 
         $datiGrafico = [];
         for ($mese = 1; $mese <= 12; $mese++) {
@@ -3639,25 +3718,25 @@ class HomeController extends Controller
                 ]
             ]);
 
-            
-
-            $calcoloPunteggioPrevenzione = $this->calcoloPunteggioOb10Prevenzione( $dataView['percentualeCicloBase'],$dataView['percentualePrimaDose'],$dataView['percentualeTotaleVeterinaria'], $dataView['percentualeTotaleAlimenti']);
-            $dataView = array_merge($calcoloPunteggioPrevenzione, $dataView);
-
-            $calcoloPunteggioDistrettuale = $this->calcoloPunteggioOb10AssistenzaDistrettuale($dataView['percentualeAnnualeCia1'],$dataView['percentualeAnnualeCia2'],$dataView['percentualeAnnualeCia3'], $dataView['percentualeOb10_ao_4']);
-            $dataView = array_merge($calcoloPunteggioDistrettuale, $dataView);
-
-            
-            $calcoloPunteggioOspedaliera = $this->calcoloPunteggioOb10AssistenzaOspedaliera($dataView['percentualeAnnualeDRG'],$dataView['percentualeOb10_ao_1'],$dataView['ultimoDataSDO']->ob10_ao_1_num );
-            $dataView = array_merge($calcoloPunteggioOspedaliera, $dataView);
 
 
+        $calcoloPunteggioPrevenzione = $this->calcoloPunteggioOb10Prevenzione($dataView['percentualeCicloBase'], $dataView['percentualePrimaDose'], $dataView['percentualeTotaleVeterinaria'], $dataView['percentualeTotaleAlimenti']);
+        $dataView = array_merge($calcoloPunteggioPrevenzione, $dataView);
 
-            
+        $calcoloPunteggioDistrettuale = $this->calcoloPunteggioOb10AssistenzaDistrettuale($dataView['percentualeAnnualeCia1'], $dataView['percentualeAnnualeCia2'], $dataView['percentualeAnnualeCia3'], $dataView['percentualeOb10_ao_4']);
+        $dataView = array_merge($calcoloPunteggioDistrettuale, $dataView);
+
+
+        $calcoloPunteggioOspedaliera = $this->calcoloPunteggioOb10AssistenzaOspedaliera($dataView['percentualeAnnualeDRG'], $dataView['percentualeOb10_ao_1'], $dataView['ultimoDataSDO']->ob10_ao_1_num);
+        $dataView = array_merge($calcoloPunteggioOspedaliera, $dataView);
 
 
 
-            
+
+
+
+
+
         return view("garanzia-lea")->with("dataView", $dataView);
     }
 

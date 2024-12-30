@@ -85,6 +85,7 @@ Route::group(['middleware' => ['role:uploader']], routes: function (): void {
     Route::post('/uploadFileScreening', [HomeController::class, 'uploadFileScreening'])->name('uploadFileScreening');
     Route::post('/uploadDatiDonazione', [HomeController::class, 'uploadDatiDonazione'])->name('uploadDatiDonazione');
     Route::post('/uploadDatiFse', [HomeController::class, 'uploadDatiFse'])->name('uploadDatiFse');
+    Route::post('/uploadFileScreeningAo', [HomeController::class, 'uploadFileScreeningAo'])->name('uploadFileScreeningAo');
 
     Route::post('/uploadDatiVeterinaria', [HomeController::class, 'uploadDatiVeterinaria'])->name('uploadDatiVeterinaria');
     Route::post('/uploadDatilea', [HomeController::class, 'uploadDatiLea'])->name('uploadDatiLea');
