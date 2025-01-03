@@ -68,8 +68,12 @@
                                         @endforeach
                                     </tbody>
                                 </table>
-                               
-z
+        
+
+
+                                <div class="legend p-3 border rounded mt-3 {{$dataView['calcoloPunteggioOb5_1']['messaggioOb5_1']['class']}}">
+                                    <strong>{{ $dataView['calcoloPunteggioOb5_1']['messaggioOb5_1']['text'] }}</strong>
+                                </div>
                             </div>
                         </div>
                         <br>

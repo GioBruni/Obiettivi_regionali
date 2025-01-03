@@ -793,13 +793,13 @@ class HomeController extends Controller
             $dataView['messaggioOb5_1'] = [
                 'text' => "Raggiungimento dell'obiettivo con punteggio: 2",
                 'class' => 'text-success',
-                'punteggio' => 1
+                'punteggio' => 3
             ];
         } elseif ($percentualeAderenti >= 20) {
             $dataView['messaggioOb5_1'] = [
                 'text' => "Raggiungimento dell'obiettivo parziale con punteggio: 1",
                 'class' => 'text-warning',
-                'punteggio' => 1
+                'punteggio' => 1.5
             ];
         } else {
             $dataView['messaggioOb5_1'] = [
@@ -808,11 +808,8 @@ class HomeController extends Controller
                 'punteggio' => 0
             ];
         }
-
-        return [
-            'messaggioOb5_1' => $dataView['messaggioOb5_1'],
-            //'percentualeAderenti' => $percentualeAderenti,
-        ];
+    
+       return $dataView;
     }
 
     protected function calcoloPunteggioOb5_2($percentualeSub2)
@@ -833,7 +830,6 @@ class HomeController extends Controller
             ];
         }
 
-        // Restituzione dei dati
         return [
             'messaggioTmpCodiciDD' => $dataView['messaggioTmpCodiciDD'],
             'percentualeSub2' => $percentualeSub2,
@@ -2158,6 +2154,8 @@ class HomeController extends Controller
 
         $dataView['calcoloPunteggioOb5_1'] = $this->calcoloPunteggioOb5_1($dataView['percentuale']);
 
+      
+
         $dataView['userStructures'] = LocationsUsers::where("user_id", Auth::user()->id)
             ->leftJoin("structures", "structures.id", "=", "users_structures.structure_id")
             ->leftJoin("structure_type", "structure_type.code", "=", "structures.type")
@@ -2668,7 +2666,6 @@ class HomeController extends Controller
 
 public function uploadFileScreeningAo(Request $request)
     {
-    
         Target5::updateOrInsert(
             [
                 'structure_id' => Auth::user()->firstStructureId()->id,
@@ -2686,7 +2683,8 @@ public function uploadFileScreeningAo(Request $request)
                 'denominatore_ao' => 8,
             ]
         );
-//***********+Carico il file************************** */
+
+     //***********+Carico il file************************** */
         $request->validate([
             'file' => 'required|file|mimes:pdf|max:5096',
         ]);
@@ -2696,8 +2694,6 @@ public function uploadFileScreeningAo(Request $request)
         $url = Storage::url($path);
 
 
-
-        // Salva le informazioni nel database
         UploatedFile::create([
             'filename' => $file->getClientOriginalName(),
             'path' => $url,

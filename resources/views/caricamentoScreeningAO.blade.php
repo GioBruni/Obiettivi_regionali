@@ -7,10 +7,10 @@
     <div class="row justify-content-center">
         <div class="col-12 col-md-12">
             <div class="card shadow-sm border-0">
-                <div class="card-header bg-danger text-white text-center">
+                <div class="card-header bg-primary text-white text-center">
                     <h4>
                         <i class="{{ $dataView['icona'] }}"></i>
-                        {{ $dataView['titolo'] }}AO AOU
+                        {{ $dataView['titolo'] }} AO AOU
                     </h4>
                     <small>{{ $dataView['tooltip'] }}</small>
                 </div>
@@ -24,7 +24,7 @@
                 @endif
 
                 <div class="card shadow-sm border-0">
-                    <div class="card-header bg-danger text-white">
+                    <div class="card-header bg-primary text-white">
                         Carica PDF
                     </div>
                     <div class="card-body">
@@ -100,7 +100,7 @@
                                 <div class="form-group">
                                     <input type="file" class="form-control" id="file" name="file" accept=".pdf"
                                         required>
-                                    <div id="file-error" class="alert alert-danger mt-2" style="display:none;">
+                                    <div id="file-error" class="alert alert-primary mt-2" style="display:none;">
                                         Il file supera i 5MB
                                     </div>
                                 </div>
@@ -108,7 +108,7 @@
                             
                             <div class="mb-3">
                                 <button type="submit" class="btn btn-primary btn-sm" id="submitBtn">
-                                    <i class="bi bi-floppy"></i>&nbsp;&nbsp;{{ __('Carica PDF') }}
+                                    <i class="bi bi-floppy"></i>&nbsp;&nbsp;{{ __('Salva') }}
                                 </button>
                             </div>
                         </form>
